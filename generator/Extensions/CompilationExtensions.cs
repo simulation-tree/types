@@ -6,7 +6,7 @@ namespace Types.Generator
     public static class CompilationExtensions
     {
         /// <summary>
-        /// Iterates through all unique struct types that are value types.
+        /// Iterates through all value struct types found in all syntax trees.
         /// </summary>
         public static IEnumerable<ITypeSymbol> GetAllTypes(this Compilation compilation)
         {
@@ -81,19 +81,7 @@ namespace Types.Generator
 
                 if (type.IsUnmanaged())
                 {
-                    Stack<ITypeSymbol> stack = new();
-                    stack.Push(type);
-                    while (stack.Count > 0)
-                    {
-                        ITypeSymbol current = stack.Pop();
-                        types.Add(current);
-
-                        foreach (IFieldSymbol field in current.GetFields())
-                        {
-                            types.Add(field.Type);
-                            stack.Push(field.Type);
-                        }
-                    }
+                    types.Add(type);
                 }
             }
 

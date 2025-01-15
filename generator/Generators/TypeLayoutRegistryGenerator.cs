@@ -24,11 +24,25 @@ namespace Types.Generator
         public static string Generate(Compilation compilation)
         {
             HashSet<ITypeSymbol> types = [];
+            Stack<ITypeSymbol> stack = new();
             foreach (ITypeSymbol type in compilation.GetAllTypes())
             {
                 if (type.HasTypeAttribute())
                 {
+                    stack.Push(type);
                     types.Add(type);
+                }
+            }
+
+            while (stack.Count > 0)
+            {
+                ITypeSymbol current = stack.Pop();
+                foreach (IFieldSymbol field in current.GetFields())
+                {
+                    if (types.Add(field.Type))
+                    {
+                        stack.Push(field.Type);
+                    }
                 }
             }
 
