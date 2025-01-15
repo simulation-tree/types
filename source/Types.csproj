@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<Title>Types</Title>
+		<Authors>popcron</Authors>
+		<Company>game-simulations</Company>
+		<Description>Assists with meta-programming with value types</Description>
+		<RepositoryUrl>https://github.com/game-simulations/types</RepositoryUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<IsAotCompatible>True</IsAotCompatible>
+		<IsTrimmable>True</IsTrimmable>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Include="..\README.md">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\unmanaged\source\Unmanaged.csproj" />
+	</ItemGroup>
+
+</Project>
