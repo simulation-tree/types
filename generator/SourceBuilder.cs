@@ -7,6 +7,7 @@ namespace Types.Generator
     {
         private readonly StringBuilder builder = new();
         private int indentation;
+        private bool needsToIndent;
 
         public IEnumerable<string> Lines
         {
@@ -29,13 +30,14 @@ namespace Types.Generator
         {
             indentation = 0;
             builder.Clear();
+            needsToIndent = false;
         }
 
         public void BeginGroup()
         {
             AppendIndentation();
             builder.Append('{');
-            builder.AppendLine();
+            AppendLine();
             indentation++;
         }
 
@@ -44,7 +46,7 @@ namespace Types.Generator
             indentation--;
             AppendIndentation();
             builder.Append('}');
-            builder.AppendLine();
+            AppendLine();
         }
 
         public void AppendIndentation()
@@ -58,12 +60,47 @@ namespace Types.Generator
         public void AppendLine(object text)
         {
             AppendIndentation();
-            builder.AppendLine(text.ToString());
+            builder.Append(text.ToString());
+            AppendLine();
         }
 
         public void AppendLine()
         {
             builder.AppendLine();
+            needsToIndent = true;
+        }
+
+        public void Append(object text)
+        {
+            if (needsToIndent)
+            {
+                needsToIndent = false;
+                AppendIndentation();
+            }
+
+            builder.Append(text.ToString());
+        }
+
+        public void Append(string text)
+        {
+            if (needsToIndent)
+            {
+                needsToIndent = false;
+                AppendIndentation();
+            }
+
+            builder.Append(text);
+        }
+
+        public void Append(char character)
+        {
+            if (needsToIndent)
+            {
+                needsToIndent = false;
+                AppendIndentation();
+            }
+
+            builder.Append(character);
         }
     }
 }

@@ -7,7 +7,9 @@ namespace Types.Generator
     public class TypeLayoutRegistryGenerator : IIncrementalGenerator
     {
         private static readonly SourceBuilder source = new();
-        private const string TypeName = "TypeLayoutRegistry";
+        private const string RegistryName = "TypeLayoutRegistry";
+        private const string Namespace = "Types";
+        private const string TypeLayoutName = "TypeLayout";
 
         void IIncrementalGenerator.Initialize(IncrementalGeneratorInitializationContext context)
         {
@@ -16,23 +18,36 @@ namespace Types.Generator
 
         private static void Generate(SourceProductionContext context, Compilation compilation)
         {
-            context.AddSource($"{TypeName}.generated.cs", Generate(compilation));
+            context.AddSource($"{RegistryName}.generated.cs", Generate(compilation));
         }
 
         public static string Generate(Compilation compilation)
         {
             HashSet<ITypeSymbol> types = [];
-            compilation.CollectTypeSymbols(types);
+            foreach (ITypeSymbol type in compilation.GetAllTypes())
+            {
+                if (type.HasTypeAttribute())
+                {
+                    types.Add(type);
+                }
+            }
 
             source.Clear();
             source.AppendLine("using System.Diagnostics;");
             source.AppendLine("using Types;");
             source.AppendLine("using Unmanaged;");
             source.AppendLine();
-            source.AppendLine($"namespace {SharedFunctions.Namespace}");
+
+            source.Append("namespace ");
+            source.Append(Namespace);
+            source.AppendLine();
+
             source.BeginGroup();
             {
-                source.AppendLine($"internal static partial class {TypeName}");
+                source.Append("internal static partial class ");
+                source.Append(RegistryName);
+                source.AppendLine();
+
                 source.BeginGroup();
                 {
                     source.AppendLine("/// <summary>");
@@ -42,25 +57,6 @@ namespace Types.Generator
                     source.BeginGroup();
                     {
                         source.AppendLine("USpan<TypeLayout.Variable> buffer = stackalloc TypeLayout.Variable[32];");
-
-                        //recursively make sure that types of fields are also registered
-                        Stack<ITypeSymbol> stack = new();
-                        foreach (ITypeSymbol type in types)
-                        {
-                            stack.Push(type);
-                        }
-
-                        while (stack.Count > 0)
-                        {
-                            ITypeSymbol type = stack.Pop();
-                            foreach (IFieldSymbol field in type.GetFields())
-                            {
-                                if (types.Add(field.Type))
-                                {
-                                    stack.Push(field.Type);
-                                }
-                            }
-                        }
 
                         bool registeredBoolean = false;
                         bool registeredByte = false;
@@ -255,44 +251,67 @@ namespace Types.Generator
             }
 
             byte count = 0;
-            AppendInheritedFields(type, ref count);
+            HashSet<string> fieldNames = new();
+            AppendInheritedFields(type, fieldNames, ref count);
 
             foreach (IFieldSymbol field in type.GetFields())
             {
-                AppendVariable(field, count);
-                count++;
+                if (fieldNames.Add(field.Name))
+                {
+                    AppendVariable(field, ref count);
+                }
             }
 
-            source.AppendLine($"{SharedFunctions.TypeLayout}.Register<{fullName}>(buffer.Slice(0, {count}));");
-
-            static void AppendVariable(IFieldSymbol field, byte count)
+            source.Append(TypeLayoutName);
+            source.Append(".Register<");
+            source.Append(fullName);
+            source.Append(">(");
+            if (count > 0)
             {
-                string variableTypeName = field.Type.GetFullTypeName();
+                source.Append("buffer.Slice(0, ");
+                source.Append(count);
+                source.Append(')');
+            }
+
+            source.Append(");");
+            source.AppendLine();
+
+            static void AppendVariable(IFieldSymbol field, ref byte count)
+            {
+                source.Append("buffer[");
+                source.Append(count);
+                source.Append("] = new(\"");
+                source.Append(field.Name);
+                source.Append("\", \"");
                 if (field.IsFixedSizeBuffer)
                 {
-                    variableTypeName = variableTypeName.TrimEnd('*');
-                    variableTypeName += '[';
-                    variableTypeName += field.FixedSize;
-                    variableTypeName += ']';
+                    string variableTypeName = field.Type.GetFullTypeName().TrimEnd('*');
+                    source.Append(variableTypeName);
+                    source.Append('[');
+                    source.Append(field.FixedSize);
+                    source.Append(']');
+                }
+                else
+                {
+                    source.Append(field.Type.GetFullTypeName());
                 }
 
-                source.AppendLine($"buffer[{count}] = new(\"{field.Name}\", \"{variableTypeName}\");");
+                source.Append("\");");
+                source.AppendLine();
                 count++;
             }
 
-            static void AppendInheritedFields(ITypeSymbol type, ref byte count)
+            static void AppendInheritedFields(ITypeSymbol type, HashSet<string> fieldNames, ref byte count)
             {
-                foreach (INamedTypeSymbol interfaceType in type.AllInterfaces)
+                foreach (ITypeSymbol inheritedType in type.GetInheritingTypes())
                 {
-                    if (interfaceType.ToDisplayString().StartsWith(SharedFunctions.InheritInterfacePrefix))
-                    {
-                        ITypeSymbol genericType = interfaceType.TypeArguments[0];
-                        AppendInheritedFields(genericType, ref count);
+                    AppendInheritedFields(inheritedType, fieldNames, ref count);
 
-                        foreach (IFieldSymbol field in genericType.GetFields())
+                    foreach (IFieldSymbol field in inheritedType.GetFields())
+                    {
+                        if (fieldNames.Add(field.Name))
                         {
-                            AppendVariable(field, count);
-                            count++;
+                            AppendVariable(field, ref count);
                         }
                     }
                 }

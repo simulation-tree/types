@@ -121,11 +121,18 @@ namespace Types.Tests
         [Test]
         public void VerifyInheritingType()
         {
-            TypeLayout layout = TypeLayout.Get<ChildType>();
-            Assert.That(layout.Variables.Length, Is.EqualTo(3));
-            Assert.That(layout.ContainsVariable("a"), Is.True);
-            Assert.That(layout.ContainsVariable("b"), Is.True);
-            Assert.That(layout.ContainsVariable("cd"), Is.True);
+            TypeLayout childLayout = TypeLayout.Get<ChildType>();
+            Assert.That(childLayout.Variables.Length, Is.EqualTo(3));
+            Assert.That(childLayout.ContainsVariable("a"), Is.True);
+            Assert.That(childLayout.ContainsVariable("b"), Is.True);
+            Assert.That(childLayout.ContainsVariable("cd"), Is.True);
+
+            TypeLayout grandChildLayout = TypeLayout.Get<GrandChildType>();
+            Assert.That(grandChildLayout.Variables.Length, Is.EqualTo(4));
+            Assert.That(grandChildLayout.ContainsVariable("a"), Is.True);
+            Assert.That(grandChildLayout.ContainsVariable("b"), Is.True);
+            Assert.That(grandChildLayout.ContainsVariable("cd"), Is.True);
+            Assert.That(grandChildLayout.ContainsVariable("value"), Is.True);
         }
     }
 }

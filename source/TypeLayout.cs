@@ -82,6 +82,9 @@ namespace Types
         }
 
 #if NET
+        /// <summary>
+        /// Default constructor not supported.
+        /// </summary>
         [Obsolete("Default constructor not supported", true)]
         public TypeLayout()
         {
@@ -89,6 +92,9 @@ namespace Types
         }
 #endif
 
+        /// <summary>
+        /// Creates a new type layout.
+        /// </summary>
         public TypeLayout(FixedString fullName, ushort size, USpan<Variable> variables)
         {
             ThrowIfGreaterThanCapacity(variables.Length);
@@ -147,6 +153,9 @@ namespace Types
             return Create(bytes);
         }
 
+        /// <summary>
+        /// Checks if this type contains a variable with the given <paramref name="name"/>.
+        /// </summary>
         public readonly bool ContainsVariable(FixedString name)
         {
             USpan<Variable> variables = Variables;
@@ -161,6 +170,9 @@ namespace Types
             return false;
         }
 
+        /// <summary>
+        /// Checks if this type contains a variable with the given <paramref name="name"/>.
+        /// </summary>
         public readonly bool ContainsVariable(string name)
         {
             USpan<Variable> variables = Variables;
@@ -175,6 +187,9 @@ namespace Types
             return false;
         }
 
+        /// <summary>
+        /// Checks if this type contains a variable with the given <paramref name="name"/>.
+        /// </summary>
         public readonly bool ContainsVariable(USpan<char> name)
         {
             USpan<Variable> variables = Variables;
@@ -197,11 +212,17 @@ namespace Types
             return systemTypes.Contains(typeof(T));
         }
 
+        /// <summary>
+        /// Checks if a type with the given <paramref name="fullTypeName"/> is registered.
+        /// </summary>
         public static bool IsRegistered(FixedString fullTypeName)
         {
             return nameToType.ContainsKey(fullTypeName.GetLongHashCode());
         }
 
+        /// <summary>
+        /// Retrieves the full type name for the given <typeparamref name="T"/>.
+        /// </summary>
         public static FixedString GetFullName<T>()
         {
             FixedString fullName = default;
@@ -251,6 +272,9 @@ namespace Types
             }
         }
 
+        /// <summary>
+        /// Registeres a <typeparamref name="T"/> type layout with no variables.
+        /// </summary>
         public unsafe static void Register<T>() where T : unmanaged
         {
             ThrowIfAlreadyRegistered<T>();
@@ -264,6 +288,9 @@ namespace Types
             Cache<T>.Initialize(layout);
         }
 
+        /// <summary>
+        /// Registers a <typeparamref name="T"/> type layout with the given <paramref name="variables"/>.
+        /// </summary>
         public unsafe static void Register<T>(USpan<Variable> variables) where T : unmanaged
         {
             ThrowIfAlreadyRegistered<T>();
@@ -277,6 +304,9 @@ namespace Types
             Cache<T>.Initialize(layout);
         }
 
+        /// <summary>
+        /// Retrieves the type layout for <typeparamref name="T"/>.
+        /// </summary>
         public static TypeLayout Get<T>() where T : unmanaged
         {
             ThrowIfTypeIsNotRegistered<T>();
@@ -284,30 +314,42 @@ namespace Types
             return Cache<T>.Value;
         }
 
-        public static TypeLayout Get(FixedString fullName)
+        /// <summary>
+        /// Retrieves the type layout for the given <paramref name="fullTypeName"/>.
+        /// </summary>
+        public static TypeLayout Get(FixedString fullTypeName)
         {
-            ThrowIfTypeIsNotRegistered(fullName);
+            ThrowIfTypeIsNotRegistered(fullTypeName);
 
-            return Get(fullName.GetLongHashCode());
+            return Get(fullTypeName.GetLongHashCode());
         }
 
-        public static TypeLayout Get(USpan<char> fullName)
+        /// <summary>
+        /// Retrieves the type layout for the given <paramref name="fullTypeName"/>.
+        /// </summary>
+        public static TypeLayout Get(USpan<char> fullTypeName)
         {
-            return Get(new FixedString(fullName));
+            return Get(new FixedString(fullTypeName));
         }
 
-        public static TypeLayout Get(string fullName)
+        /// <summary>
+        /// Retrieves the type layout for the given <paramref name="fullTypeName"/>.
+        /// </summary>
+        public static TypeLayout Get(string fullTypeName)
         {
-            return Get(new FixedString(fullName));
+            return Get(new FixedString(fullTypeName));
         }
 
-        public static TypeLayout Get(long fullNameHash)
+        /// <summary>
+        /// Retrieves the type layout for the given <paramref name="typeHash"/>.
+        /// </summary>
+        public static TypeLayout Get(long typeHash)
         {
-            return nameToType[fullNameHash];
+            return nameToType[typeHash];
         }
 
         [Conditional("DEBUG")]
-        public static void ThrowIfGreaterThanCapacity(uint length)
+        private static void ThrowIfGreaterThanCapacity(uint length)
         {
             if (length >= Capacity)
             {
@@ -316,29 +358,29 @@ namespace Types
         }
 
         [Conditional("DEBUG")]
-        public static void ThrowIfTypeIsNotRegistered<T>()
+        private static void ThrowIfTypeIsNotRegistered<T>()
         {
             if (!systemTypes.Contains(typeof(T)))
             {
-                throw new InvalidOperationException($"TypeLayout for {typeof(T)} is not registered");
+                throw new InvalidOperationException($"TypeLayout for `{typeof(T)}` is not registered");
             }
         }
 
         [Conditional("DEBUG")]
-        public static void ThrowIfAlreadyRegistered<T>()
+        private static void ThrowIfAlreadyRegistered<T>()
         {
             if (systemTypes.Contains(typeof(T)))
             {
-                throw new InvalidOperationException($"TypeLayout for {typeof(T)} is already registered");
+                throw new InvalidOperationException($"TypeLayout for `{typeof(T)}` is already registered");
             }
         }
 
         [Conditional("DEBUG")]
-        public static void ThrowIfTypeIsNotRegistered(FixedString fullName)
+        private static void ThrowIfTypeIsNotRegistered(FixedString fullTypeName)
         {
-            if (!nameToType.ContainsKey(fullName.GetLongHashCode()))
+            if (!nameToType.ContainsKey(fullTypeName.GetLongHashCode()))
             {
-                throw new InvalidOperationException($"TypeLayout for {fullName} is not registered");
+                throw new InvalidOperationException($"TypeLayout for `{fullTypeName}` is not registered");
             }
         }
 
@@ -407,44 +449,70 @@ namespace Types
             }
         }
 
+        /// <inheritdoc/>
         public static bool operator ==(TypeLayout left, TypeLayout right)
         {
             return left.Equals(right);
         }
 
+        /// <inheritdoc/>
         public static bool operator !=(TypeLayout left, TypeLayout right)
         {
             return !(left == right);
         }
 
+        /// <summary>
+        /// Describes a variable part of a <see cref="Types.TypeLayout"/>.
+        /// </summary>
         [DebuggerTypeProxy(typeof(VariableDebugView))]
         public struct Variable : IEquatable<Variable>, ISerializable
         {
             private FixedString name;
             private long typeFullNameHash;
 
+            /// <summary>
+            /// Name of the variable.
+            /// </summary>
             public readonly FixedString Name => name;
+
+            /// <summary>
+            /// Type layout of the variable.
+            /// </summary>
             public readonly TypeLayout TypeLayout => Get(typeFullNameHash);
+
+            /// <summary>
+            /// Size of the variable in bytes.
+            /// </summary>
             public readonly ushort Size => TypeLayout.Size;
 
-            public Variable(FixedString name, FixedString typeFullName)
+            /// <summary>
+            /// Creates a new variable with the given <paramref name="name"/> and <paramref name="fullTypeName"/>.
+            /// </summary>
+            public Variable(FixedString name, FixedString fullTypeName)
             {
                 this.name = name;
-                typeFullNameHash = typeFullName.GetLongHashCode();
+                typeFullNameHash = fullTypeName.GetLongHashCode();
             }
 
-            public Variable(string name, string typeFullName)
+            /// <summary>
+            /// Creates a new variable with the given <paramref name="name"/> and <paramref name="fullTypeName"/>.
+            /// </summary>
+            public Variable(string name, string fullTypeName)
             {
                 this.name = name;
-                typeFullNameHash = new FixedString(typeFullName).GetLongHashCode();
+                typeFullNameHash = new FixedString(fullTypeName).GetLongHashCode();
             }
 
-            public Variable(FixedString name, int typeFullNameHash)
+            /// <summary>
+            /// Creates a new variable with the given <paramref name="name"/> and <paramref name="typeHash"/>.
+            /// </summary>
+            public Variable(FixedString name, int typeHash)
             {
                 this.name = name;
-                this.typeFullNameHash = typeFullNameHash;
+                this.typeFullNameHash = typeHash;
             }
 
+            /// <inheritdoc/>
             public readonly override string ToString()
             {
                 USpan<char> buffer = stackalloc char[256];
@@ -452,6 +520,10 @@ namespace Types
                 return buffer.Slice(0, length).ToString();
             }
 
+            /// <summary>
+            /// Builds a string representation of this variable and writes it to <paramref name="buffer"/>.
+            /// </summary>
+            /// <returns>Amount of characters written.</returns>
             public readonly uint ToString(USpan<char> buffer)
             {
                 TypeLayout typeLayout = TypeLayout;
@@ -463,16 +535,19 @@ namespace Types
                 return length;
             }
 
+            /// <inheritdoc/>
             public readonly override bool Equals(object? obj)
             {
                 return obj is Variable variable && Equals(variable);
             }
 
+            /// <inheritdoc/>
             public readonly bool Equals(Variable other)
             {
                 return Name.Equals(other.Name) && typeFullNameHash == other.typeFullNameHash;
             }
 
+            /// <inheritdoc/>
             public readonly override int GetHashCode()
             {
                 unchecked
@@ -488,7 +563,7 @@ namespace Types
                 }
             }
 
-            void ISerializable.Write(BinaryWriter writer)
+            readonly void ISerializable.Write(BinaryWriter writer)
             {
                 writer.WriteValue(name.Length);
                 for (byte i = 0; i < name.Length; i++)
@@ -512,11 +587,13 @@ namespace Types
                 typeFullNameHash = reader.ReadValue<long>();
             }
 
+            /// <inheritdoc/>
             public static bool operator ==(Variable left, Variable right)
             {
                 return left.Equals(right);
             }
 
+            /// <inheritdoc/>
             public static bool operator !=(Variable left, Variable right)
             {
                 return !(left == right);
