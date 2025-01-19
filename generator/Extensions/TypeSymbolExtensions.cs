@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
@@ -132,6 +133,14 @@ namespace Types.Generator
 
         public static bool HasTypeAttribute(this ITypeSymbol type)
         {
+            return HasAttribute(type, "Types.TypeAttribute");
+        }
+
+        /// <summary>
+        /// Checks if the type contains an attribute with the given name.
+        /// </summary>
+        public static bool HasAttribute(this ITypeSymbol type, string attributeName)
+        {
             Stack<ITypeSymbol> stack = new();
 
             ImmutableArray<AttributeData> attributes = type.GetAttributes();
@@ -147,7 +156,7 @@ namespace Types.Generator
             {
                 ITypeSymbol current = stack.Pop();
                 string attributeTypeName = current.GetFullTypeName();
-                if (attributeTypeName == "Types.TypeAttribute")
+                if (attributeName == attributeTypeName)
                 {
                     return true;
                 }
