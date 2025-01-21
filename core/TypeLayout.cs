@@ -5,6 +5,9 @@ using Unmanaged;
 
 namespace Types
 {
+    /// <summary>
+    /// Describes a type.
+    /// </summary>
     [DebuggerTypeProxy(typeof(TypeLayoutDebugView))]
     public unsafe struct TypeLayout : IEquatable<TypeLayout>, ISerializable
     {
@@ -23,6 +26,9 @@ namespace Types
 
         private fixed byte data[(int)(Capacity * 264)];
 
+        /// <summary>
+        /// All variables defined by this type.
+        /// </summary>
         public readonly USpan<Variable> Variables
         {
             get

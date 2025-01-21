@@ -12,7 +12,7 @@
 		<Title>Types</Title>
 		<Authors>popcron</Authors>
 		<Company>game-simulations</Company>
-		<Description>Assits programming with value types</Description>
+		<Description>Assists programming with value types</Description>
 		<RepositoryUrl>https://github.com/game-simulations/types</RepositoryUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<IsAotCompatible>True</IsAotCompatible>
