@@ -9,6 +9,7 @@
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<NoStandardLib>true</NoStandardLib>
 		<Title>Types</Title>
 		<Authors>popcron</Authors>
 		<Company>game-simulations</Company>
