@@ -15,6 +15,7 @@
 		<Company>game-simulations</Company>
 		<Authors>popcron</Authors>
 		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+		<RepositoryUrl>https://github.com/game-simulations/types</RepositoryUrl>
 	</PropertyGroup>
 
 	<ItemGroup>
