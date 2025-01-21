@@ -24,7 +24,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\source\Types.csproj" />
+		<ProjectReference Include="..\core\Types.Core.csproj" />
 		<ProjectReference Include="..\generator\Types.Generator.csproj">
 			<OutputItemType>Analyzer</OutputItemType>
 			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>

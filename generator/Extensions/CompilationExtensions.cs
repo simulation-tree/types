@@ -10,7 +10,7 @@ namespace Types.Generator
         /// </summary>
         public static IEnumerable<ITypeSymbol> GetAllTypes(this Compilation compilation)
         {
-            HashSet<ITypeSymbol> types = new();
+            HashSet<ITypeSymbol> types = [];
             foreach (SyntaxTree tree in compilation.SyntaxTrees)
             {
                 SemanticModel semanticModel = compilation.GetSemanticModel(tree);

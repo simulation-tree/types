@@ -3,16 +3,12 @@
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
 		<ImplicitUsings>disable</ImplicitUsings>
-		<IncludeBuildOutput>false</IncludeBuildOutput>
-		<IncludeContentInPack>true</IncludeContentInPack>
-		<NoWarn>$(NoWarn);NU5128</NoWarn>
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<Title>Types</Title>
+		<Title>Types Source</Title>
 		<Authors>popcron</Authors>
 		<Company>game-simulations</Company>
-		<Description>Assits programming with value types</Description>
 		<RepositoryUrl>https://github.com/game-simulations/types</RepositoryUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<IsAotCompatible>True</IsAotCompatible>
@@ -27,8 +23,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\generator\Types.Generator.csproj" />
-	  <ProjectReference Include="..\core\Types.Core.csproj" />
+		<ProjectReference Include="..\..\unmanaged\source\Unmanaged.csproj" />
 	</ItemGroup>
 
 </Project>
