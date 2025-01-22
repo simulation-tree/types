@@ -21,17 +21,90 @@ namespace Types.Generator
             context.AddSource($"{RegistryName}.generated.cs", Generate(compilation));
         }
 
+        private static bool IsPublic(ITypeSymbol type)
+        {
+            if (type.DeclaredAccessibility == Accessibility.Public)
+            {
+                //if any generic parameters are non public
+                if (type is INamedTypeSymbol namedType && namedType.IsGenericType)
+                {
+                    foreach (ITypeSymbol typeArgument in namedType.TypeArguments)
+                    {
+                        if (typeArgument.DeclaredAccessibility != Accessibility.Public)
+                        {
+                            return false;
+                        }
+                    }
+                }
+
+                //if any field type is non public
+                foreach (IFieldSymbol field in type.GetFields())
+                {
+                    if (field.Type.DeclaredAccessibility != Accessibility.Public)
+                    {
+                        return false;
+                    }
+
+                    if (field.Type.ToDisplayString().EndsWith("?"))
+                    {
+                        return false;
+                    }
+                }
+
+                if (type.ToDisplayString().EndsWith("?"))
+                {
+                    return false;
+                }
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private static bool IncludeType(ITypeSymbol type)
+        {
+            //ignore void
+            if (type.SpecialType == SpecialType.System_Void)
+            {
+                return false;
+            }
+
+            //skip anything from specific namespaces
+            string typeFullName = type.GetFullTypeName();
+            if (type.ContainingNamespace is not null)
+            {
+                if (typeFullName.StartsWith("System."))
+                {
+                    return false;
+                }
+                else if (typeFullName.StartsWith("Microsoft.") || typeFullName.StartsWith("NUnit.") || typeFullName.StartsWith("Newtonsoft."))
+                {
+                    return false;
+                }
+            }
+
+            //skip pointer types
+            if (typeFullName.Contains("*"))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         public static string Generate(Compilation compilation)
         {
-            HashSet<ITypeSymbol> types = [];
+            source.Clear();
+
+            HashSet<ITypeSymbol> allTypes = [];
             Stack<ITypeSymbol> stack = new();
             foreach (ITypeSymbol type in compilation.GetAllTypes())
             {
-                if (type.HasTypeAttribute())
-                {
-                    stack.Push(type);
-                    types.Add(type);
-                }
+                stack.Push(type);
+                allTypes.Add(type);
             }
 
             while (stack.Count > 0)
@@ -39,14 +112,34 @@ namespace Types.Generator
                 ITypeSymbol current = stack.Pop();
                 foreach (IFieldSymbol field in current.GetFields())
                 {
-                    if (types.Add(field.Type))
+                    if (allTypes.Add(field.Type))
                     {
                         stack.Push(field.Type);
                     }
                 }
             }
 
-            source.Clear();
+            //prune incompatible types
+            HashSet<ITypeSymbol> types = [];
+            foreach (ITypeSymbol type in allTypes)
+            {
+                if (IsPublic(type) && IncludeType(type))
+                {
+                    int fieldCount = 0;
+                    foreach (IFieldSymbol field in type.GetFields())
+                    {
+                        fieldCount++;
+                    }
+
+                    if (fieldCount < 16)
+                    {
+                        types.Add(type);
+                    }
+                }
+            }
+
+            //todo: should also prune types that are never referenced/mentioned
+
             source.AppendLine("using System.Diagnostics;");
             source.AppendLine("using Types;");
             source.AppendLine("using Unmanaged;");
@@ -70,7 +163,7 @@ namespace Types.Generator
                     source.AppendLine($"public static void RegisterAll()");
                     source.BeginGroup();
                     {
-                        source.AppendLine("USpan<TypeLayout.Variable> buffer = stackalloc TypeLayout.Variable[32];");
+                        source.AppendLine("USpan<TypeLayout.Variable> buffer = stackalloc TypeLayout.Variable[(int)TypeLayout.Capacity];");
 
                         bool registeredBoolean = false;
                         bool registeredByte = false;
@@ -85,37 +178,11 @@ namespace Types.Generator
                         bool registeredDouble = false;
                         bool registeredDecimal = false;
                         bool registeredChar = false;
+                        bool registeredNint = false;
+                        bool registeredNuint = false;
                         foreach (ITypeSymbol type in types)
                         {
-                            if (type.DeclaredAccessibility != Accessibility.Public)
-                            {
-                                continue;
-                            }
-
-                            //skip anything from system assemblies
-                            if (type.ContainingAssembly is IAssemblySymbol assembly)
-                            {
-                                if (assembly.Name.StartsWith("System") || assembly.Name.StartsWith("Microsoft") || assembly.Name.StartsWith("NUnit") || assembly.Name.StartsWith("Newtonsoft"))
-                                {
-                                    continue;
-                                }
-                            }
-
-                            if (type.ContainingNamespace is INamespaceSymbol containingNamespace)
-                            {
-                                if (containingNamespace.Name.StartsWith("System") || containingNamespace.Name.StartsWith("Microsoft") || containingNamespace.Name.StartsWith("NUnit") || containingNamespace.Name.StartsWith("Newtonsoft"))
-                                {
-                                    continue;
-                                }
-                            }
-
-                            //skip pointer types
                             string typeFullName = type.GetFullTypeName();
-                            if (typeFullName.Contains("*"))
-                            {
-                                continue;
-                            }
-
                             if (!registeredBoolean && typeFullName == "System.Boolean")
                             {
                                 registeredBoolean = true;
@@ -181,7 +248,17 @@ namespace Types.Generator
                                 registeredChar = true;
                             }
 
-                            AppendLayoutRegistration(type, type.GetFullTypeName());
+                            if (!registeredNint && typeFullName == "System.IntPtr")
+                            {
+                                registeredNint = true;
+                            }
+
+                            if (!registeredNuint && typeFullName == "System.UIntPtr")
+                            {
+                                registeredNuint = true;
+                            }
+
+                            AppendLayoutRegistration(type, typeFullName);
                         }
 
                         if (!registeredBoolean)
@@ -247,6 +324,16 @@ namespace Types.Generator
                         if (!registeredChar)
                         {
                             AppendLayoutRegistration(compilation.GetTypeByMetadataName("System.Char") ?? throw new(), "System.Char");
+                        }
+
+                        if (!registeredNint)
+                        {
+                            AppendLayoutRegistration(compilation.GetTypeByMetadataName("System.IntPtr") ?? throw new(), "System.IntPtr");
+                        }
+
+                        if (!registeredNuint)
+                        {
+                            AppendLayoutRegistration(compilation.GetTypeByMetadataName("System.UIntPtr") ?? throw new(), "System.UIntPtr");
                         }
                     }
                     source.EndGroup();

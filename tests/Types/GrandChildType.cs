@@ -2,7 +2,6 @@
 
 namespace Types.Tests
 {
-    [Type]
     public struct ParentType : IEmpty, ISomething
     {
         public byte a;
@@ -17,13 +16,11 @@ namespace Types.Tests
         }
     }
 
-    [Type]
     public partial struct ChildType : IInherits<ParentType>
     {
         public ushort cd;
     }
 
-    [Type]
     public partial struct GrandChildType : IInherits<ChildType>
     {
         public uint value;

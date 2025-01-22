@@ -1,6 +1,5 @@
 ﻿namespace Types.Tests
 {
-    [Type]
     public readonly struct Stress
     {
         public readonly byte first;

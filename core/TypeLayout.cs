@@ -279,7 +279,7 @@ namespace Types
         }
 
         /// <summary>
-        /// Registeres a <typeparamref name="T"/> type layout with no variables.
+        /// Registeres a <typeparamref name="T"/> type layout without variables.
         /// </summary>
         public unsafe static void Register<T>() where T : unmanaged
         {
@@ -357,7 +357,7 @@ namespace Types
         [Conditional("DEBUG")]
         private static void ThrowIfGreaterThanCapacity(uint length)
         {
-            if (length >= Capacity)
+            if (length > Capacity)
             {
                 throw new InvalidOperationException($"TypeLayout has reached its capacity of {Capacity} variables");
             }
@@ -506,7 +506,7 @@ namespace Types
             public Variable(string name, string fullTypeName)
             {
                 this.name = name;
-                typeFullNameHash = new FixedString(fullTypeName).GetLongHashCode();
+                typeFullNameHash = FixedString.GetLongHashCode(fullTypeName);
             }
 
             /// <summary>

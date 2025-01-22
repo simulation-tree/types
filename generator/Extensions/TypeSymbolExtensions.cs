@@ -1,5 +1,4 @@
 ﻿using Microsoft.CodeAnalysis;
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
@@ -33,6 +32,9 @@ namespace Types.Generator
             return true;
         }
 
+        /// <summary>
+        /// Iterates through all fields declared by the type.
+        /// </summary>
         public static IEnumerable<IFieldSymbol> GetFields(this ITypeSymbol type)
         {
             foreach (ISymbol typeMember in type.GetMembers())
@@ -125,15 +127,18 @@ namespace Types.Generator
             {
                 return "System.Char";
             }
+            else if (special == SpecialType.System_IntPtr)
+            {
+                return "System.IntPtr";
+            }
+            else if (special == SpecialType.System_UIntPtr)
+            {
+                return "System.UIntPtr";
+            }
             else
             {
                 return symbol.ToDisplayString();
             }
-        }
-
-        public static bool HasTypeAttribute(this ITypeSymbol type)
-        {
-            return HasAttribute(type, "Types.TypeAttribute");
         }
 
         /// <summary>

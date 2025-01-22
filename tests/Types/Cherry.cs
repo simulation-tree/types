@@ -2,7 +2,6 @@
 
 namespace Types.Tests
 {
-    [Type]
     public struct Cherry
     {
         public FixedString stones;
