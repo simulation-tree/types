@@ -11,6 +11,11 @@ namespace Types.Generator
         /// </summary>
         public static bool IsUnmanaged(this ITypeSymbol type)
         {
+            if (type.IsReferenceType)
+            {
+                return false;
+            }
+
             //check if the entire type is a true value type and doesnt contain references
             Stack<ITypeSymbol> stack = new();
             stack.Push(type);

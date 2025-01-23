@@ -64,6 +64,13 @@ namespace Types.Generator
             AppendLine();
         }
 
+        public void AppendLine(string text)
+        {
+            AppendIndentation();
+            builder.Append(text);
+            AppendLine();
+        }
+
         public void AppendLine()
         {
             builder.AppendLine();

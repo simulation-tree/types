@@ -16,6 +16,11 @@ namespace Types
         private static readonly List<TypeLayout> all = new();
 
         /// <summary>
+        /// All registered type layouts.
+        /// </summary>
+        public static IReadOnlyCollection<TypeLayout> All => all;
+
+        /// <summary>
         /// Maximum amount of variables per type.
         /// </summary>
         public const uint Capacity = 16;
@@ -58,6 +63,11 @@ namespace Types
                 throw new InvalidOperationException($"System type not found for {this}");
             }
         }
+
+        /// <summary>
+        /// Retrieves the raw handle for this type.
+        /// </summary>
+        public readonly RuntimeTypeHandle RuntimeTypeHandle => TypeRegistry.GetRuntimeTypeHandle(this);
 
         /// <summary>
         /// Full name of the type including the namespace.
@@ -132,13 +142,14 @@ namespace Types
         /// </summary>
         public readonly bool Is<T>() where T : unmanaged
         {
-            int index = systemTypes.IndexOf(typeof(T));
-            if (index >= 0)
+            if (TypeRegistry.IsRegistered<T>())
             {
-                return all[index] == this;
+                return TypeRegistry.Get<T>() == this;
             }
-
-            return false;
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -146,7 +157,7 @@ namespace Types
         /// </summary>
         public readonly object Create(USpan<byte> bytes)
         {
-            return ObjectCreator.Create(this, bytes);
+            return TypeInstanceCreator.Do(RuntimeTypeHandle, bytes);
         }
 
         /// <summary>
@@ -213,6 +224,7 @@ namespace Types
         /// <summary>
         /// Checks if <typeparamref name="T"/> is registered.
         /// </summary>
+        [Obsolete]
         public static bool IsRegistered<T>() where T : unmanaged
         {
             return systemTypes.Contains(typeof(T));
@@ -221,6 +233,7 @@ namespace Types
         /// <summary>
         /// Checks if a type with the given <paramref name="fullTypeName"/> is registered.
         /// </summary>
+        [Obsolete]
         public static bool IsRegistered(FixedString fullTypeName)
         {
             return nameToType.ContainsKey(fullTypeName.GetLongHashCode());
@@ -281,6 +294,7 @@ namespace Types
         /// <summary>
         /// Registeres a <typeparamref name="T"/> type layout without variables.
         /// </summary>
+        [Obsolete]
         public unsafe static void Register<T>() where T : unmanaged
         {
             ThrowIfAlreadyRegistered<T>();
@@ -291,12 +305,12 @@ namespace Types
             systemTypes.Add(typeof(T));
             all.Add(layout);
             nameToType.Add(fullName.GetLongHashCode(), layout);
-            Cache<T>.Initialize(layout);
         }
 
         /// <summary>
         /// Registers a <typeparamref name="T"/> type layout with the given <paramref name="variables"/>.
         /// </summary>
+        [Obsolete]
         public unsafe static void Register<T>(USpan<Variable> variables) where T : unmanaged
         {
             ThrowIfAlreadyRegistered<T>();
@@ -307,22 +321,23 @@ namespace Types
             systemTypes.Add(typeof(T));
             all.Add(layout);
             nameToType.Add(fullName.GetLongHashCode(), layout);
-            Cache<T>.Initialize(layout);
         }
 
         /// <summary>
         /// Retrieves the type layout for <typeparamref name="T"/>.
         /// </summary>
+        [Obsolete]
         public static TypeLayout Get<T>() where T : unmanaged
         {
             ThrowIfTypeIsNotRegistered<T>();
 
-            return Cache<T>.Value;
+            return default;
         }
 
         /// <summary>
         /// Retrieves the type layout for the given <paramref name="fullTypeName"/>.
         /// </summary>
+        [Obsolete]
         public static TypeLayout Get(FixedString fullTypeName)
         {
             ThrowIfTypeIsNotRegistered(fullTypeName);
@@ -333,6 +348,7 @@ namespace Types
         /// <summary>
         /// Retrieves the type layout for the given <paramref name="fullTypeName"/>.
         /// </summary>
+        [Obsolete]
         public static TypeLayout Get(USpan<char> fullTypeName)
         {
             return Get(new FixedString(fullTypeName));
@@ -341,6 +357,7 @@ namespace Types
         /// <summary>
         /// Retrieves the type layout for the given <paramref name="fullTypeName"/>.
         /// </summary>
+        [Obsolete]
         public static TypeLayout Get(string fullTypeName)
         {
             return Get(new FixedString(fullTypeName));
@@ -349,6 +366,7 @@ namespace Types
         /// <summary>
         /// Retrieves the type layout for the given <paramref name="typeHash"/>.
         /// </summary>
+        [Obsolete]
         public static TypeLayout Get(long typeHash)
         {
             return nameToType[typeHash];
@@ -484,7 +502,7 @@ namespace Types
             /// <summary>
             /// Type layout of the variable.
             /// </summary>
-            public readonly TypeLayout TypeLayout => Get(typeFullNameHash);
+            public readonly TypeLayout TypeLayout => TypeRegistry.Get(typeFullNameHash);
 
             /// <summary>
             /// Size of the variable in bytes.
@@ -630,22 +648,6 @@ namespace Types
             }
         }
 
-        internal static class ObjectCreator
-        {
-            private static readonly Dictionary<TypeLayout, Func<USpan<byte>, object>> functions = new();
-
-            public static void Set(TypeLayout type, Func<USpan<byte>, object> action)
-            {
-                functions[type] = action;
-            }
-
-            public static object Create(TypeLayout type, USpan<byte> bytes)
-            {
-                Func<USpan<byte>, object> action = functions[type];
-                return action(bytes);
-            }
-        }
-
         internal class TypeLayoutDebugView
         {
             public readonly string fullName;
@@ -657,25 +659,6 @@ namespace Types
                 fullName = layout.FullName.ToString();
                 name = layout.Name.ToString();
                 size = layout.Size;
-            }
-        }
-
-        internal static class Cache<T> where T : unmanaged
-        {
-            private static TypeLayout value;
-
-            internal static TypeLayout Value => value;
-
-            internal static void Initialize(TypeLayout value)
-            {
-                Cache<T>.value = value;
-                ObjectCreator.Set(value, static (bytes) =>
-                {
-                    T instance = default;
-                    void* ptr = &instance;
-                    bytes.CopyTo(ptr, (uint)sizeof(T));
-                    return instance;
-                });
             }
         }
     }

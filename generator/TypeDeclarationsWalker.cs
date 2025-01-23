@@ -25,5 +25,16 @@ namespace Types.Generator
 
             base.VisitStructDeclaration(node);
         }
+
+        public override void VisitClassDeclaration(ClassDeclarationSyntax node)
+        {
+            ITypeSymbol? typeSymbol = semanticModel.GetDeclaredSymbol(node);
+            if (typeSymbol is not null)
+            {
+                types.Add(typeSymbol);
+            }
+
+            base.VisitClassDeclaration(node);
+        }
     }
 }
