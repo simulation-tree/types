@@ -108,7 +108,7 @@ namespace Types.Tests
         public void CreateObjectFromTypeLayout()
         {
             TypeLayout layout = TypeRegistry.Get<Stress>();
-            object instance = layout.Create();
+            object instance = layout.CreateInstance();
             Assert.That(instance, Is.InstanceOf<Stress>());
             Assert.That((Stress)instance, Is.EqualTo(default(Stress)));
         }

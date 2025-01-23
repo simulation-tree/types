@@ -23,7 +23,7 @@ namespace Types.Functions
         {
             TypeLayout type = new(TypeLayout.GetFullName<T>(), (ushort)sizeof(T), variables);
             function(new(type, typeof(T).TypeHandle));
-            TypeInstanceCreator.Initialize<T>();
+            TypeInstanceCreator.Initialize<T>(type);
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace Types.Functions
         {
             TypeLayout type = new(TypeLayout.GetFullName<T>(), (ushort)sizeof(T), []);
             function(new(type, typeof(T).TypeHandle));
-            TypeInstanceCreator.Initialize<T>();
+            TypeInstanceCreator.Initialize<T>(type);
         }
 
         /// <summary>

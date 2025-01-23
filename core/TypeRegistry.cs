@@ -69,6 +69,16 @@ namespace Types
         }
 
         /// <summary>
+        /// Retrieves the type metadata for the <paramref name="handle"/> of the wanted type.
+        /// </summary>
+        public static TypeLayout Get(RuntimeTypeHandle handle)
+        {
+            ThrowIfNotRegistered(handle);
+
+            return handleToType[handle];
+        }
+
+        /// <summary>
         /// Retrieves the raw handle for the <paramref name="type"/>.
         /// </summary>
         public static RuntimeTypeHandle GetRuntimeTypeHandle(TypeLayout type)
@@ -126,6 +136,23 @@ namespace Types
             if (!typeToHandle.ContainsKey(type))
             {
                 throw new InvalidOperationException($"Type `{type}` is not registered");
+            }
+        }
+
+        [Conditional("DEBUG")]
+        private static void ThrowIfNotRegistered(RuntimeTypeHandle handle)
+        {
+            if (!handleToType.ContainsKey(handle))
+            {
+                Type? type = Type.GetTypeFromHandle(handle);
+                if (type is not null)
+                {
+                    throw new InvalidOperationException($"Type `{type}` is not registered");
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Type with handle `{handle}` is not registered");
+                }
             }
         }
 

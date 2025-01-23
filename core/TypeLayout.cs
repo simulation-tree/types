@@ -1,25 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Unmanaged;
 
 namespace Types
 {
     /// <summary>
-    /// Describes a type.
+    /// Describes metadata for a type.
     /// </summary>
     [DebuggerTypeProxy(typeof(TypeLayoutDebugView))]
     public unsafe struct TypeLayout : IEquatable<TypeLayout>, ISerializable
     {
-        private static readonly Dictionary<long, TypeLayout> nameToType = new();
-        private static readonly List<Type> systemTypes = new();
-        private static readonly List<TypeLayout> all = new();
-
-        /// <summary>
-        /// All registered type layouts.
-        /// </summary>
-        public static IReadOnlyCollection<TypeLayout> All => all;
-
         /// <summary>
         /// Maximum amount of variables per type.
         /// </summary>
@@ -52,15 +42,8 @@ namespace Types
         {
             get
             {
-                for (int i = 0; i < systemTypes.Count; i++)
-                {
-                    if (all[i] == this)
-                    {
-                        return systemTypes[i];
-                    }
-                }
-
-                throw new InvalidOperationException($"System type not found for {this}");
+                RuntimeTypeHandle handle = RuntimeTypeHandle;
+                return Type.GetTypeFromHandle(handle) ?? throw new InvalidOperationException($"System type not found for handle {handle}");
             }
         }
 
@@ -155,19 +138,19 @@ namespace Types
         /// <summary>
         /// Creates an <see cref="object"/> instance of this type.
         /// </summary>
-        public readonly object Create(USpan<byte> bytes)
+        public readonly object CreateInstance(USpan<byte> bytes)
         {
-            return TypeInstanceCreator.Do(RuntimeTypeHandle, bytes);
+            return TypeInstanceCreator.Do(this, bytes);
         }
 
         /// <summary>
         /// Creates an <see cref="object"/> instance of this type
         /// with default state.
         /// </summary>
-        public readonly object Create()
+        public readonly object CreateInstance()
         {
             USpan<byte> bytes = stackalloc byte[size];
-            return Create(bytes);
+            return CreateInstance(bytes);
         }
 
         /// <summary>
@@ -222,24 +205,6 @@ namespace Types
         }
 
         /// <summary>
-        /// Checks if <typeparamref name="T"/> is registered.
-        /// </summary>
-        [Obsolete]
-        public static bool IsRegistered<T>() where T : unmanaged
-        {
-            return systemTypes.Contains(typeof(T));
-        }
-
-        /// <summary>
-        /// Checks if a type with the given <paramref name="fullTypeName"/> is registered.
-        /// </summary>
-        [Obsolete]
-        public static bool IsRegistered(FixedString fullTypeName)
-        {
-            return nameToType.ContainsKey(fullTypeName.GetLongHashCode());
-        }
-
-        /// <summary>
         /// Retrieves the full type name for the given <typeparamref name="T"/>.
         /// </summary>
         public static FixedString GetFullName<T>()
@@ -291,120 +256,12 @@ namespace Types
             }
         }
 
-        /// <summary>
-        /// Registeres a <typeparamref name="T"/> type layout without variables.
-        /// </summary>
-        [Obsolete]
-        public unsafe static void Register<T>() where T : unmanaged
-        {
-            ThrowIfAlreadyRegistered<T>();
-
-            ushort size = (ushort)sizeof(T);
-            FixedString fullName = GetFullName<T>();
-            TypeLayout layout = new(fullName, size, stackalloc Variable[0]);
-            systemTypes.Add(typeof(T));
-            all.Add(layout);
-            nameToType.Add(fullName.GetLongHashCode(), layout);
-        }
-
-        /// <summary>
-        /// Registers a <typeparamref name="T"/> type layout with the given <paramref name="variables"/>.
-        /// </summary>
-        [Obsolete]
-        public unsafe static void Register<T>(USpan<Variable> variables) where T : unmanaged
-        {
-            ThrowIfAlreadyRegistered<T>();
-
-            ushort size = (ushort)sizeof(T);
-            FixedString fullName = GetFullName<T>();
-            TypeLayout layout = new(fullName, size, variables);
-            systemTypes.Add(typeof(T));
-            all.Add(layout);
-            nameToType.Add(fullName.GetLongHashCode(), layout);
-        }
-
-        /// <summary>
-        /// Retrieves the type layout for <typeparamref name="T"/>.
-        /// </summary>
-        [Obsolete]
-        public static TypeLayout Get<T>() where T : unmanaged
-        {
-            ThrowIfTypeIsNotRegistered<T>();
-
-            return default;
-        }
-
-        /// <summary>
-        /// Retrieves the type layout for the given <paramref name="fullTypeName"/>.
-        /// </summary>
-        [Obsolete]
-        public static TypeLayout Get(FixedString fullTypeName)
-        {
-            ThrowIfTypeIsNotRegistered(fullTypeName);
-
-            return Get(fullTypeName.GetLongHashCode());
-        }
-
-        /// <summary>
-        /// Retrieves the type layout for the given <paramref name="fullTypeName"/>.
-        /// </summary>
-        [Obsolete]
-        public static TypeLayout Get(USpan<char> fullTypeName)
-        {
-            return Get(new FixedString(fullTypeName));
-        }
-
-        /// <summary>
-        /// Retrieves the type layout for the given <paramref name="fullTypeName"/>.
-        /// </summary>
-        [Obsolete]
-        public static TypeLayout Get(string fullTypeName)
-        {
-            return Get(new FixedString(fullTypeName));
-        }
-
-        /// <summary>
-        /// Retrieves the type layout for the given <paramref name="typeHash"/>.
-        /// </summary>
-        [Obsolete]
-        public static TypeLayout Get(long typeHash)
-        {
-            return nameToType[typeHash];
-        }
-
         [Conditional("DEBUG")]
         private static void ThrowIfGreaterThanCapacity(uint length)
         {
             if (length > Capacity)
             {
                 throw new InvalidOperationException($"TypeLayout has reached its capacity of {Capacity} variables");
-            }
-        }
-
-        [Conditional("DEBUG")]
-        private static void ThrowIfTypeIsNotRegistered<T>()
-        {
-            if (!systemTypes.Contains(typeof(T)))
-            {
-                throw new InvalidOperationException($"TypeLayout for `{typeof(T)}` is not registered");
-            }
-        }
-
-        [Conditional("DEBUG")]
-        private static void ThrowIfAlreadyRegistered<T>()
-        {
-            if (systemTypes.Contains(typeof(T)))
-            {
-                throw new InvalidOperationException($"TypeLayout for `{typeof(T)}` is already registered");
-            }
-        }
-
-        [Conditional("DEBUG")]
-        private static void ThrowIfTypeIsNotRegistered(FixedString fullTypeName)
-        {
-            if (!nameToType.ContainsKey(fullTypeName.GetLongHashCode()))
-            {
-                throw new InvalidOperationException($"TypeLayout for `{fullTypeName}` is not registered");
             }
         }
 
@@ -633,13 +490,14 @@ namespace Types
                 public VariableDebugView(Variable variable)
                 {
                     name = variable.Name.ToString();
-                    if (nameToType.TryGetValue(variable.typeFullNameHash, out TypeLayout layout))
+                    try
                     {
-                        typeFullName = layout.FullName.ToString();
-                        typeName = layout.Name.ToString();
-                        typeSize = layout.Size;
+                        TypeLayout type = TypeRegistry.Get(variable.typeFullNameHash);
+                        typeFullName = type.FullName.ToString();
+                        typeName = type.Name.ToString();
+                        typeSize = type.Size;
                     }
-                    else
+                    catch
                     {
                         typeFullName = variable.typeFullNameHash.ToString();
                         typeName = "Unknown";
