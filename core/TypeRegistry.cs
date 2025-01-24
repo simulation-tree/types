@@ -25,13 +25,13 @@ namespace Types
 
         static TypeRegistry()
         {
-            Register<BuiltInTypeBank>();
+            Load<BuiltInTypeBank>();
         }
 
         /// <summary>
-        /// Registers all <see cref="TypeLayout"/>s from the bank of type <typeparamref name="T"/>.
+        /// Loads all <see cref="TypeLayout"/>s from the bank of type <typeparamref name="T"/>.
         /// </summary>
-        public unsafe static void Register<T>() where T : unmanaged, ITypeBank
+        public unsafe static void Load<T>() where T : unmanaged, ITypeBank
         {
             T bank = default;
             bank.Load(new(&Register));

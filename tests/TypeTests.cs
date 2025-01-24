@@ -6,7 +6,7 @@ namespace Types.Tests
     {
         static TypeTests()
         {
-            TypeRegistry.Register<TypeBank>();
+            TypeRegistry.Load<Types.Tests.TypeBank>();
         }
     }
 }

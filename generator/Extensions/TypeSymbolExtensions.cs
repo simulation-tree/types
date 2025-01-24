@@ -147,9 +147,9 @@ namespace Types.Generator
         }
 
         /// <summary>
-        /// Checks if the type contains an attribute with the given name.
+        /// Checks if the type contains an attribute with the given <paramref name="fullAttributeName"/>.
         /// </summary>
-        public static bool HasAttribute(this ITypeSymbol type, string attributeName)
+        public static bool HasAttribute(this ITypeSymbol type, string fullAttributeName)
         {
             Stack<ITypeSymbol> stack = new();
 
@@ -166,7 +166,7 @@ namespace Types.Generator
             {
                 ITypeSymbol current = stack.Pop();
                 string attributeTypeName = current.GetFullTypeName();
-                if (attributeName == attributeTypeName)
+                if (fullAttributeName == attributeTypeName)
                 {
                     return true;
                 }

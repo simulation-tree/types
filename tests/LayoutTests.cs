@@ -2,14 +2,14 @@
 
 namespace Types.Tests
 {
-    public class LayoutTests : TypeTests
+    public unsafe class LayoutTests : TypeTests
     {
         [Test]
         public void VerifyLayoutOfRegisteredTypes()
         {
             TypeLayout layout = TypeRegistry.Get<Stress>();
             Assert.That(layout.Name.ToString(), Is.EqualTo("Stress"));
-            Assert.That(layout.Size, Is.EqualTo(TypeInfo<Stress>.size));
+            Assert.That(layout.Size, Is.EqualTo((uint)sizeof(Stress)));
             Assert.That(layout.Variables.Length, Is.EqualTo(5));
             Assert.That(layout.Variables[0].Size, Is.EqualTo(1));
             Assert.That(layout.Variables[0].Name.ToString(), Is.EqualTo("first"));
@@ -19,7 +19,7 @@ namespace Types.Tests
             Assert.That(layout.Variables[2].Name.ToString(), Is.EqualTo("third"));
             Assert.That(layout.Variables[3].Size, Is.EqualTo(4));
             Assert.That(layout.Variables[3].Name.ToString(), Is.EqualTo("fourth"));
-            Assert.That(layout.Variables[4].Size, Is.EqualTo(TypeInfo<Cherry>.size));
+            Assert.That(layout.Variables[4].Size, Is.EqualTo((uint)sizeof(Cherry)));
             Assert.That(layout.Variables[4].Name.ToString(), Is.EqualTo("cherry"));
         }
 

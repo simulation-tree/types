@@ -9,7 +9,7 @@ namespace Types.Tests
         public void LoadCustomBank()
         {
             Assert.That(TypeRegistry.IsRegistered<DateTime>(), Is.False);
-            TypeRegistry.Register<CustomTypeBank>();
+            TypeRegistry.Load<CustomTypeBank>();
             Assert.That(TypeRegistry.IsRegistered<DateTime>(), Is.True);
         }
 
