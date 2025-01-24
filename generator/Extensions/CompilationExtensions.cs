@@ -2,7 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 
-namespace Types.Generator
+namespace Types
 {
     public static class CompilationExtensions
     {

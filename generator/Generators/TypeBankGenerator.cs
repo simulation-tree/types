@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 
-namespace Types.Generator
+namespace Types
 {
     [Generator(LanguageNames.CSharp)]
     public class TypeBankGenerator : IIncrementalGenerator
@@ -22,8 +22,10 @@ namespace Types.Generator
 
         private void Generate(SourceProductionContext context, (ImmutableArray<ITypeSymbol?> types, Compilation compilation) input)
         {
-            string sourceCode = Generate(input.types, input.compilation);
-            context.AddSource($"{TypeName}.generated.cs", sourceCode);
+            if (input.types.Length > 0)
+            {
+                context.AddSource($"{TypeName}.generated.cs", Generate(input.types, input.compilation));
+            }
         }
 
         private static bool Predicate(SyntaxNode node, CancellationToken token)

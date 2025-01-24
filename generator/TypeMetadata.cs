@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace Types.Generator
+namespace Types
 {
     public class TypeMetadata
     {

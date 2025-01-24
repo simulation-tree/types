@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Types.Generator
+namespace Types
 {
     [Generator(LanguageNames.CSharp)]
     public class TypeInheritanceGenerator : IIncrementalGenerator
