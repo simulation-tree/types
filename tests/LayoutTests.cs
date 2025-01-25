@@ -1,4 +1,5 @@
-﻿using Unmanaged;
+﻿using System.Numerics;
+using Unmanaged;
 
 namespace Types.Tests
 {
@@ -43,6 +44,9 @@ namespace Types.Tests
             Assert.That(TypeRegistry.IsRegistered(typeof(byte).FullName ?? typeof(byte).Name), Is.True);
             Assert.That(TypeRegistry.IsRegistered(typeof(sbyte).FullName ?? typeof(sbyte).Name), Is.True);
             Assert.That(TypeRegistry.IsRegistered(typeof(short).FullName ?? typeof(short).Name), Is.True);
+
+            Assert.That(TypeRegistry.Get<Vector3>().Size, Is.EqualTo((uint)sizeof(Vector3)));
+            Assert.That(TypeRegistry.Get<Vector3>().Variables.Length, Is.EqualTo(3));
         }
 
         [Test]
@@ -59,7 +63,7 @@ namespace Types.Tests
             Assert.That(a.Variables.Length, Is.EqualTo(5));
             Assert.That(a.Variables.Length, Is.EqualTo(b.Variables.Length));
             Assert.That(a.Variables[4].Name.ToString(), Is.EqualTo(b.Variables[4].Name.ToString()));
-            Assert.That(a.Variables[4].TypeLayout.Variables[0], Is.EqualTo(b.Variables[4].TypeLayout.Variables[0]));
+            Assert.That(a.Variables[4].Type.Variables[0], Is.EqualTo(b.Variables[4].Type.Variables[0]));
             Assert.That(a, Is.EqualTo(b));
         }
 

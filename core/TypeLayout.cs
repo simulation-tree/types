@@ -42,7 +42,7 @@ namespace Types
         {
             get
             {
-                RuntimeTypeHandle handle = RuntimeTypeHandle;
+                RuntimeTypeHandle handle = TypeHandle;
                 return Type.GetTypeFromHandle(handle) ?? throw new InvalidOperationException($"System type not found for handle {handle}");
             }
         }
@@ -50,7 +50,7 @@ namespace Types
         /// <summary>
         /// Retrieves the raw handle for this type.
         /// </summary>
-        public readonly RuntimeTypeHandle RuntimeTypeHandle => TypeRegistry.GetRuntimeTypeHandle(this);
+        public readonly RuntimeTypeHandle TypeHandle => TypeRegistry.GetRuntimeTypeHandle(this);
 
         /// <summary>
         /// Full name of the type including the namespace.
@@ -359,12 +359,12 @@ namespace Types
             /// <summary>
             /// Type layout of the variable.
             /// </summary>
-            public readonly TypeLayout TypeLayout => TypeRegistry.Get(typeFullNameHash);
+            public readonly TypeLayout Type => TypeRegistry.Get(typeFullNameHash);
 
             /// <summary>
             /// Size of the variable in bytes.
             /// </summary>
-            public readonly ushort Size => TypeLayout.Size;
+            public readonly ushort Size => Type.Size;
 
             /// <summary>
             /// Creates a new variable with the given <paramref name="name"/> and <paramref name="fullTypeName"/>.
@@ -407,7 +407,7 @@ namespace Types
             /// <returns>Amount of characters written.</returns>
             public readonly uint ToString(USpan<char> buffer)
             {
-                TypeLayout typeLayout = TypeLayout;
+                TypeLayout typeLayout = Type;
                 uint length = name.CopyTo(buffer);
                 buffer[length++] = ' ';
                 buffer[length++] = '(';
