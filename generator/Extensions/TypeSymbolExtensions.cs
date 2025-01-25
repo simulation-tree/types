@@ -1,8 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 
-namespace Types.Generator
+namespace Types
 {
     public static class TypeSymbolExtensions
     {
@@ -11,6 +10,11 @@ namespace Types.Generator
         /// </summary>
         public static bool IsUnmanaged(this ITypeSymbol type)
         {
+            if (type.IsReferenceType)
+            {
+                return false;
+            }
+
             //check if the entire type is a true value type and doesnt contain references
             Stack<ITypeSymbol> stack = new();
             stack.Push(type);
@@ -142,14 +146,12 @@ namespace Types.Generator
         }
 
         /// <summary>
-        /// Checks if the type contains an attribute with the given name.
+        /// Checks if the type contains an attribute with the given <paramref name="fullAttributeName"/>.
         /// </summary>
-        public static bool HasAttribute(this ITypeSymbol type, string attributeName)
+        public static bool HasAttribute(this ITypeSymbol type, string fullAttributeName)
         {
             Stack<ITypeSymbol> stack = new();
-
-            ImmutableArray<AttributeData> attributes = type.GetAttributes();
-            foreach (AttributeData attribute in attributes)
+            foreach (AttributeData attribute in type.GetAttributes())
             {
                 if (attribute.AttributeClass is INamedTypeSymbol attributeType)
                 {
@@ -160,13 +162,47 @@ namespace Types.Generator
             while (stack.Count > 0)
             {
                 ITypeSymbol current = stack.Pop();
-                string attributeTypeName = current.GetFullTypeName();
-                if (attributeName == attributeTypeName)
+                if (fullAttributeName == current.ToDisplayString())
                 {
                     return true;
                 }
                 else
                 {
+                    if (current.BaseType is INamedTypeSymbol currentBaseType)
+                    {
+                        stack.Push(currentBaseType);
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Checks if the type implements the interface with the given <paramref name="fullInterfaceName"/>.
+        /// </summary>
+        public static bool HasInterface(this ITypeSymbol type, string fullInterfaceName)
+        {
+            Stack<ITypeSymbol> stack = new();
+            foreach (ITypeSymbol interfaceType in type.AllInterfaces)
+            {
+                stack.Push(interfaceType);
+            }
+
+            while (stack.Count > 0)
+            {
+                ITypeSymbol current = stack.Pop();
+                if (current.ToDisplayString() == fullInterfaceName)
+                {
+                    return true;
+                }
+                else
+                {
+                    foreach (ITypeSymbol interfaceType in current.AllInterfaces)
+                    {
+                        stack.Push(interfaceType);
+                    }
+
                     if (current.BaseType is INamedTypeSymbol currentBaseType)
                     {
                         stack.Push(currentBaseType);

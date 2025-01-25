@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 
-namespace Types.Generator
+namespace Types
 {
     public class TypeDeclarationsWalker : CSharpSyntaxWalker
     {
@@ -24,6 +24,17 @@ namespace Types.Generator
             }
 
             base.VisitStructDeclaration(node);
+        }
+
+        public override void VisitClassDeclaration(ClassDeclarationSyntax node)
+        {
+            ITypeSymbol? typeSymbol = semanticModel.GetDeclaredSymbol(node);
+            if (typeSymbol is not null)
+            {
+                types.Add(typeSymbol);
+            }
+
+            base.VisitClassDeclaration(node);
         }
     }
 }

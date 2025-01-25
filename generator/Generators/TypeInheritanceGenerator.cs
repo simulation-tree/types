@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Types.Generator
+namespace Types
 {
     [Generator(LanguageNames.CSharp)]
     public class TypeInheritanceGenerator : IIncrementalGenerator
@@ -18,8 +18,8 @@ namespace Types.Generator
 
         private static void Generate(SourceProductionContext context, (InputType? input, Compilation compilation) data)
         {
-            InputType? input = data.input;
-            if (input is not InheritingType inheritingType)
+            InputType? type = data.input;
+            if (type is null)
             {
                 return;
             }
@@ -28,10 +28,10 @@ namespace Types.Generator
             builder.AppendLine("using Types;");
             builder.AppendLine();
 
-            if (input.containedNamespace is not null)
+            if (type.containedNamespace is not null)
             {
                 builder.Append("namespace ");
-                builder.Append(input.containedNamespace);
+                builder.Append(type.containedNamespace);
                 builder.AppendLine();
 
                 builder.BeginGroup();
@@ -39,17 +39,17 @@ namespace Types.Generator
 
             //write the type declaration
             builder.Append("public ");
-            if (inheritingType.isReadOnly)
+            if (type.isReadOnly)
             {
                 builder.Append("readonly ");
             }
 
             builder.Append("partial struct ");
-            builder.Append(input.typeName);
+            builder.Append(type.typeName);
 
             //decorate with interfaces
             List<ITypeSymbol> implementingTypes = new();
-            foreach (ITypeSymbol inheritedType in inheritingType.inheritedTypes)
+            foreach (ITypeSymbol inheritedType in type.inheritedTypes)
             {
                 foreach (ITypeSymbol implementingType in inheritedType.AllInterfaces)
                 {
@@ -79,22 +79,22 @@ namespace Types.Generator
             //implement everything that the inheriting types do
             builder.BeginGroup();
             {
-                if (inheritingType.inheritedTypes.Count > 0)
+                if (type.inheritedTypes.Count > 0)
                 {
-                    foreach (ITypeSymbol inheritedType in inheritingType.inheritedTypes)
+                    foreach (ITypeSymbol inheritedType in type.inheritedTypes)
                     {
                         AppendInheritedType(data, builder, inheritedType);
                     }
 
                     //implicit casts up towards the inherited types
                     builder.AppendLine();
-                    for (int i = 0; i < inheritingType.inheritedTypes.Count; i++)
+                    for (int i = 0; i < type.inheritedTypes.Count; i++)
                     {
-                        ITypeSymbol inheritedType = inheritingType.inheritedTypes[i];
+                        ITypeSymbol inheritedType = type.inheritedTypes[i];
                         builder.Append("public static implicit operator ");
                         builder.Append(inheritedType.GetFullTypeName());
                         builder.Append('(');
-                        builder.Append(input.typeName);
+                        builder.Append(type.typeName);
                         builder.Append(" input)");
                         builder.AppendLine();
 
@@ -118,7 +118,7 @@ namespace Types.Generator
                         }
                         builder.EndGroup();
 
-                        if (i < inheritingType.inheritedTypes.Count - 1)
+                        if (i < type.inheritedTypes.Count - 1)
                         {
                             builder.AppendLine();
                         }
@@ -127,12 +127,12 @@ namespace Types.Generator
             }
             builder.EndGroup();
 
-            if (inheritingType.containedNamespace is not null)
+            if (type.containedNamespace is not null)
             {
                 builder.EndGroup();
             }
 
-            context.AddSource($"{input.typeName}.generated.cs", builder.ToString());
+            context.AddSource($"{type.typeName}.generated.cs", builder.ToString());
         }
 
         private static void AppendInheritedType((InputType? input, Compilation compilation) data, SourceBuilder builder, ITypeSymbol inheritedType)
@@ -276,7 +276,7 @@ namespace Types.Generator
                     string fullTypeName = typeSymbol.GetFullTypeName();
                     bool isReadOnly = typeSymbol.IsReadOnly;
                     SyntaxTree syntaxTree = node.SyntaxTree;
-                    return new InheritingType(syntaxTree, typeSymbol.Name, fullTypeName, containingNamespace, isReadOnly, inheritedTypes);
+                    return new(syntaxTree, typeSymbol.Name, fullTypeName, containingNamespace, isReadOnly, inheritedTypes);
                 }
             }
 

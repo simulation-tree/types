@@ -7,6 +7,7 @@
 		<Nullable>enable</Nullable>
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -24,6 +25,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\unmanaged\tests\Unmanaged.Tests.csproj" />
 		<ProjectReference Include="..\core\Types.Core.csproj" />
 		<ProjectReference Include="..\generator\Types.Generator.csproj">
 			<OutputItemType>Analyzer</OutputItemType>

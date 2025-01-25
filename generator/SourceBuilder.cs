@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 
-namespace Types.Generator
+namespace Types
 {
     public class SourceBuilder
     {
@@ -61,6 +61,13 @@ namespace Types.Generator
         {
             AppendIndentation();
             builder.Append(text.ToString());
+            AppendLine();
+        }
+
+        public void AppendLine(string text)
+        {
+            AppendIndentation();
+            builder.Append(text);
             AppendLine();
         }
 
