@@ -2,12 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Types.Functions;
 using Unmanaged;
 
-[assembly: InternalsVisibleTo("Types.Tests")]
 namespace Types
 {
     /// <summary>
@@ -20,8 +17,6 @@ namespace Types
         private static readonly Dictionary<TypeLayout, RuntimeTypeHandle> typeToHandle = new();
         private static readonly Dictionary<long, TypeLayout> hashToType = new();
 
-        internal static Action<Register.Input>? OnRegister;
-
         /// <summary>
         /// All registered type layouts.
         /// </summary>
@@ -29,27 +24,27 @@ namespace Types
 
         static unsafe TypeRegistry()
         {
-            RegisterType(new(TypeLayout.GetFullName<byte>(), sizeof(byte), []), typeof(byte).TypeHandle);
-            RegisterType(new(TypeLayout.GetFullName<sbyte>(), sizeof(sbyte), []), typeof(sbyte).TypeHandle);
-            RegisterType(new(TypeLayout.GetFullName<short>(), sizeof(short), []), typeof(short).TypeHandle);
-            RegisterType(new(TypeLayout.GetFullName<ushort>(), sizeof(ushort), []), typeof(ushort).TypeHandle);
-            RegisterType(new(TypeLayout.GetFullName<int>(), sizeof(int), []), typeof(int).TypeHandle);
-            RegisterType(new(TypeLayout.GetFullName<uint>(), sizeof(uint), []), typeof(uint).TypeHandle);
-            RegisterType(new(TypeLayout.GetFullName<long>(), sizeof(long), []), typeof(long).TypeHandle);
-            RegisterType(new(TypeLayout.GetFullName<ulong>(), sizeof(ulong), []), typeof(ulong).TypeHandle);
-            RegisterType(new(TypeLayout.GetFullName<float>(), sizeof(float), []), typeof(float).TypeHandle);
-            RegisterType(new(TypeLayout.GetFullName<double>(), sizeof(double), []), typeof(double).TypeHandle);
-            RegisterType(new(TypeLayout.GetFullName<char>(), sizeof(char), []), typeof(char).TypeHandle);
-            RegisterType(new(TypeLayout.GetFullName<bool>(), sizeof(bool), []), typeof(bool).TypeHandle);
-            RegisterType(new(TypeLayout.GetFullName<nint>(), (ushort)sizeof(nint), []), typeof(nint).TypeHandle);
-            RegisterType(new(TypeLayout.GetFullName<nuint>(), (ushort)sizeof(nuint), []), typeof(nuint).TypeHandle);
-            RegisterType(new(TypeLayout.GetFullName<FixedString>(), (ushort)sizeof(FixedString), []), typeof(FixedString).TypeHandle);
-            RegisterType(new(TypeLayout.GetFullName<Vector2>(), (ushort)sizeof(Vector2), [new("x", TypeLayout.GetFullName<float>()), new("y", TypeLayout.GetFullName<float>())]), typeof(Vector2).TypeHandle);
-            RegisterType(new(TypeLayout.GetFullName<Vector3>(), (ushort)sizeof(Vector3), [new("x", TypeLayout.GetFullName<float>()), new("y", TypeLayout.GetFullName<float>()), new("z", TypeLayout.GetFullName<float>())]), typeof(Vector3).TypeHandle);
-            RegisterType(new(TypeLayout.GetFullName<Vector4>(), (ushort)sizeof(Vector4), [new("x", TypeLayout.GetFullName<float>()), new("y", TypeLayout.GetFullName<float>()), new("z", TypeLayout.GetFullName<float>()), new("w", TypeLayout.GetFullName<float>())]), typeof(Vector4).TypeHandle);
-            RegisterType(new(TypeLayout.GetFullName<Quaternion>(), (ushort)sizeof(Quaternion), [new("x", TypeLayout.GetFullName<float>()), new("y", TypeLayout.GetFullName<float>()), new("z", TypeLayout.GetFullName<float>()), new("w", TypeLayout.GetFullName<float>())]), typeof(Quaternion).TypeHandle);
-            RegisterType(new(TypeLayout.GetFullName<Matrix3x2>(), (ushort)sizeof(Matrix3x2), [new("M11", TypeLayout.GetFullName<float>()), new("M12", TypeLayout.GetFullName<float>()), new("M21", TypeLayout.GetFullName<float>()), new("M22", TypeLayout.GetFullName<float>()), new("M31", TypeLayout.GetFullName<float>()), new("M32", TypeLayout.GetFullName<float>())]), typeof(Matrix3x2).TypeHandle);
-            RegisterType(new(TypeLayout.GetFullName<Matrix4x4>(), (ushort)sizeof(Matrix4x4), [new("M11", TypeLayout.GetFullName<float>()), new("M12", TypeLayout.GetFullName<float>()), new("M13", TypeLayout.GetFullName<float>()), new("M14", TypeLayout.GetFullName<float>()), new("M21", TypeLayout.GetFullName<float>()), new("M22", TypeLayout.GetFullName<float>()), new("M23", TypeLayout.GetFullName<float>()), new("M24", TypeLayout.GetFullName<float>()), new("M31", TypeLayout.GetFullName<float>()), new("M32", TypeLayout.GetFullName<float>()), new("M33", TypeLayout.GetFullName<float>()), new("M34", TypeLayout.GetFullName<float>()), new("M41", TypeLayout.GetFullName<float>()), new("M42", TypeLayout.GetFullName<float>()), new("M43", TypeLayout.GetFullName<float>()), new("M44", TypeLayout.GetFullName<float>())]), typeof(Matrix4x4).TypeHandle);
+            Register(new(TypeLayout.GetFullName<byte>(), sizeof(byte), []), typeof(byte).TypeHandle);
+            Register(new(TypeLayout.GetFullName<sbyte>(), sizeof(sbyte), []), typeof(sbyte).TypeHandle);
+            Register(new(TypeLayout.GetFullName<short>(), sizeof(short), []), typeof(short).TypeHandle);
+            Register(new(TypeLayout.GetFullName<ushort>(), sizeof(ushort), []), typeof(ushort).TypeHandle);
+            Register(new(TypeLayout.GetFullName<int>(), sizeof(int), []), typeof(int).TypeHandle);
+            Register(new(TypeLayout.GetFullName<uint>(), sizeof(uint), []), typeof(uint).TypeHandle);
+            Register(new(TypeLayout.GetFullName<long>(), sizeof(long), []), typeof(long).TypeHandle);
+            Register(new(TypeLayout.GetFullName<ulong>(), sizeof(ulong), []), typeof(ulong).TypeHandle);
+            Register(new(TypeLayout.GetFullName<float>(), sizeof(float), []), typeof(float).TypeHandle);
+            Register(new(TypeLayout.GetFullName<double>(), sizeof(double), []), typeof(double).TypeHandle);
+            Register(new(TypeLayout.GetFullName<char>(), sizeof(char), []), typeof(char).TypeHandle);
+            Register(new(TypeLayout.GetFullName<bool>(), sizeof(bool), []), typeof(bool).TypeHandle);
+            Register(new(TypeLayout.GetFullName<nint>(), (ushort)sizeof(nint), []), typeof(nint).TypeHandle);
+            Register(new(TypeLayout.GetFullName<nuint>(), (ushort)sizeof(nuint), []), typeof(nuint).TypeHandle);
+            Register(new(TypeLayout.GetFullName<FixedString>(), (ushort)sizeof(FixedString), []), typeof(FixedString).TypeHandle);
+            Register(new(TypeLayout.GetFullName<Vector2>(), (ushort)sizeof(Vector2), [new("x", TypeLayout.GetFullName<float>()), new("y", TypeLayout.GetFullName<float>())]), typeof(Vector2).TypeHandle);
+            Register(new(TypeLayout.GetFullName<Vector3>(), (ushort)sizeof(Vector3), [new("x", TypeLayout.GetFullName<float>()), new("y", TypeLayout.GetFullName<float>()), new("z", TypeLayout.GetFullName<float>())]), typeof(Vector3).TypeHandle);
+            Register(new(TypeLayout.GetFullName<Vector4>(), (ushort)sizeof(Vector4), [new("x", TypeLayout.GetFullName<float>()), new("y", TypeLayout.GetFullName<float>()), new("z", TypeLayout.GetFullName<float>()), new("w", TypeLayout.GetFullName<float>())]), typeof(Vector4).TypeHandle);
+            Register(new(TypeLayout.GetFullName<Quaternion>(), (ushort)sizeof(Quaternion), [new("x", TypeLayout.GetFullName<float>()), new("y", TypeLayout.GetFullName<float>()), new("z", TypeLayout.GetFullName<float>()), new("w", TypeLayout.GetFullName<float>())]), typeof(Quaternion).TypeHandle);
+            Register(new(TypeLayout.GetFullName<Matrix3x2>(), (ushort)sizeof(Matrix3x2), [new("M11", TypeLayout.GetFullName<float>()), new("M12", TypeLayout.GetFullName<float>()), new("M21", TypeLayout.GetFullName<float>()), new("M22", TypeLayout.GetFullName<float>()), new("M31", TypeLayout.GetFullName<float>()), new("M32", TypeLayout.GetFullName<float>())]), typeof(Matrix3x2).TypeHandle);
+            Register(new(TypeLayout.GetFullName<Matrix4x4>(), (ushort)sizeof(Matrix4x4), [new("M11", TypeLayout.GetFullName<float>()), new("M12", TypeLayout.GetFullName<float>()), new("M13", TypeLayout.GetFullName<float>()), new("M14", TypeLayout.GetFullName<float>()), new("M21", TypeLayout.GetFullName<float>()), new("M22", TypeLayout.GetFullName<float>()), new("M23", TypeLayout.GetFullName<float>()), new("M24", TypeLayout.GetFullName<float>()), new("M31", TypeLayout.GetFullName<float>()), new("M32", TypeLayout.GetFullName<float>()), new("M33", TypeLayout.GetFullName<float>()), new("M34", TypeLayout.GetFullName<float>()), new("M41", TypeLayout.GetFullName<float>()), new("M42", TypeLayout.GetFullName<float>()), new("M43", TypeLayout.GetFullName<float>()), new("M44", TypeLayout.GetFullName<float>())]), typeof(Matrix4x4).TypeHandle);
         }
 
         /// <summary>
@@ -58,21 +53,18 @@ namespace Types
         public unsafe static void Load<T>() where T : unmanaged, ITypeBank
         {
             T bank = default;
-            bank.Load(new(&Register));
+            bank.Load(new(Register));
         }
 
-        [UnmanagedCallersOnly]
-        private static void Register(Register.Input input)
+        /// <summary>
+        /// Registers a type using the information in the given <paramref name="input"/>.
+        /// </summary>
+        public static void Register(Register.Input input)
         {
-            RegisterType(input);
+            Register(input.type, input.Handle);
         }
 
-        internal static void RegisterType(Register.Input input)
-        {
-            RegisterType(input.type, input.Handle);
-        }
-
-        private static void RegisterType(TypeLayout type, RuntimeTypeHandle handle)
+        private static void Register(TypeLayout type, RuntimeTypeHandle handle)
         {
             types.Add(type);
             handleToType.Add(handle, type);
@@ -87,7 +79,7 @@ namespace Types
         {
             ushort size = (ushort)sizeof(T);
             TypeLayout type = new(TypeLayout.GetFullName<T>(), size, []);
-            RegisterType(type, typeof(T).TypeHandle);
+            Register(type, typeof(T).TypeHandle);
         }
 
         /// <summary>
