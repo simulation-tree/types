@@ -6,6 +6,7 @@ on:
     paths:
       - '**/*.cs'
       - '**/*.csproj'
+      - '.github/workflows/test.yml'
     branches:
       - main
       - dev
