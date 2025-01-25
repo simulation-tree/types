@@ -23,17 +23,7 @@ namespace Types.Functions
         {
             TypeLayout type = new(TypeLayout.GetFullName<T>(), (ushort)sizeof(T), variables);
             Input input = new(type, typeof(T).TypeHandle);
-            if (TypeRegistry.OnRegister is not null)
-            {
-                //todo: annoying branch that only exists here because tests fail on
-                //the remote actions runner, despite not happening locally :(
-                TypeRegistry.OnRegister.Invoke(input);
-            }
-            else
-            {
-                function(input);
-            }
-
+            Invoke(input);
             TypeInstanceCreator.Initialize<T>(type);
         }
 
@@ -43,8 +33,33 @@ namespace Types.Functions
         public readonly void Invoke<T>() where T : unmanaged
         {
             TypeLayout type = new(TypeLayout.GetFullName<T>(), (ushort)sizeof(T), []);
-            function(new(type, typeof(T).TypeHandle));
+            Input input = new(type, typeof(T).TypeHandle);
+            Invoke(input);
             TypeInstanceCreator.Initialize<T>(type);
+        }
+
+        private readonly void Invoke(Input input)
+        {
+            if (TypeRegistry.OnRegister is not null)
+            {
+                //todo: annoying branch that only exists here because tests fail on
+                //the remote actions runner, despite not happening locally :(
+                InvokeManaged(input);
+            }
+            else
+            {
+                InvokeUnmanaged(input);
+            }
+        }
+
+        private readonly void InvokeUnmanaged(Input input)
+        {
+            function(input);
+        }
+
+        private readonly void InvokeManaged(Input input)
+        {
+            TypeRegistry.OnRegister?.Invoke(input);
         }
 
         /// <summary>
