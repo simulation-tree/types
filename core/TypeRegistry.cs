@@ -81,6 +81,16 @@ namespace Types
         }
 
         /// <summary>
+        /// Manually registers type <typeparamref name="T"/>.
+        /// </summary>
+        public unsafe static void Register<T>() where T : unmanaged
+        {
+            ushort size = (ushort)sizeof(T);
+            TypeLayout type = new(TypeLayout.GetFullName<T>(), size, []);
+            RegisterType(type, typeof(T).TypeHandle);
+        }
+
+        /// <summary>
         /// Retrieves the type metadata for <typeparamref name="T"/>.
         /// </summary>
         public static TypeLayout Get<T>() where T : unmanaged
