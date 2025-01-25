@@ -22,7 +22,18 @@ namespace Types.Functions
         public readonly void Invoke<T>(USpan<TypeLayout.Variable> variables) where T : unmanaged
         {
             TypeLayout type = new(TypeLayout.GetFullName<T>(), (ushort)sizeof(T), variables);
-            function(new(type, typeof(T).TypeHandle));
+            Input input = new(type, typeof(T).TypeHandle);
+            if (TypeRegistry.OnRegister is not null)
+            {
+                //todo: annoying branch that only exists here because tests fail on
+                //the remote actions runner, despite not happening locally :(
+                TypeRegistry.OnRegister.Invoke(input);
+            }
+            else
+            {
+                function(input);
+            }
+
             TypeInstanceCreator.Initialize<T>(type);
         }
 

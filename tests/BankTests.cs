@@ -3,7 +3,7 @@ using Types.Functions;
 
 namespace Types.Tests
 {
-    public unsafe class BankTests
+    public unsafe class BankTests : TypeTests
     {
         [Test]
         public void LoadCustomBank()
