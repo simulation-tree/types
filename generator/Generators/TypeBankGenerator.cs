@@ -112,7 +112,7 @@ namespace Types
                     source.AppendLine("USpan<TypeLayout.Variable> buffer = stackalloc TypeLayout.Variable[(int)TypeLayout.Capacity];");
                     foreach (ITypeSymbol type in types)
                     {
-                        AppendRegister(type);
+                        AppendRegister(source, type);
                     }
                 }
                 source.EndGroup();
@@ -127,7 +127,7 @@ namespace Types
             return source.ToString();
         }
 
-        private static void AppendRegister(ITypeSymbol type)
+        private static void AppendRegister(SourceBuilder source, ITypeSymbol type)
         {
             string fullName = type.GetFullTypeName();
             if (fullName.EndsWith("e__FixedBuffer"))
@@ -137,13 +137,13 @@ namespace Types
 
             byte count = 0;
             HashSet<string> fieldNames = new();
-            AppendInheritedFields(type, fieldNames, ref count);
+            AppendInheritedFields(source, type, fieldNames, ref count);
 
             foreach (IFieldSymbol field in type.GetFields())
             {
                 if (fieldNames.Add(field.Name))
                 {
-                    AppendVariable(field, ref count);
+                    AppendVariable(source, field, ref count);
                 }
             }
 
@@ -160,7 +160,7 @@ namespace Types
             source.Append(");");
             source.AppendLine();
 
-            static void AppendVariable(IFieldSymbol field, ref byte count)
+            static void AppendVariable(SourceBuilder source, IFieldSymbol field, ref byte count)
             {
                 source.Append("buffer[");
                 source.Append(count);
@@ -185,17 +185,17 @@ namespace Types
                 count++;
             }
 
-            static void AppendInheritedFields(ITypeSymbol type, HashSet<string> fieldNames, ref byte count)
+            static void AppendInheritedFields(SourceBuilder source, ITypeSymbol type, HashSet<string> fieldNames, ref byte count)
             {
                 foreach (ITypeSymbol inheritedType in type.GetInheritingTypes())
                 {
-                    AppendInheritedFields(inheritedType, fieldNames, ref count);
+                    AppendInheritedFields(source, inheritedType, fieldNames, ref count);
 
                     foreach (IFieldSymbol field in inheritedType.GetFields())
                     {
                         if (fieldNames.Add(field.Name))
                         {
-                            AppendVariable(field, ref count);
+                            AppendVariable(source, field, ref count);
                         }
                     }
                 }
