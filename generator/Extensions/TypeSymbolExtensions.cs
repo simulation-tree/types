@@ -10,7 +10,7 @@ namespace Types
         /// </summary>
         public static bool IsUnmanaged(this ITypeSymbol type)
         {
-            if (type.IsReferenceType)
+            if (type.IsReferenceType || type.IsRefLikeType)
             {
                 return false;
             }
