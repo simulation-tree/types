@@ -4,34 +4,194 @@ using Unmanaged;
 
 namespace Types
 {
+    internal struct Variables4 : IEquatable<Variables4>
+    {
+        public TypeLayout.Variable a;
+        public TypeLayout.Variable b;
+        public TypeLayout.Variable c;
+        public TypeLayout.Variable d;
+
+        public TypeLayout.Variable this[byte index]
+        {
+            readonly get
+            {
+                return index switch
+                {
+                    0 => a,
+                    1 => b,
+                    2 => c,
+                    3 => d,
+                    _ => throw new IndexOutOfRangeException()
+                };
+            }
+            set
+            {
+                switch (index)
+                {
+                    case 0:
+                        a = value;
+                        break;
+                    case 1:
+                        b = value;
+                        break;
+                    case 2:
+                        c = value;
+                        break;
+                    case 3:
+                        d = value;
+                        break;
+                    default:
+                        throw new IndexOutOfRangeException();
+                }
+            }
+        }
+
+        public Variables4(TypeLayout.Variable a, TypeLayout.Variable b, TypeLayout.Variable c, TypeLayout.Variable d)
+        {
+            this.a = a;
+            this.b = b;
+            this.c = c;
+            this.d = d;
+        }
+
+        public readonly override bool Equals(object? obj)
+        {
+            return obj is Variables4 variables && Equals(variables);
+        }
+
+        public readonly bool Equals(Variables4 other)
+        {
+            return a.Equals(other.a) && b.Equals(other.b) && c.Equals(other.c) && d.Equals(other.d);
+        }
+
+        public readonly override int GetHashCode()
+        {
+            return HashCode.Combine(a, b, c, d);
+        }
+
+        public static bool operator ==(Variables4 left, Variables4 right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Variables4 left, Variables4 right)
+        {
+            return !(left == right);
+        }
+    }
+
+    internal struct Variables16 : IEquatable<Variables16>
+    {
+        public Variables4 a;
+        public Variables4 b;
+        public Variables4 c;
+        public Variables4 d;
+
+        public TypeLayout.Variable this[byte index]
+        {
+            readonly get
+            {
+                byte innerIndex = (byte)(index & 3);
+                byte outerIndex = (byte)(index >> 2);
+                return outerIndex switch
+                {
+                    0 => a[innerIndex],
+                    1 => b[innerIndex],
+                    2 => c[innerIndex],
+                    3 => d[innerIndex],
+                    _ => throw new IndexOutOfRangeException()
+                };
+            }
+            set
+            {
+                byte innerIndex = (byte)(index & 3);
+                byte outerIndex = (byte)(index >> 2);
+                switch (outerIndex)
+                {
+                    case 0:
+                        a[innerIndex] = value;
+                        break;
+                    case 1:
+                        b[innerIndex] = value;
+                        break;
+                    case 2:
+                        c[innerIndex] = value;
+                        break;
+                    case 3:
+                        d[innerIndex] = value;
+                        break;
+                    default:
+                        throw new IndexOutOfRangeException();
+                }
+            }
+        }
+
+        public Variables16(Variables4 a, Variables4 b, Variables4 c, Variables4 d)
+        {
+            this.a = a;
+            this.b = b;
+            this.c = c;
+            this.d = d;
+        }
+
+        public readonly override bool Equals(object? obj)
+        {
+            return obj is Variables16 variables && Equals(variables);
+        }
+
+        public readonly bool Equals(Variables16 other)
+        {
+            return a.Equals(other.a) && b.Equals(other.b) && c.Equals(other.c) && d.Equals(other.d);
+        }
+
+        public readonly override int GetHashCode()
+        {
+            return HashCode.Combine(a, b, c, d);
+        }
+
+        public static bool operator ==(Variables16 left, Variables16 right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Variables16 left, Variables16 right)
+        {
+            return !(left == right);
+        }
+    }
+
     /// <summary>
     /// Describes metadata for a type.
     /// </summary>
-    [DebuggerTypeProxy(typeof(TypeLayoutDebugView))]
-    public unsafe struct TypeLayout : IEquatable<TypeLayout>, ISerializable
+    public struct TypeLayout : IEquatable<TypeLayout>, ISerializable
     {
         /// <summary>
         /// Maximum amount of variables per type.
         /// </summary>
         public const uint Capacity = 16;
 
-        private FixedString fullName;
+        private long hash;
         private ushort size;
-        private byte count;
-
-        private fixed byte data[(int)(Capacity * 264)];
+        private byte variableCount;
+        private Variables16 variables;
 
         /// <summary>
-        /// All variables defined by this type.
+        /// Hash value unique to this type.
         /// </summary>
-        public readonly USpan<Variable> Variables
+        public readonly long Hash => hash;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
+        private readonly Variable[] Variables
         {
             get
             {
-                fixed (byte* ptr = data)
+                Variable[] variables = new Variable[variableCount];
+                for (byte i = 0; i < variableCount; i++)
                 {
-                    return new(ptr, count);
+                    variables[i] = this.variables[i];
                 }
+
+                return variables;
             }
         }
 
@@ -50,12 +210,12 @@ namespace Types
         /// <summary>
         /// Retrieves the raw handle for this type.
         /// </summary>
-        public readonly RuntimeTypeHandle TypeHandle => TypeRegistry.GetRuntimeTypeHandle(this);
+        public readonly RuntimeTypeHandle TypeHandle => TypeRegistry.GetRuntimeTypeHandle(hash);
 
         /// <summary>
         /// Full name of the type including the namespace.
         /// </summary>
-        public readonly FixedString FullName => fullName;
+        public readonly USpan<char> FullName => TypeNames.Get(hash);
 
         /// <summary>
         /// Size of the type in bytes.
@@ -63,12 +223,18 @@ namespace Types
         public readonly ushort Size => size;
 
         /// <summary>
+        /// Amount of variables stored.
+        /// </summary>
+        public readonly byte Count => variableCount;
+
+        /// <summary>
         /// Name of the type.
         /// </summary>
-        public readonly FixedString Name
+        public readonly USpan<char> Name
         {
             get
             {
+                USpan<char> fullName = FullName;
                 if (fullName.TryLastIndexOf('.', out uint index))
                 {
                     return fullName.Slice(index + 1);
@@ -79,6 +245,11 @@ namespace Types
                 }
             }
         }
+
+        /// <summary>
+        /// Indexer for variables.
+        /// </summary>
+        public readonly Variable this[byte index] => variables[index];
 
 #if NET
         /// <summary>
@@ -94,14 +265,37 @@ namespace Types
         /// <summary>
         /// Creates a new type layout.
         /// </summary>
+        public TypeLayout(USpan<char> fullName, ushort size, USpan<Variable> variables)
+        {
+            ThrowIfGreaterThanCapacity(variables.Length);
+
+            this.size = size;
+            variableCount = (byte)variables.Length;
+            this.variables = new();
+            for (byte i = 0; i < variableCount; i++)
+            {
+                this.variables[i] = variables[i];
+            }
+
+            hash = TypeNames.Set(fullName);
+        }
+
+        /// <summary>
+        /// Creates a new type layout.
+        /// </summary>
         public TypeLayout(FixedString fullName, ushort size, USpan<Variable> variables)
         {
             ThrowIfGreaterThanCapacity(variables.Length);
 
-            this.fullName = fullName;
             this.size = size;
-            count = (byte)variables.Length;
-            variables.CopyTo(Variables);
+            variableCount = (byte)variables.Length;
+            this.variables = new();
+            for (byte i = 0; i < variableCount; i++)
+            {
+                this.variables[i] = variables[i];
+            }
+
+            hash = TypeNames.Set(fullName);
         }
 
         /// <inheritdoc/>
@@ -117,7 +311,7 @@ namespace Types
         /// </summary>
         public readonly uint ToString(USpan<char> destination)
         {
-            return fullName.CopyTo(destination);
+            return FullName.CopyTo(destination);
         }
 
         /// <summary>
@@ -154,12 +348,24 @@ namespace Types
         }
 
         /// <summary>
+        /// Copies all variables in this type to the <paramref name="destination"/>.
+        /// </summary>
+        public readonly byte CopyVariablesTo(USpan<Variable> destination)
+        {
+            for (byte i = 0; i < variableCount; i++)
+            {
+                destination[i] = variables[i];
+            }
+
+            return variableCount;
+        }
+
+        /// <summary>
         /// Checks if this type contains a variable with the given <paramref name="name"/>.
         /// </summary>
         public readonly bool ContainsVariable(FixedString name)
         {
-            USpan<Variable> variables = Variables;
-            for (uint i = 0; i < variables.Length; i++)
+            for (byte i = 0; i < variableCount; i++)
             {
                 if (variables[i].Name == name)
                 {
@@ -175,10 +381,10 @@ namespace Types
         /// </summary>
         public readonly bool ContainsVariable(string name)
         {
-            USpan<Variable> variables = Variables;
-            for (uint i = 0; i < variables.Length; i++)
+            USpan<char> nameSpan = name.AsSpan();
+            for (byte i = 0; i < variableCount; i++)
             {
-                if (variables[i].Name.Equals(name))
+                if (variables[i].Name.SequenceEqual(nameSpan))
                 {
                     return true;
                 }
@@ -192,10 +398,10 @@ namespace Types
         /// </summary>
         public readonly bool ContainsVariable(USpan<char> name)
         {
-            USpan<Variable> variables = Variables;
-            for (uint i = 0; i < variables.Length; i++)
+            USpan<char> nameSpan = name;
+            for (byte i = 0; i < variableCount; i++)
             {
-                if (variables[i].Name.Equals(name))
+                if (variables[i].Name.SequenceEqual(nameSpan))
                 {
                     return true;
                 }
@@ -274,59 +480,50 @@ namespace Types
         /// <inheritdoc/>
         public readonly bool Equals(TypeLayout other)
         {
-            return fullName.Equals(other.fullName) && count == other.count && Variables.SequenceEqual(other.Variables);
+            return hash == other.hash && variableCount == other.variableCount && variables == other.variables;
         }
 
         /// <inheritdoc/>
         public readonly override int GetHashCode()
         {
-            return fullName.GetHashCode();
+            unchecked
+            {
+                return (int)hash;
+            }
         }
 
         readonly void ISerializable.Write(BinaryWriter writer)
         {
-            //full name
-            writer.WriteValue(fullName.Length);
-            for (byte i = 0; i < fullName.Length; i++)
+            USpan<char> fullName = FullName;
+            writer.WriteValue((ushort)fullName.Length);
+            for (uint i = 0; i < fullName.Length; i++)
             {
                 writer.WriteValue((byte)fullName[i]);
             }
 
             writer.WriteValue(size);
-
-            //variables
-            writer.WriteValue(count);
-            USpan<Variable> variables = Variables;
-            foreach (Variable variable in variables)
+            writer.WriteValue(variableCount);
+            for (byte i = 0; i < variableCount; i++)
             {
-                writer.WriteObject(variable);
+                writer.WriteObject(variables[i]);
             }
         }
 
         void ISerializable.Read(BinaryReader reader)
         {
-            //full name
-            byte fullNameLength = reader.ReadValue<byte>();
-            fullName = default;
-            fullName.Length = fullNameLength;
-            for (byte i = 0; i < fullNameLength; i++)
+            ushort fullNameLength = reader.ReadValue<ushort>();
+            USpan<char> fullName = stackalloc char[fullNameLength];
+            for (uint i = 0; i < fullNameLength; i++)
             {
                 fullName[i] = (char)reader.ReadValue<byte>();
             }
 
+            hash = TypeNames.Set(fullName);
             size = reader.ReadValue<ushort>();
-
-            //variables
-            count = reader.ReadValue<byte>();
-            USpan<Variable> variables = stackalloc Variable[count];
-            for (byte i = 0; i < count; i++)
+            variableCount = reader.ReadValue<byte>();
+            for (byte i = 0; i < variableCount; i++)
             {
                 variables[i] = reader.ReadObject<Variable>();
-            }
-
-            fixed (byte* ptr = data)
-            {
-                variables.CopyTo(new(ptr, count));
             }
         }
 
@@ -343,18 +540,17 @@ namespace Types
         }
 
         /// <summary>
-        /// Describes a variable part of a <see cref="Types.TypeLayout"/>.
+        /// Describes a variable part of a <see cref="TypeLayout"/>.
         /// </summary>
-        [DebuggerTypeProxy(typeof(VariableDebugView))]
         public struct Variable : IEquatable<Variable>, ISerializable
         {
-            private FixedString name;
+            private long nameHash;
             private long typeFullNameHash;
 
             /// <summary>
             /// Name of the variable.
             /// </summary>
-            public readonly FixedString Name => name;
+            public readonly USpan<char> Name => TypeNames.Get(nameHash);
 
             /// <summary>
             /// Type layout of the variable.
@@ -371,7 +567,7 @@ namespace Types
             /// </summary>
             public Variable(FixedString name, FixedString fullTypeName)
             {
-                this.name = name;
+                this.nameHash = TypeNames.Set(name);
                 typeFullNameHash = fullTypeName.GetLongHashCode();
             }
 
@@ -380,7 +576,7 @@ namespace Types
             /// </summary>
             public Variable(string name, string fullTypeName)
             {
-                this.name = name;
+                this.nameHash = TypeNames.Set(name);
                 typeFullNameHash = FixedString.GetLongHashCode(fullTypeName);
             }
 
@@ -389,7 +585,7 @@ namespace Types
             /// </summary>
             public Variable(FixedString name, int typeHash)
             {
-                this.name = name;
+                this.nameHash = TypeNames.Set(name);
                 this.typeFullNameHash = typeHash;
             }
 
@@ -408,11 +604,9 @@ namespace Types
             public readonly uint ToString(USpan<char> buffer)
             {
                 TypeLayout typeLayout = Type;
-                uint length = name.CopyTo(buffer);
-                buffer[length++] = ' ';
-                buffer[length++] = '(';
-                length += typeLayout.Name.CopyTo(buffer.Slice(length));
-                buffer[length++] = ')';
+                uint length = typeLayout.Name.CopyTo(buffer);
+                buffer[length++] = '=';
+                length += Name.CopyTo(buffer.Slice(length));
                 return length;
             }
 
@@ -425,7 +619,7 @@ namespace Types
             /// <inheritdoc/>
             public readonly bool Equals(Variable other)
             {
-                return Name.Equals(other.Name) && typeFullNameHash == other.typeFullNameHash;
+                return nameHash == other.nameHash && typeFullNameHash == other.typeFullNameHash;
             }
 
             /// <inheritdoc/>
@@ -434,6 +628,7 @@ namespace Types
                 unchecked
                 {
                     int hashCode = 17;
+                    USpan<char> name = Name;
                     for (byte i = 0; i < name.Length; i++)
                     {
                         hashCode = hashCode * 31 + name[i];
@@ -446,7 +641,8 @@ namespace Types
 
             readonly void ISerializable.Write(BinaryWriter writer)
             {
-                writer.WriteValue(name.Length);
+                USpan<char> name = Name;
+                writer.WriteValue((ushort)name.Length);
                 for (byte i = 0; i < name.Length; i++)
                 {
                     writer.WriteValue((byte)name[i]);
@@ -457,14 +653,14 @@ namespace Types
 
             void ISerializable.Read(BinaryReader reader)
             {
-                byte nameLength = reader.ReadValue<byte>();
-                name = default;
-                name.Length = nameLength;
+                ushort nameLength = reader.ReadValue<ushort>();
+                USpan<char> name = stackalloc char[nameLength];
                 for (byte i = 0; i < nameLength; i++)
                 {
                     name[i] = (char)reader.ReadValue<byte>();
                 }
 
+                nameHash = TypeNames.Set(name);
                 typeFullNameHash = reader.ReadValue<long>();
             }
 
@@ -478,45 +674,6 @@ namespace Types
             public static bool operator !=(Variable left, Variable right)
             {
                 return !(left == right);
-            }
-
-            internal class VariableDebugView
-            {
-                public readonly string name;
-                public readonly string typeFullName;
-                public readonly string typeName;
-                public readonly ushort typeSize;
-
-                public VariableDebugView(Variable variable)
-                {
-                    name = variable.Name.ToString();
-                    try
-                    {
-                        TypeLayout type = TypeRegistry.Get(variable.typeFullNameHash);
-                        typeFullName = type.FullName.ToString();
-                        typeName = type.Name.ToString();
-                        typeSize = type.Size;
-                    }
-                    catch
-                    {
-                        typeFullName = variable.typeFullNameHash.ToString();
-                        typeName = "Unknown";
-                    }
-                }
-            }
-        }
-
-        internal class TypeLayoutDebugView
-        {
-            public readonly string fullName;
-            public readonly string name;
-            public readonly ushort size;
-
-            public TypeLayoutDebugView(TypeLayout layout)
-            {
-                fullName = layout.FullName.ToString();
-                name = layout.Name.ToString();
-                size = layout.Size;
             }
         }
     }

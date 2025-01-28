@@ -22,13 +22,13 @@ namespace Example
 }
 
 TypeLayout layout = TypeRegistry.Get<Apple>();
-Assert.That(layout.FullName, Is.EqualTo("Example.Apple"));
+Assert.That(layout.FullName.ToString(), Is.EqualTo("Example.Apple"));
 Assert.That(layout.Size, Is.EqualTo(7));
-Assert.That(layout.Variables.Length, Is.EqualTo(3));
-Assert.That(layout.Variables[0].Name, Is.EqualTo("first"));
-Assert.That(layout.Variables[1].Name, Is.EqualTo("second"));
-Assert.That(layout.Variables[2].Name, Is.EqualTo("item"));
-Assert.That(layout.Variables[2].Type, Is.EqualTo(TypeRegistry.Get<Item>()));
+Assert.That(layout.Count, Is.EqualTo(3));
+Assert.That(layout[0].Name.ToString(), Is.EqualTo("first"));
+Assert.That(layout[1].Name.ToString(), Is.EqualTo("second"));
+Assert.That(layout[2].Name.ToString(), Is.EqualTo("item"));
+Assert.That(layout[2].Type, Is.EqualTo(TypeRegistry.Get<Item>()));
 ```
 
 ### Type banks
@@ -36,7 +36,6 @@ Assert.That(layout.Variables[2].Type, Is.EqualTo(TypeRegistry.Get<Item>()));
 Type banks are generated for every project that references this library.
 They contain code that registers declared types:
 ```cs
-TypeRegistry.Load<MyProject.TypeBank>();
 TypeRegistry.Load<CustomTypeBank>();
 
 public readonly struct CustomTypeBank : ITypeBank
@@ -51,8 +50,8 @@ public readonly struct CustomTypeBank : ITypeBank
 ### Type registry loaders
 
 These are also generated like type banks. But differ in that they're only
-generated for projects with a `static void Main()` method, and load all
-type banks:
+generated for projects with an entry point (a `static void Main()` method).
+They load all type banks found in the project:
 ```cs
 TypeRegistryLoader.Load();
 ```

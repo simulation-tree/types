@@ -14,7 +14,7 @@ namespace Types
     {
         private static readonly List<TypeLayout> types = new();
         private static readonly Dictionary<RuntimeTypeHandle, TypeLayout> handleToType = new();
-        private static readonly Dictionary<TypeLayout, RuntimeTypeHandle> typeToHandle = new();
+        private static readonly Dictionary<long, RuntimeTypeHandle> typeToHandle = new();
         private static readonly Dictionary<long, TypeLayout> hashToType = new();
 
         /// <summary>
@@ -66,10 +66,11 @@ namespace Types
 
         private static void Register(TypeLayout type, RuntimeTypeHandle handle)
         {
+            long hash = type.Hash;
             types.Add(type);
             handleToType.Add(handle, type);
-            typeToHandle.Add(type, handle);
-            hashToType.Add(type.FullName.GetLongHashCode(), type);
+            typeToHandle.Add(hash, handle);
+            hashToType.Add(hash, type);
         }
 
         /// <summary>
@@ -113,13 +114,13 @@ namespace Types
         }
 
         /// <summary>
-        /// Retrieves the raw handle for the <paramref name="type"/>.
+        /// Retrieves the raw handle for the <paramref name="hash"/>.
         /// </summary>
-        public static RuntimeTypeHandle GetRuntimeTypeHandle(TypeLayout type)
+        public static RuntimeTypeHandle GetRuntimeTypeHandle(long hash)
         {
-            ThrowIfNotRegistered(type);
+            ThrowIfNotRegistered(hash);
 
-            return typeToHandle[type];
+            return typeToHandle[hash];
         }
 
         /// <summary>
@@ -161,15 +162,6 @@ namespace Types
             if (!hashToType.ContainsKey(hash))
             {
                 throw new InvalidOperationException($"Type with hash `{hash}` is not registered");
-            }
-        }
-
-        [Conditional("DEBUG")]
-        private static void ThrowIfNotRegistered(TypeLayout type)
-        {
-            if (!typeToHandle.ContainsKey(type))
-            {
-                throw new InvalidOperationException($"Type `{type}` is not registered");
             }
         }
 

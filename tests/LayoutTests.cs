@@ -8,20 +8,21 @@ namespace Types.Tests
         [Test]
         public void VerifyLayoutOfRegisteredTypes()
         {
-            TypeLayout layout = TypeRegistry.Get<Stress>();
-            Assert.That(layout.Name.ToString(), Is.EqualTo("Stress"));
-            Assert.That(layout.Size, Is.EqualTo((uint)sizeof(Stress)));
-            Assert.That(layout.Variables.Length, Is.EqualTo(5));
-            Assert.That(layout.Variables[0].Size, Is.EqualTo(1));
-            Assert.That(layout.Variables[0].Name.ToString(), Is.EqualTo("first"));
-            Assert.That(layout.Variables[1].Size, Is.EqualTo(2));
-            Assert.That(layout.Variables[1].Name.ToString(), Is.EqualTo("second"));
-            Assert.That(layout.Variables[2].Size, Is.EqualTo(4));
-            Assert.That(layout.Variables[2].Name.ToString(), Is.EqualTo("third"));
-            Assert.That(layout.Variables[3].Size, Is.EqualTo(4));
-            Assert.That(layout.Variables[3].Name.ToString(), Is.EqualTo("fourth"));
-            Assert.That(layout.Variables[4].Size, Is.EqualTo((uint)sizeof(Cherry)));
-            Assert.That(layout.Variables[4].Name.ToString(), Is.EqualTo("cherry"));
+            TypeLayout type = TypeRegistry.Get<Stress>();
+            Assert.That(type.SystemType, Is.EqualTo(typeof(Stress)));
+            Assert.That(type.Name.ToString(), Is.EqualTo("Stress"));
+            Assert.That(type.Size, Is.EqualTo((uint)sizeof(Stress)));
+            Assert.That(type.Count, Is.EqualTo(5));
+            Assert.That(type[0].Size, Is.EqualTo(1));
+            Assert.That(type[0].Name.ToString(), Is.EqualTo("first"));
+            Assert.That(type[1].Size, Is.EqualTo(2));
+            Assert.That(type[1].Name.ToString(), Is.EqualTo("second"));
+            Assert.That(type[2].Size, Is.EqualTo(4));
+            Assert.That(type[2].Name.ToString(), Is.EqualTo("third"));
+            Assert.That(type[3].Size, Is.EqualTo(4));
+            Assert.That(type[3].Name.ToString(), Is.EqualTo("fourth"));
+            Assert.That(type[4].Size, Is.EqualTo((uint)sizeof(Cherry)));
+            Assert.That(type[4].Name.ToString(), Is.EqualTo("cherry"));
         }
 
         [Test]
@@ -46,7 +47,7 @@ namespace Types.Tests
             Assert.That(TypeRegistry.IsRegistered(typeof(short).FullName ?? typeof(short).Name), Is.True);
 
             Assert.That(TypeRegistry.Get<Vector3>().Size, Is.EqualTo((uint)sizeof(Vector3)));
-            Assert.That(TypeRegistry.Get<Vector3>().Variables.Length, Is.EqualTo(3));
+            Assert.That(TypeRegistry.Get<Vector3>().Count, Is.EqualTo(3));
         }
 
         [Test]
@@ -60,10 +61,10 @@ namespace Types.Tests
             TypeLayout b = reader.ReadObject<TypeLayout>();
 
             Assert.That(a.Name.ToString(), Is.EqualTo(b.Name.ToString()));
-            Assert.That(a.Variables.Length, Is.EqualTo(5));
-            Assert.That(a.Variables.Length, Is.EqualTo(b.Variables.Length));
-            Assert.That(a.Variables[4].Name.ToString(), Is.EqualTo(b.Variables[4].Name.ToString()));
-            Assert.That(a.Variables[4].Type.Variables[0], Is.EqualTo(b.Variables[4].Type.Variables[0]));
+            Assert.That(a.Count, Is.EqualTo(5));
+            Assert.That(a.Count, Is.EqualTo(b.Count));
+            Assert.That(a[4].Name.ToString(), Is.EqualTo(b[4].Name.ToString()));
+            Assert.That(a[4].Type[0], Is.EqualTo(b[4].Type[0]));
             Assert.That(a, Is.EqualTo(b));
         }
 
@@ -121,13 +122,13 @@ namespace Types.Tests
         public void VerifyInheritingType()
         {
             TypeLayout childLayout = TypeRegistry.Get<ChildType>();
-            Assert.That(childLayout.Variables.Length, Is.EqualTo(3));
+            Assert.That(childLayout.Count, Is.EqualTo(3));
             Assert.That(childLayout.ContainsVariable("a"), Is.True);
             Assert.That(childLayout.ContainsVariable("b"), Is.True);
             Assert.That(childLayout.ContainsVariable("cd"), Is.True);
 
             TypeLayout grandChildLayout = TypeRegistry.Get<GrandChildType>();
-            Assert.That(grandChildLayout.Variables.Length, Is.EqualTo(4));
+            Assert.That(grandChildLayout.Count, Is.EqualTo(4));
             Assert.That(grandChildLayout.ContainsVariable("a"), Is.True);
             Assert.That(grandChildLayout.ContainsVariable("b"), Is.True);
             Assert.That(grandChildLayout.ContainsVariable("cd"), Is.True);
