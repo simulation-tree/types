@@ -11,7 +11,7 @@ namespace Types
     public class TypeBankGenerator : IIncrementalGenerator
     {
         private static readonly SourceBuilder source = new();
-        public const string TypeName = "TypeBank";
+        public const string TypeNameFormat = "{0}TypeBank";
 
         void IIncrementalGenerator.Initialize(IncrementalGeneratorInitializationContext context)
         {
@@ -24,7 +24,8 @@ namespace Types
         {
             if (input.types.Length > 0)
             {
-                context.AddSource($"{TypeName}.generated.cs", Generate(input.types, input.compilation));
+                string source = Generate(input.types, input.compilation, out string typeName);
+                context.AddSource($"{typeName}.generated.cs", source);
             }
         }
 
@@ -68,9 +69,14 @@ namespace Types
             return null;
         }
 
-        public static string Generate(ImmutableArray<ITypeSymbol?> types, Compilation compilation)
+        public static string Generate(ImmutableArray<ITypeSymbol?> types, Compilation compilation, out string typeName)
         {
             string? assemblyName = compilation.AssemblyName;
+            if (assemblyName is not null && assemblyName.EndsWith(".Core"))
+            {
+                assemblyName = assemblyName.Substring(0, assemblyName.Length - 5);
+            }
+
             source.Clear();
             source.AppendLine("using Types;");
             source.AppendLine("using Types.Functions;");
@@ -84,8 +90,10 @@ namespace Types
                 source.BeginGroup();
             }
 
+            typeName = TypeNameFormat.Replace("{0}", assemblyName ?? "");
+            typeName = typeName.Replace(".", "");
             source.Append("public readonly struct ");
-            source.Append(TypeName);
+            source.Append(typeName);
             source.Append(" : ITypeBank");
             source.AppendLine();
 
