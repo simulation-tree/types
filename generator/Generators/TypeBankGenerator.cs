@@ -10,7 +10,6 @@ namespace Types
     [Generator(LanguageNames.CSharp)]
     public class TypeBankGenerator : IIncrementalGenerator
     {
-        private static readonly SourceBuilder source = new();
         public const string TypeNameFormat = "{0}TypeBank";
 
         void IIncrementalGenerator.Initialize(IncrementalGeneratorInitializationContext context)
@@ -85,7 +84,7 @@ namespace Types
                 assemblyName = assemblyName.Substring(0, assemblyName.Length - 5);
             }
 
-            source.Clear();
+            SourceBuilder source = new();
             source.AppendLine("using Types;");
             source.AppendLine("using Types.Functions;");
             source.AppendLine("using Unmanaged;");
