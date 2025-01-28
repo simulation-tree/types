@@ -16,15 +16,23 @@ namespace Types
         void IIncrementalGenerator.Initialize(IncrementalGeneratorInitializationContext context)
         {
             IncrementalValuesProvider<ITypeSymbol?> types = context.SyntaxProvider.CreateSyntaxProvider(Predicate, Transform);
-            IncrementalValueProvider<Compilation> compilation = context.CompilationProvider;
-            context.RegisterSourceOutput(types.Collect().Combine(compilation), Generate);
+            context.RegisterSourceOutput(types.Collect(), Generate);
         }
 
-        private void Generate(SourceProductionContext context, (ImmutableArray<ITypeSymbol?> types, Compilation compilation) input)
+        private void Generate(SourceProductionContext context, ImmutableArray<ITypeSymbol?> typesArray)
         {
-            if (input.types.Length > 0)
+            List<ITypeSymbol> types = new();
+            foreach (ITypeSymbol? type in typesArray)
             {
-                string source = Generate(input.types, input.compilation, out string typeName);
+                if (type is not null)
+                {
+                    types.Add(type);
+                }
+            }
+
+            if (types.Count > 0)
+            {
+                string source = Generate(types, out string typeName);
                 context.AddSource($"{typeName}.generated.cs", source);
             }
         }
@@ -69,9 +77,9 @@ namespace Types
             return null;
         }
 
-        public static string Generate(ImmutableArray<ITypeSymbol?> types, Compilation compilation, out string typeName)
+        public static string Generate(IReadOnlyList<ITypeSymbol> types, out string typeName)
         {
-            string? assemblyName = compilation.AssemblyName;
+            string? assemblyName = types[0].ContainingAssembly?.Name;
             if (assemblyName is not null && assemblyName.EndsWith(".Core"))
             {
                 assemblyName = assemblyName.Substring(0, assemblyName.Length - 5);
@@ -103,12 +111,9 @@ namespace Types
                 source.BeginGroup();
                 {
                     source.AppendLine("USpan<TypeLayout.Variable> buffer = stackalloc TypeLayout.Variable[(int)TypeLayout.Capacity];");
-                    foreach (ITypeSymbol? type in types)
+                    foreach (ITypeSymbol type in types)
                     {
-                        if (type is not null)
-                        {
-                            AppendRegister(type);
-                        }
+                        AppendRegister(type);
                     }
                 }
                 source.EndGroup();
