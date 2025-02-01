@@ -21,6 +21,12 @@ namespace Types
             }
         }
 
+        public int Length
+        {
+            get => builder.Length;
+            set => builder.Length = value;
+        }
+
         public override string ToString()
         {
             return builder.ToString();

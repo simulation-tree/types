@@ -61,11 +61,6 @@ namespace Types
             {
                 if (typeMember is IMethodSymbol method)
                 {
-                    if (method.IsStatic)
-                    {
-                        continue;
-                    }
-
                     if (method.MethodKind == MethodKind.Constructor)
                     {
                         continue;

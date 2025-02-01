@@ -18,12 +18,14 @@ namespace Types
 
         private static void Generate(SourceProductionContext context, (InputType? input, Compilation compilation) data)
         {
-            InputType? type = data.input;
-            if (type is null)
+            if (data.input is not null)
             {
-                return;
+                Generate(context, data.input, data.compilation);
             }
+        }
 
+        private static void Generate(SourceProductionContext context, InputType type, Compilation compilation)
+        { 
             SourceBuilder builder = new();
             builder.AppendLine("using Types;");
             builder.AppendLine();
@@ -33,7 +35,6 @@ namespace Types
                 builder.Append("namespace ");
                 builder.Append(type.containedNamespace);
                 builder.AppendLine();
-
                 builder.BeginGroup();
             }
 
@@ -83,14 +84,13 @@ namespace Types
                 {
                     foreach (ITypeSymbol inheritedType in type.inheritedTypes)
                     {
-                        AppendInheritedType(data, builder, inheritedType);
+                        AppendInheritedType(type, compilation, builder, inheritedType);
                     }
 
-                    //implicit casts up towards the inherited types
+                    //implicit casts towards the inherited types
                     builder.AppendLine();
-                    for (int i = 0; i < type.inheritedTypes.Count; i++)
+                    foreach (ITypeSymbol inheritedType in type.inheritedTypes)
                     {
-                        ITypeSymbol inheritedType = type.inheritedTypes[i];
                         builder.Append("public static implicit operator ");
                         builder.Append(inheritedType.GetFullTypeName());
                         builder.Append('(');
@@ -117,12 +117,10 @@ namespace Types
                             builder.AppendLine();
                         }
                         builder.EndGroup();
-
-                        if (i < type.inheritedTypes.Count - 1)
-                        {
-                            builder.AppendLine();
-                        }
+                        builder.AppendLine();
                     }
+
+                    builder.Length -= 2;
                 }
             }
             builder.EndGroup();
@@ -135,7 +133,7 @@ namespace Types
             context.AddSource($"{type.typeName}.generated.cs", builder.ToString());
         }
 
-        private static void AppendInheritedType((InputType? input, Compilation compilation) data, SourceBuilder builder, ITypeSymbol inheritedType)
+        private static void AppendInheritedType(InputType type, Compilation compilation, SourceBuilder builder, ITypeSymbol inheritedType)
         {
             //write fields
             foreach (IFieldSymbol field in inheritedType.GetFields())
@@ -190,7 +188,7 @@ namespace Types
                                 }
 
                                 //type name
-                                SemanticModel semanticModel = data.compilation.GetSemanticModel(propertyNode.SyntaxTree);
+                                SemanticModel semanticModel = compilation.GetSemanticModel(propertyNode.SyntaxTree);
                                 ITypeSymbol? propertyType = semanticModel.GetSymbolInfo(propertyNode.Type).Symbol as ITypeSymbol;
                                 if (propertyType is not null)
                                 {
@@ -240,9 +238,25 @@ namespace Types
                 }
                 else
                 {
-                    //copy entire method
-                    builder.AppendLine();
-                    builder.AppendLine(syntaxNode.ToString());
+                    string body = syntaxNode.ToString();
+                    if (method.IsStatic && method.MethodKind == MethodKind.Conversion && SymbolEqualityComparer.Default.Equals(method.ReturnType, inheritedType))
+                    {
+                        //const string ImplicitPrefix = " static implicit operator ";
+                        //int index = body.IndexOf(ImplicitPrefix);
+                        //int startIndex = index + ImplicitPrefix.Length;
+                        //int endIndex = body.IndexOf('(', startIndex);
+                        //body = body.Substring(0, startIndex) + type.typeName + body.Substring(endIndex);
+                        ////todo: replace the return type of the method
+                        
+                        //dont actually inherit these methods, they return the upper type
+                        //and theyre only relevant for those
+                    }
+                    else
+                    {
+                        //copy entire method
+                        builder.AppendLine();
+                        builder.AppendLine(body);
+                    }
                 }
             }
         }
