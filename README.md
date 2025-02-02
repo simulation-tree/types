@@ -55,25 +55,3 @@ They load all type banks found in the project:
 ```cs
 TypeRegistryLoader.Load();
 ```
-
-### Inheriting
-
-Value types that are partial, and use the `IInherit<>` interface can inherit fields
-and methods from the mentioned type:
-```cs
-public struct ParentType
-{
-	public ushort cd;
-}
-
-public partial struct ChildType : IInherit<ParentType>
-{
-	public byte a;
-	public byte b;
-}
-
-ChildType child = new();
-child.a = 0;
-child.b = 1;
-child.cd = 2;
-```
