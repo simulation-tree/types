@@ -71,6 +71,20 @@ namespace Types
             }
         }
 
+        public static IEnumerable<IMethodSymbol> GetConstructors(this ITypeSymbol type)
+        {
+            foreach (ISymbol typeMember in type.GetMembers())
+            {
+                if (typeMember is IMethodSymbol method)
+                {
+                    if (method.MethodKind == MethodKind.Constructor)
+                    {
+                        yield return method;
+                    }
+                }
+            }
+        }
+
         public static string GetFullTypeName(this ITypeSymbol symbol)
         {
             SpecialType special = symbol.SpecialType;
@@ -143,10 +157,10 @@ namespace Types
         /// <summary>
         /// Checks if the type contains an attribute with the given <paramref name="fullAttributeName"/>.
         /// </summary>
-        public static bool HasAttribute(this ITypeSymbol type, string fullAttributeName)
+        public static bool HasAttribute(this ISymbol symbol, string fullAttributeName)
         {
             Stack<ITypeSymbol> stack = new();
-            foreach (AttributeData attribute in type.GetAttributes())
+            foreach (AttributeData attribute in symbol.GetAttributes())
             {
                 if (attribute.AttributeClass is INamedTypeSymbol attributeType)
                 {
@@ -206,33 +220,6 @@ namespace Types
             }
 
             return false;
-        }
-
-        public static IEnumerable<ITypeSymbol> GetInheritingTypes(this ITypeSymbol type)
-        {
-            Stack<INamedTypeSymbol> stack = new();
-            foreach (INamedTypeSymbol interfaceType in type.AllInterfaces)
-            {
-                stack.Push(interfaceType);
-                while (stack.Count > 0)
-                {
-                    INamedTypeSymbol current = stack.Pop();
-                    if (current.GetFullTypeName().StartsWith("Types.IInherits<"))
-                    {
-                        ITypeSymbol genericType = current.TypeArguments[0];
-                        foreach (INamedTypeSymbol interfaceTypeOfGeneric in genericType.AllInterfaces)
-                        {
-                            stack.Push(interfaceTypeOfGeneric);
-                        }
-
-                        yield return genericType;
-                    }
-                    else if (current.BaseType is INamedTypeSymbol currentBaseType)
-                    {
-                        stack.Push(currentBaseType);
-                    }
-                }
-            }
         }
     }
 }

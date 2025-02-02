@@ -117,22 +117,5 @@ namespace Types.Tests
             Assert.That(instance, Is.InstanceOf<Stress>());
             Assert.That((Stress)instance, Is.EqualTo(default(Stress)));
         }
-
-        [Test]
-        public void VerifyInheritingType()
-        {
-            TypeLayout childLayout = TypeRegistry.Get<ChildType>();
-            Assert.That(childLayout.Count, Is.EqualTo(3));
-            Assert.That(childLayout.ContainsVariable("a"), Is.True);
-            Assert.That(childLayout.ContainsVariable("b"), Is.True);
-            Assert.That(childLayout.ContainsVariable("cd"), Is.True);
-
-            TypeLayout grandChildLayout = TypeRegistry.Get<GrandChildType>();
-            Assert.That(grandChildLayout.Count, Is.EqualTo(4));
-            Assert.That(grandChildLayout.ContainsVariable("a"), Is.True);
-            Assert.That(grandChildLayout.ContainsVariable("b"), Is.True);
-            Assert.That(grandChildLayout.ContainsVariable("cd"), Is.True);
-            Assert.That(grandChildLayout.ContainsVariable("value"), Is.True);
-        }
     }
 }

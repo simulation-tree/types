@@ -137,8 +137,6 @@ namespace Types
 
             byte count = 0;
             HashSet<string> fieldNames = new();
-            AppendInheritedFields(source, type, fieldNames, ref count);
-
             foreach (IFieldSymbol field in type.GetFields())
             {
                 if (fieldNames.Add(field.Name))
@@ -183,22 +181,6 @@ namespace Types
                 source.Append("\");");
                 source.AppendLine();
                 count++;
-            }
-
-            static void AppendInheritedFields(SourceBuilder source, ITypeSymbol type, HashSet<string> fieldNames, ref byte count)
-            {
-                foreach (ITypeSymbol inheritedType in type.GetInheritingTypes())
-                {
-                    AppendInheritedFields(source, inheritedType, fieldNames, ref count);
-
-                    foreach (IFieldSymbol field in inheritedType.GetFields())
-                    {
-                        if (fieldNames.Add(field.Name))
-                        {
-                            AppendVariable(source, field, ref count);
-                        }
-                    }
-                }
             }
         }
     }

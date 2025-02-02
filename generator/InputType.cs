@@ -6,20 +6,16 @@ namespace Types
     public class InputType
     {
         public readonly SyntaxTree syntaxTree;
-        public readonly string typeName;
+        public readonly ITypeSymbol typeSymbol;
         public readonly string fullTypeName;
-        public readonly string? containedNamespace;
-        public readonly bool isReadOnly;
         public readonly IReadOnlyList<ITypeSymbol> inheritedTypes;
 
-        public InputType(SyntaxTree syntaxTree, string name, string fullTypeName, string? containedNamespace, bool isReadOnly, IReadOnlyList<ITypeSymbol> inheritedTypes)
+        public InputType(SyntaxTree syntaxTree, ITypeSymbol symbol, string fullTypeName, IReadOnlyList<ITypeSymbol> inheritedTypes)
         {
-            this.isReadOnly = isReadOnly;
             this.inheritedTypes = inheritedTypes;
             this.syntaxTree = syntaxTree;
-            this.typeName = name;
+            this.typeSymbol = symbol;
             this.fullTypeName = fullTypeName;
-            this.containedNamespace = containedNamespace;
         }
     }
 }
