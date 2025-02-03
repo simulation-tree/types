@@ -44,22 +44,27 @@ namespace Types
             AppendIndentation();
             builder.Append('{');
             AppendLine();
-            indentation++;
+            indentation += 4;
         }
 
         public void EndGroup()
         {
-            indentation--;
+            indentation -= 4;
             AppendIndentation();
             builder.Append('}');
             AppendLine();
+        }
+
+        public void Indent(int indentation)
+        {
+            this.indentation += indentation;
         }
 
         public void AppendIndentation()
         {
             for (int i = 0; i < indentation; i++)
             {
-                builder.Append("    ");
+                builder.Append(' ');
             }
         }
 
