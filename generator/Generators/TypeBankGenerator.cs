@@ -106,7 +106,7 @@ namespace Types
 
             source.BeginGroup();
             {
-                source.AppendLine("void ITypeBank.Load(Register register)");
+                source.AppendLine("readonly void ITypeBank.Load(Register register)");
                 source.BeginGroup();
                 {
                     source.AppendLine("USpan<TypeLayout.Variable> buffer = stackalloc TypeLayout.Variable[(int)TypeLayout.Capacity];");
