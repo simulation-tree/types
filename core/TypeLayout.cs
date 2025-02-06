@@ -168,7 +168,7 @@ namespace Types
         /// <summary>
         /// Maximum amount of variables per type.
         /// </summary>
-        public const uint Capacity = 16;
+        public const byte Capacity = 16;
 
         private long hash;
         private ushort size;
@@ -433,16 +433,17 @@ namespace Types
         }
 
         /// <summary>
-        /// Retrieves the full type name for the given <typeparamref name="T"/>.
+        /// Retrieves the full type name for the given <paramref name="type"/>.
         /// </summary>
-        public static FixedString GetFullName<T>()
+        public static FixedString GetFullName(Type type)
         {
             FixedString fullName = default;
-            AppendType(ref fullName, typeof(T));
+            AppendType(ref fullName, type);
             return fullName;
 
             static void AppendType(ref FixedString text, Type type)
             {
+                //todo: handle case where the type name is System.Collections.Generic.List`1+Enumerator[etc, etc]
                 Type? current = type;
                 string? currentNameSpace = current.Namespace;
                 while (current is not null)
@@ -462,7 +463,12 @@ namespace Types
                         }
 
                         text.Insert(0, '<');
-                        text.Insert(0, name[..name.IndexOf('`')]);
+                        int index = name.IndexOf('`');
+                        if (index != -1)
+                        {
+                            string trimmedName = name[..index];
+                            text.Insert(0, trimmedName);
+                        }
                     }
                     else
                     {
@@ -482,6 +488,14 @@ namespace Types
                     text.Insert(0, currentNameSpace);
                 }
             }
+        }
+
+        /// <summary>
+        /// Retrieves the full type name for the type <typeparamref name="T"/>.
+        /// </summary>
+        public static FixedString GetFullName<T>()
+        {
+            return GetFullName(typeof(T));
         }
 
         [Conditional("DEBUG")]

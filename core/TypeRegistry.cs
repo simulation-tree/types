@@ -92,7 +92,10 @@ namespace Types
             Register(input.type, input.Handle);
         }
 
-        private static void Register(TypeLayout type, RuntimeTypeHandle handle)
+        /// <summary>
+        /// Manually registers the given <paramref name="type"/>.
+        /// </summary>
+        public static void Register(TypeLayout type, RuntimeTypeHandle handle)
         {
             long hash = type.Hash;
             types.Add(type);
@@ -160,6 +163,14 @@ namespace Types
         }
 
         /// <summary>
+        /// Checks if the given <paramref name="type"/> is registered.
+        /// </summary>
+        public static bool IsRegistered(Type type)
+        {
+            return handleToType.ContainsKey(RuntimeTypeTable.GetHandle(type));
+        }
+
+        /// <summary>
         /// Checks if a type with <paramref name="fullTypeName"/> is registered.
         /// </summary>
         public static bool IsRegistered(FixedString fullTypeName)
@@ -212,7 +223,15 @@ namespace Types
 
         private static class Cache<T> where T : unmanaged
         {
-            public static readonly TypeLayout value = handleToType[RuntimeTypeTable.GetHandle<T>()];
+            public static readonly TypeLayout value;
+
+            static Cache()
+            {
+                if (!handleToType.TryGetValue(RuntimeTypeTable.GetHandle<T>(), out value))
+                {
+                    throw new InvalidOperationException($"Type `{typeof(T)}` is not registered");
+                }
+            }
         }
     }
 }
