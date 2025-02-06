@@ -52,7 +52,7 @@ namespace Types.Functions
             /// <summary>
             /// Handle of the registering type.
             /// </summary>
-            public readonly RuntimeTypeHandle Handle => RuntimeTypeTable.FromAddress(handle);
+            public readonly RuntimeTypeHandle Handle => RuntimeTypeTable.GetHandle(handle);
 
             /// <summary>
             /// Creates the input argument.
@@ -60,7 +60,7 @@ namespace Types.Functions
             public Input(TypeLayout type, RuntimeTypeHandle handle)
             {
                 this.type = type;
-                this.handle = handle.Value;
+                this.handle = RuntimeTypeTable.GetAddress(handle);
             }
         }
     }
