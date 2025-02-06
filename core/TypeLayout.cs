@@ -263,6 +263,28 @@ namespace Types
 #endif
 
         /// <summary>
+        /// Creates a new type layout without any variables set.
+        /// </summary>
+        public TypeLayout(USpan<char> fullName, ushort size)
+        {
+            this.size = size;
+            variableCount = 0;
+            variables = default;
+            hash = TypeNames.Set(fullName);
+        }
+
+        /// <summary>
+        /// Creates a new type layout without any variables set.
+        /// </summary>
+        public TypeLayout(FixedString fullName, ushort size)
+        {
+            this.size = size;
+            variableCount = 0;
+            variables = default;
+            hash = TypeNames.Set(fullName);
+        }
+
+        /// <summary>
         /// Creates a new type layout.
         /// </summary>
         public TypeLayout(USpan<char> fullName, ushort size, USpan<Variable> variables)

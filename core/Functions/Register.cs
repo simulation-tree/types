@@ -21,7 +21,7 @@ namespace Types.Functions
         public unsafe readonly void Invoke<T>(USpan<TypeLayout.Variable> variables) where T : unmanaged
         {
             TypeLayout type = new(TypeLayout.GetFullName<T>(), (ushort)sizeof(T), variables);
-            Input input = new(type, typeof(T).TypeHandle);
+            Input input = new(type, RuntimeTypeTable.GetHandle<T>());
             action(input);
             TypeInstanceCreator.Initialize<T>(type);
         }
@@ -31,8 +31,8 @@ namespace Types.Functions
         /// </summary>
         public unsafe readonly void Invoke<T>() where T : unmanaged
         {
-            TypeLayout type = new(TypeLayout.GetFullName<T>(), (ushort)sizeof(T), []);
-            Input input = new(type, typeof(T).TypeHandle);
+            TypeLayout type = new(TypeLayout.GetFullName<T>(), (ushort)sizeof(T));
+            Input input = new(type, RuntimeTypeTable.GetHandle<T>());
             action(input);
             TypeInstanceCreator.Initialize<T>(type);
         }
@@ -52,7 +52,7 @@ namespace Types.Functions
             /// <summary>
             /// Handle of the registering type.
             /// </summary>
-            public readonly RuntimeTypeHandle Handle => RuntimeTypeHandle.FromIntPtr(handle);
+            public readonly RuntimeTypeHandle Handle => RuntimeTypeTable.FromAddress(handle);
 
             /// <summary>
             /// Creates the input argument.

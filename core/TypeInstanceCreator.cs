@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Unmanaged;
 
 namespace Types
 {
     internal static class TypeInstanceCreator
     {
-        private static readonly Dictionary<TypeLayout, Func<USpan<byte>, object>> functions = new();
+        private static readonly Dictionary<TypeLayout, Create> functions = new();
 
         public unsafe static void Initialize<T>(TypeLayout type) where T : unmanaged
         {
@@ -21,8 +20,10 @@ namespace Types
 
         public static object Do(TypeLayout type, USpan<byte> bytes)
         {
-            Func<USpan<byte>, object> action = functions[type];
+            Create action = functions[type];
             return action(bytes);
         }
+
+        public delegate object Create(USpan<byte> bytes);
     }
 }
