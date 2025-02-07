@@ -4,14 +4,14 @@ using Unmanaged;
 
 namespace Types
 {
-    internal struct Variables4 : IEquatable<Variables4>
+    internal struct Variables4
     {
         public TypeLayout.Variable a;
         public TypeLayout.Variable b;
         public TypeLayout.Variable c;
         public TypeLayout.Variable d;
 
-        public TypeLayout.Variable this[byte index]
+        public TypeLayout.Variable this[uint index]
         {
             readonly get
             {
@@ -46,53 +46,28 @@ namespace Types
             }
         }
 
-        public Variables4(TypeLayout.Variable a, TypeLayout.Variable b, TypeLayout.Variable c, TypeLayout.Variable d)
+        private Variables4(TypeLayout.Variable a, TypeLayout.Variable b, TypeLayout.Variable c, TypeLayout.Variable d)
         {
             this.a = a;
             this.b = b;
             this.c = c;
             this.d = d;
         }
-
-        public readonly override bool Equals(object? obj)
-        {
-            return obj is Variables4 variables && Equals(variables);
-        }
-
-        public readonly bool Equals(Variables4 other)
-        {
-            return a.Equals(other.a) && b.Equals(other.b) && c.Equals(other.c) && d.Equals(other.d);
-        }
-
-        public readonly override int GetHashCode()
-        {
-            return HashCode.Combine(a, b, c, d);
-        }
-
-        public static bool operator ==(Variables4 left, Variables4 right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(Variables4 left, Variables4 right)
-        {
-            return !(left == right);
-        }
     }
 
-    internal struct Variables16 : IEquatable<Variables16>
+    internal struct Variables16
     {
         public Variables4 a;
         public Variables4 b;
         public Variables4 c;
         public Variables4 d;
 
-        public TypeLayout.Variable this[byte index]
+        public TypeLayout.Variable this[uint index]
         {
             readonly get
             {
-                byte innerIndex = (byte)(index & 3);
-                byte outerIndex = (byte)(index >> 2);
+                uint innerIndex = index & 3;
+                uint outerIndex = index >> 2;
                 return outerIndex switch
                 {
                     0 => a[innerIndex],
@@ -104,8 +79,8 @@ namespace Types
             }
             set
             {
-                byte innerIndex = (byte)(index & 3);
-                byte outerIndex = (byte)(index >> 2);
+                uint innerIndex = index & 3;
+                uint outerIndex = index >> 2;
                 switch (outerIndex)
                 {
                     case 0:
@@ -126,37 +101,12 @@ namespace Types
             }
         }
 
-        public Variables16(Variables4 a, Variables4 b, Variables4 c, Variables4 d)
+        private Variables16(Variables4 a, Variables4 b, Variables4 c, Variables4 d)
         {
             this.a = a;
             this.b = b;
             this.c = c;
             this.d = d;
-        }
-
-        public readonly override bool Equals(object? obj)
-        {
-            return obj is Variables16 variables && Equals(variables);
-        }
-
-        public readonly bool Equals(Variables16 other)
-        {
-            return a.Equals(other.a) && b.Equals(other.b) && c.Equals(other.c) && d.Equals(other.d);
-        }
-
-        public readonly override int GetHashCode()
-        {
-            return HashCode.Combine(a, b, c, d);
-        }
-
-        public static bool operator ==(Variables16 left, Variables16 right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(Variables16 left, Variables16 right)
-        {
-            return !(left == right);
         }
     }
 
@@ -186,7 +136,7 @@ namespace Types
             get
             {
                 Variable[] variables = new Variable[variableCount];
-                for (byte i = 0; i < variableCount; i++)
+                for (uint i = 0; i < variableCount; i++)
                 {
                     variables[i] = this.variables[i];
                 }
@@ -294,7 +244,7 @@ namespace Types
             this.size = size;
             variableCount = (byte)variables.Length;
             this.variables = new();
-            for (byte i = 0; i < variableCount; i++)
+            for (uint i = 0; i < variableCount; i++)
             {
                 this.variables[i] = variables[i];
             }
@@ -312,7 +262,7 @@ namespace Types
             this.size = size;
             variableCount = (byte)variables.Length;
             this.variables = new();
-            for (byte i = 0; i < variableCount; i++)
+            for (uint i = 0; i < variableCount; i++)
             {
                 this.variables[i] = variables[i];
             }
@@ -374,7 +324,7 @@ namespace Types
         /// </summary>
         public readonly byte CopyVariablesTo(USpan<Variable> destination)
         {
-            for (byte i = 0; i < variableCount; i++)
+            for (uint i = 0; i < variableCount; i++)
             {
                 destination[i] = variables[i];
             }
@@ -387,7 +337,7 @@ namespace Types
         /// </summary>
         public readonly bool ContainsVariable(FixedString name)
         {
-            for (byte i = 0; i < variableCount; i++)
+            for (uint i = 0; i < variableCount; i++)
             {
                 if (variables[i].Name == name)
                 {
@@ -404,7 +354,7 @@ namespace Types
         public readonly bool ContainsVariable(string name)
         {
             USpan<char> nameSpan = name.AsSpan();
-            for (byte i = 0; i < variableCount; i++)
+            for (uint i = 0; i < variableCount; i++)
             {
                 if (variables[i].Name.SequenceEqual(nameSpan))
                 {
@@ -421,7 +371,7 @@ namespace Types
         public readonly bool ContainsVariable(USpan<char> name)
         {
             USpan<char> nameSpan = name;
-            for (byte i = 0; i < variableCount; i++)
+            for (uint i = 0; i < variableCount; i++)
             {
                 if (variables[i].Name.SequenceEqual(nameSpan))
                 {
@@ -516,7 +466,7 @@ namespace Types
         /// <inheritdoc/>
         public readonly bool Equals(TypeLayout other)
         {
-            return hash == other.hash && variableCount == other.variableCount && variables == other.variables;
+            return hash == other.hash && variableCount == other.variableCount;
         }
 
         /// <inheritdoc/>
@@ -539,7 +489,7 @@ namespace Types
 
             writer.WriteValue(size);
             writer.WriteValue(variableCount);
-            for (byte i = 0; i < variableCount; i++)
+            for (uint i = 0; i < variableCount; i++)
             {
                 writer.WriteObject(variables[i]);
             }
@@ -557,7 +507,7 @@ namespace Types
             hash = TypeNames.Set(fullName);
             size = reader.ReadValue<ushort>();
             variableCount = reader.ReadValue<byte>();
-            for (byte i = 0; i < variableCount; i++)
+            for (uint i = 0; i < variableCount; i++)
             {
                 variables[i] = reader.ReadObject<Variable>();
             }
@@ -665,7 +615,7 @@ namespace Types
                 {
                     int hashCode = 17;
                     USpan<char> name = Name;
-                    for (byte i = 0; i < name.Length; i++)
+                    for (uint i = 0; i < name.Length; i++)
                     {
                         hashCode = hashCode * 31 + name[i];
                     }
@@ -679,7 +629,7 @@ namespace Types
             {
                 USpan<char> name = Name;
                 writer.WriteValue((ushort)name.Length);
-                for (byte i = 0; i < name.Length; i++)
+                for (uint i = 0; i < name.Length; i++)
                 {
                     writer.WriteValue((byte)name[i]);
                 }
@@ -691,7 +641,7 @@ namespace Types
             {
                 ushort nameLength = reader.ReadValue<ushort>();
                 USpan<char> name = stackalloc char[nameLength];
-                for (byte i = 0; i < nameLength; i++)
+                for (uint i = 0; i < nameLength; i++)
                 {
                     name[i] = (char)reader.ReadValue<byte>();
                 }
