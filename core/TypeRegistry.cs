@@ -115,7 +115,7 @@ namespace Types
         }
 
         /// <summary>
-        /// Retrieves the type metadata for <typeparamref name="T"/>.
+        /// Retrieves the metadata for <typeparamref name="T"/>.
         /// </summary>
         public static TypeLayout Get<T>() where T : unmanaged
         {
@@ -125,7 +125,7 @@ namespace Types
         }
 
         /// <summary>
-        /// Retrieves the type metadata for the type with the given <paramref name="hash"/>.
+        /// Retrieves the metadata for the type with the given <paramref name="hash"/>.
         /// </summary>
         public static TypeLayout Get(long hash)
         {
@@ -135,7 +135,15 @@ namespace Types
         }
 
         /// <summary>
-        /// Retrieves the type metadata for the <paramref name="handle"/> of the wanted type.
+        /// Tries to get the metadata for the type with the given <paramref name="hash"/>.
+        /// </summary>
+        public static bool TryGet(long hash, out TypeLayout type)
+        {
+            return hashToType.TryGetValue(hash, out type);
+        }
+
+        /// <summary>
+        /// Retrieves the metadata for the <paramref name="handle"/> of the wanted type.
         /// </summary>
         public static TypeLayout Get(RuntimeTypeHandle handle)
         {
