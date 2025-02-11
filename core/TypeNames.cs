@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Unmanaged;
 
 namespace Types
@@ -20,6 +21,7 @@ namespace Types
             return hash;
         }
 
+        [SkipLocalsInit]
         internal static long Set(FixedString value)
         {
             USpan<char> span = stackalloc char[value.Length];

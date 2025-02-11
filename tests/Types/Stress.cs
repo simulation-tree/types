@@ -7,5 +7,10 @@
         public readonly uint third;
         public readonly float fourth;
         public readonly Cherry cherry;
+
+        public readonly override string ToString()
+        {
+            return $"Stress: {first}, {second}, {third}, {fourth}, {cherry}";
+        }
     }
 }

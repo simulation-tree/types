@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Types.Functions;
 using Unmanaged;
 
@@ -22,6 +23,7 @@ namespace Types
         /// </summary>
         public static IReadOnlyCollection<TypeLayout> All => types;
 
+        [SkipLocalsInit]
         static unsafe TypeRegistry()
         {
             Register(new(TypeLayout.GetFullName<byte>(), sizeof(byte)), RuntimeTypeTable.GetHandle<byte>());
@@ -41,6 +43,7 @@ namespace Types
             Register(new(TypeLayout.GetFullName<FixedString>(), (ushort)sizeof(FixedString)), RuntimeTypeTable.GetHandle<FixedString>());
 
             USpan<TypeLayout.Variable> buffer = stackalloc TypeLayout.Variable[16];
+           
             buffer[0] = new("x", TypeLayout.GetFullName<float>());
             buffer[1] = new("y", TypeLayout.GetFullName<float>());
             buffer[2] = new("z", TypeLayout.GetFullName<float>());
@@ -49,6 +52,7 @@ namespace Types
             Register(new(TypeLayout.GetFullName<Vector3>(), (ushort)sizeof(Vector3), buffer.Slice(0, 3)), RuntimeTypeTable.GetHandle<Vector3>());
             Register(new(TypeLayout.GetFullName<Vector4>(), (ushort)sizeof(Vector4), buffer.Slice(0, 4)), RuntimeTypeTable.GetHandle<Vector4>());
             Register(new(TypeLayout.GetFullName<Quaternion>(), (ushort)sizeof(Quaternion), buffer.Slice(0, 4)), RuntimeTypeTable.GetHandle<Quaternion>());
+            
             buffer[0] = new("M11", TypeLayout.GetFullName<float>());
             buffer[1] = new("M12", TypeLayout.GetFullName<float>());
             buffer[2] = new("M21", TypeLayout.GetFullName<float>());
@@ -56,6 +60,7 @@ namespace Types
             buffer[4] = new("M31", TypeLayout.GetFullName<float>());
             buffer[5] = new("M32", TypeLayout.GetFullName<float>());
             Register(new(TypeLayout.GetFullName<Matrix3x2>(), (ushort)sizeof(Matrix3x2), buffer.Slice(0, 6)), RuntimeTypeTable.GetHandle<Matrix3x2>());
+            
             buffer[0] = new("M11", TypeLayout.GetFullName<float>());
             buffer[1] = new("M12", TypeLayout.GetFullName<float>());
             buffer[2] = new("M13", TypeLayout.GetFullName<float>());

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Unmanaged;
 
 namespace Types
@@ -7,6 +8,7 @@ namespace Types
     /// <summary>
     /// Describes metadata for a type.
     /// </summary>
+    [SkipLocalsInit]
     public struct TypeLayout : IEquatable<TypeLayout>, ISerializable
     {
         /// <summary>
@@ -210,6 +212,7 @@ namespace Types
         public readonly object CreateInstance()
         {
             USpan<byte> bytes = stackalloc byte[size];
+            bytes.Clear();
             return CreateInstance(bytes);
         }
 
