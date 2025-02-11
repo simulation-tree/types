@@ -4,112 +4,6 @@ using Unmanaged;
 
 namespace Types
 {
-    internal struct Variables4
-    {
-        public TypeLayout.Variable a;
-        public TypeLayout.Variable b;
-        public TypeLayout.Variable c;
-        public TypeLayout.Variable d;
-
-        public TypeLayout.Variable this[uint index]
-        {
-            readonly get
-            {
-                return index switch
-                {
-                    0 => a,
-                    1 => b,
-                    2 => c,
-                    3 => d,
-                    _ => throw new IndexOutOfRangeException()
-                };
-            }
-            set
-            {
-                switch (index)
-                {
-                    case 0:
-                        a = value;
-                        break;
-                    case 1:
-                        b = value;
-                        break;
-                    case 2:
-                        c = value;
-                        break;
-                    case 3:
-                        d = value;
-                        break;
-                    default:
-                        throw new IndexOutOfRangeException();
-                }
-            }
-        }
-
-        private Variables4(TypeLayout.Variable a, TypeLayout.Variable b, TypeLayout.Variable c, TypeLayout.Variable d)
-        {
-            this.a = a;
-            this.b = b;
-            this.c = c;
-            this.d = d;
-        }
-    }
-
-    internal struct Variables16
-    {
-        public Variables4 a;
-        public Variables4 b;
-        public Variables4 c;
-        public Variables4 d;
-
-        public TypeLayout.Variable this[uint index]
-        {
-            readonly get
-            {
-                uint innerIndex = index & 3;
-                uint outerIndex = index >> 2;
-                return outerIndex switch
-                {
-                    0 => a[innerIndex],
-                    1 => b[innerIndex],
-                    2 => c[innerIndex],
-                    3 => d[innerIndex],
-                    _ => throw new IndexOutOfRangeException()
-                };
-            }
-            set
-            {
-                uint innerIndex = index & 3;
-                uint outerIndex = index >> 2;
-                switch (outerIndex)
-                {
-                    case 0:
-                        a[innerIndex] = value;
-                        break;
-                    case 1:
-                        b[innerIndex] = value;
-                        break;
-                    case 2:
-                        c[innerIndex] = value;
-                        break;
-                    case 3:
-                        d[innerIndex] = value;
-                        break;
-                    default:
-                        throw new IndexOutOfRangeException();
-                }
-            }
-        }
-
-        private Variables16(Variables4 a, Variables4 b, Variables4 c, Variables4 d)
-        {
-            this.a = a;
-            this.b = b;
-            this.c = c;
-            this.d = d;
-        }
-    }
-
     /// <summary>
     /// Describes metadata for a type.
     /// </summary>
@@ -173,7 +67,7 @@ namespace Types
         public readonly ushort Size => size;
 
         /// <summary>
-        /// Amount of variables stored.
+        /// Amount of <see cref="Variable"/>s the type has.
         /// </summary>
         public readonly byte Count => variableCount;
 
@@ -199,7 +93,7 @@ namespace Types
         /// <summary>
         /// Indexer for variables.
         /// </summary>
-        public readonly Variable this[byte index] => variables[index];
+        public readonly Variable this[uint index] => variables[index];
 
 #if NET
         /// <summary>
@@ -383,6 +277,82 @@ namespace Types
         }
 
         /// <summary>
+        /// Retrieves the variable in this type with the given <paramref name="name"/>.
+        /// </summary>
+        public readonly Variable GetVariable(FixedString name)
+        {
+            ThrowIfVariableIsMissing(name);
+
+            for (uint i = 0; i < variableCount; i++)
+            {
+                Variable variable = variables[i];
+                if (new FixedString(variable.Name).Equals(name))
+                {
+                    return variable;
+                }
+            }
+
+            return default;
+        }
+
+        /// <summary>
+        /// Retrieves the variable in this type with the given <paramref name="name"/>.
+        /// </summary>
+        public readonly Variable GetVariable(USpan<char> name)
+        {
+            ThrowIfVariableIsMissing(name);
+
+            for (uint i = 0; i < variableCount; i++)
+            {
+                Variable variable = variables[i];
+                if (variable.Name.SequenceEqual(name))
+                {
+                    return variable;
+                }
+            }
+
+            return default;
+        }
+
+        /// <summary>
+        /// Retrieves the index of the variable with the given <paramref name="name"/>.
+        /// </summary>
+        public readonly uint IndexOf(FixedString name)
+        {
+            ThrowIfVariableIsMissing(name);
+
+            for (uint i = 0; i < variableCount; i++)
+            {
+                Variable variable = variables[i];
+                if (new FixedString(variable.Name).Equals(name))
+                {
+                    return i;
+                }
+            }
+
+            return uint.MaxValue;
+        }
+
+        /// <summary>
+        /// Retrieves the index of the variable with the given <paramref name="name"/>.
+        /// </summary>
+        public readonly uint IndexOf(USpan<char> name)
+        {
+            ThrowIfVariableIsMissing(name);
+
+            for (uint i = 0; i < variableCount; i++)
+            {
+                Variable variable = variables[i];
+                if (variable.Name.SequenceEqual(name))
+                {
+                    return i;
+                }
+            }
+
+            return uint.MaxValue;
+        }
+
+        /// <summary>
         /// Retrieves the full type name for the given <paramref name="type"/>.
         /// </summary>
         public static FixedString GetFullName(Type type)
@@ -446,6 +416,15 @@ namespace Types
         public static FixedString GetFullName<T>()
         {
             return GetFullName(typeof(T));
+        }
+
+        [Conditional("DEBUG")]
+        private readonly void ThrowIfVariableIsMissing(FixedString name)
+        {
+            if (!ContainsVariable(name))
+            {
+                throw new InvalidOperationException($"Variable `{name}` not found in type {FullName}");
+            }
         }
 
         [Conditional("DEBUG")]
@@ -660,6 +639,112 @@ namespace Types
             public static bool operator !=(Variable left, Variable right)
             {
                 return !(left == right);
+            }
+        }
+
+        internal struct Variables4
+        {
+            public Variable a;
+            public Variable b;
+            public Variable c;
+            public Variable d;
+
+            public Variable this[uint index]
+            {
+                readonly get
+                {
+                    return index switch
+                    {
+                        0 => a,
+                        1 => b,
+                        2 => c,
+                        3 => d,
+                        _ => throw new IndexOutOfRangeException()
+                    };
+                }
+                set
+                {
+                    switch (index)
+                    {
+                        case 0:
+                            a = value;
+                            break;
+                        case 1:
+                            b = value;
+                            break;
+                        case 2:
+                            c = value;
+                            break;
+                        case 3:
+                            d = value;
+                            break;
+                        default:
+                            throw new IndexOutOfRangeException();
+                    }
+                }
+            }
+
+            private Variables4(Variable a, Variable b, Variable c, Variable d)
+            {
+                this.a = a;
+                this.b = b;
+                this.c = c;
+                this.d = d;
+            }
+        }
+
+        internal struct Variables16
+        {
+            public Variables4 a;
+            public Variables4 b;
+            public Variables4 c;
+            public Variables4 d;
+
+            public Variable this[uint index]
+            {
+                readonly get
+                {
+                    uint innerIndex = index & 3;
+                    uint outerIndex = index >> 2;
+                    return outerIndex switch
+                    {
+                        0 => a[innerIndex],
+                        1 => b[innerIndex],
+                        2 => c[innerIndex],
+                        3 => d[innerIndex],
+                        _ => throw new IndexOutOfRangeException()
+                    };
+                }
+                set
+                {
+                    uint innerIndex = index & 3;
+                    uint outerIndex = index >> 2;
+                    switch (outerIndex)
+                    {
+                        case 0:
+                            a[innerIndex] = value;
+                            break;
+                        case 1:
+                            b[innerIndex] = value;
+                            break;
+                        case 2:
+                            c[innerIndex] = value;
+                            break;
+                        case 3:
+                            d[innerIndex] = value;
+                            break;
+                        default:
+                            throw new IndexOutOfRangeException();
+                    }
+                }
+            }
+
+            private Variables16(Variables4 a, Variables4 b, Variables4 c, Variables4 d)
+            {
+                this.a = a;
+                this.b = b;
+                this.c = c;
+                this.d = d;
             }
         }
     }
