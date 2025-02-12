@@ -78,6 +78,9 @@ namespace Types
             buffer[14] = new("M43", TypeLayout.GetFullName<float>());
             buffer[15] = new("M44", TypeLayout.GetFullName<float>());
             Register(new(TypeLayout.GetFullName<Matrix4x4>(), (ushort)sizeof(Matrix4x4), buffer.Slice(0, 16)), RuntimeTypeTable.GetHandle<Matrix4x4>());
+
+            buffer[0] = new("_dateData", TypeLayout.GetFullName<ulong>());
+            Register(new(TypeLayout.GetFullName<DateTime>(), (ushort)sizeof(DateTime), buffer.Slice(0, 1)), RuntimeTypeTable.GetHandle<DateTime>());
         }
 
         /// <summary>
