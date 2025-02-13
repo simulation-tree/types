@@ -40,6 +40,11 @@ namespace Types
             builder.AppendLine();
             builder.BeginGroup();
             {
+                builder.AppendLine("/// <summary>");
+                builder.AppendLine("/// Registers all types declared by this and other");
+                builder.AppendLine("/// referenced projects.");
+                builder.AppendLine("/// </summary>");
+
                 builder.AppendLine("public static void Load()");
                 builder.BeginGroup();
                 {

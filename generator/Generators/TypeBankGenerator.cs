@@ -97,6 +97,10 @@ namespace Types
                 source.BeginGroup();
             }
 
+            source.AppendLine("/// <summary>");
+            source.AppendLine("/// Contains all types declared by this project.");
+            source.AppendLine("/// </summary>");
+
             typeName = TypeNameFormat.Replace("{0}", assemblyName ?? "");
             typeName = typeName.Replace(".", "");
             source.Append("public readonly struct ");
