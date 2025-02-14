@@ -9,7 +9,7 @@ using Unmanaged;
 namespace Types
 {
     /// <summary>
-    /// Stores all types registered with a <see cref="ITypeBank"/>.
+    /// Stores metadata about types.
     /// </summary>
     public static class TypeRegistry
     {
