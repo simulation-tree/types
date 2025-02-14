@@ -8,7 +8,7 @@ namespace Types
         /// <summary>
         /// Iterates through all types found in every syntax trees.
         /// </summary>
-        public static IReadOnlyCollection<ITypeSymbol> GetAllTypes(this Compilation compilation)
+        public static IReadOnlyCollection<ITypeSymbol> GetAllTypes(this Compilation compilation, bool includingReferencedProjects = true)
         {
             Stack<ISymbol> symbolStack = new();
             HashSet<ITypeSymbol> types = [];
@@ -23,49 +23,52 @@ namespace Types
                 }
             }
 
-            foreach (MetadataReference assemblyReference in compilation.References)
+            if (includingReferencedProjects)
             {
-                if (compilation.GetAssemblyOrModuleSymbol(assemblyReference) is IAssemblySymbol assemblySymbol)
+                foreach (MetadataReference assemblyReference in compilation.References)
                 {
-                    symbolStack.Push(assemblySymbol.GlobalNamespace);
-                    while (symbolStack.Count > 0)
+                    if (compilation.GetAssemblyOrModuleSymbol(assemblyReference) is IAssemblySymbol assemblySymbol)
                     {
-                        ISymbol current = symbolStack.Pop();
-                        if (current is INamespaceSymbol namespaceSymbol)
+                        symbolStack.Push(assemblySymbol.GlobalNamespace);
+                        while (symbolStack.Count > 0)
                         {
-                            foreach (ISymbol member in namespaceSymbol.GetNamespaceMembers())
+                            ISymbol current = symbolStack.Pop();
+                            if (current is INamespaceSymbol namespaceSymbol)
                             {
-                                symbolStack.Push(member);
-                            }
+                                foreach (ISymbol member in namespaceSymbol.GetNamespaceMembers())
+                                {
+                                    symbolStack.Push(member);
+                                }
 
-                            foreach (ISymbol member in namespaceSymbol.GetTypeMembers())
-                            {
-                                symbolStack.Push(member);
+                                foreach (ISymbol member in namespaceSymbol.GetTypeMembers())
+                                {
+                                    symbolStack.Push(member);
+                                }
                             }
-                        }
-                        else if (current is ITypeSymbol type)
-                        {
-                            types.Add(type);
-                            foreach (ISymbol member in type.GetMembers())
+                            else if (current is ITypeSymbol type)
                             {
-                                symbolStack.Push(member);
+                                types.Add(type);
+                                foreach (ISymbol member in type.GetMembers())
+                                {
+                                    symbolStack.Push(member);
+                                }
                             }
-                        }
-                        else if (current is IFieldSymbol field)
-                        {
-                            types.Add(field.Type);
-                        }
-                        else if (current is IMethodSymbol method)
-                        {
-                            types.Add(method.ReturnType);
-                            foreach (IParameterSymbol parameter in method.Parameters)
+                            else if (current is IFieldSymbol field)
                             {
-                                types.Add(parameter.Type);
+                                types.Add(field.Type);
                             }
-                        }
-                        else if (current is IPropertySymbol property)
-                        {
-                            types.Add(property.Type);
+                            else if (current is IMethodSymbol method)
+                            {
+                                types.Add(method.ReturnType);
+                                foreach (IParameterSymbol parameter in method.Parameters)
+                                {
+                                    types.Add(parameter.Type);
+                                }
+                            }
+                            else if (current is IPropertySymbol property)
+                            {
+                                types.Add(property.Type);
+                            }
                         }
                     }
                 }
