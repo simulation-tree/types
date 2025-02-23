@@ -460,7 +460,7 @@ namespace Types
             }
         }
 
-        readonly void ISerializable.Write(BinaryWriter writer)
+        readonly void ISerializable.Write(ByteWriter writer)
         {
             USpan<char> fullName = FullName;
             writer.WriteValue((ushort)fullName.Length);
@@ -477,7 +477,7 @@ namespace Types
             }
         }
 
-        void ISerializable.Read(BinaryReader reader)
+        void ISerializable.Read(ByteReader reader)
         {
             ushort fullNameLength = reader.ReadValue<ushort>();
             USpan<char> fullName = stackalloc char[fullNameLength];
@@ -607,7 +607,7 @@ namespace Types
                 }
             }
 
-            readonly void ISerializable.Write(BinaryWriter writer)
+            readonly void ISerializable.Write(ByteWriter writer)
             {
                 USpan<char> name = Name;
                 writer.WriteValue((ushort)name.Length);
@@ -619,7 +619,7 @@ namespace Types
                 writer.WriteValue(typeFullNameHash);
             }
 
-            void ISerializable.Read(BinaryReader reader)
+            void ISerializable.Read(ByteReader reader)
             {
                 ushort nameLength = reader.ReadValue<ushort>();
                 USpan<char> name = stackalloc char[nameLength];

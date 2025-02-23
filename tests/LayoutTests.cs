@@ -54,10 +54,10 @@ namespace Types.Tests
         public void SerializeTypes()
         {
             TypeLayout a = TypeRegistry.Get<Stress>();
-            using BinaryWriter writer = new();
+            using ByteWriter writer = new();
             writer.WriteObject(a);
 
-            using BinaryReader reader = new(writer);
+            using ByteReader reader = new(writer);
             TypeLayout b = reader.ReadObject<TypeLayout>();
 
             Assert.That(a.Name.ToString(), Is.EqualTo(b.Name.ToString()));
