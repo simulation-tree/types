@@ -171,7 +171,7 @@ namespace Types
         {
             USpan<char> buffer = stackalloc char[256];
             uint length = ToString(buffer);
-            return buffer.Slice(0, length).ToString();
+            return buffer.GetSpan(length).ToString();
         }
 
         /// <summary>
@@ -179,7 +179,8 @@ namespace Types
         /// </summary>
         public readonly uint ToString(USpan<char> destination)
         {
-            return FullName.CopyTo(destination);
+            FullName.CopyTo(destination);
+            return FullName.Length;
         }
 
         /// <summary>
@@ -562,7 +563,7 @@ namespace Types
             {
                 USpan<char> buffer = stackalloc char[256];
                 uint length = ToString(buffer);
-                return buffer.Slice(0, length).ToString();
+                return buffer.GetSpan(length).ToString();
             }
 
             /// <summary>
@@ -572,9 +573,11 @@ namespace Types
             public readonly uint ToString(USpan<char> buffer)
             {
                 TypeLayout typeLayout = Type;
-                uint length = typeLayout.Name.CopyTo(buffer);
+                typeLayout.Name.CopyTo(buffer);
+                uint length = typeLayout.Name.Length;
                 buffer[length++] = '=';
-                length += Name.CopyTo(buffer.Slice(length));
+                Name.CopyTo(buffer.Slice(length));
+                length += Name.Length;
                 return length;
             }
 

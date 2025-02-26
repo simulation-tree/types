@@ -48,10 +48,10 @@ namespace Types
             buffer[1] = new("y", TypeLayout.GetFullName<float>());
             buffer[2] = new("z", TypeLayout.GetFullName<float>());
             buffer[3] = new("w", TypeLayout.GetFullName<float>());
-            Register(new(TypeLayout.GetFullName<Vector2>(), (ushort)sizeof(Vector2), buffer.Slice(0, 2)), RuntimeTypeTable.GetHandle<Vector2>());
-            Register(new(TypeLayout.GetFullName<Vector3>(), (ushort)sizeof(Vector3), buffer.Slice(0, 3)), RuntimeTypeTable.GetHandle<Vector3>());
-            Register(new(TypeLayout.GetFullName<Vector4>(), (ushort)sizeof(Vector4), buffer.Slice(0, 4)), RuntimeTypeTable.GetHandle<Vector4>());
-            Register(new(TypeLayout.GetFullName<Quaternion>(), (ushort)sizeof(Quaternion), buffer.Slice(0, 4)), RuntimeTypeTable.GetHandle<Quaternion>());
+            Register(new(TypeLayout.GetFullName<Vector2>(), (ushort)sizeof(Vector2), buffer.GetSpan(2)), RuntimeTypeTable.GetHandle<Vector2>());
+            Register(new(TypeLayout.GetFullName<Vector3>(), (ushort)sizeof(Vector3), buffer.GetSpan(3)), RuntimeTypeTable.GetHandle<Vector3>());
+            Register(new(TypeLayout.GetFullName<Vector4>(), (ushort)sizeof(Vector4), buffer.GetSpan(4)), RuntimeTypeTable.GetHandle<Vector4>());
+            Register(new(TypeLayout.GetFullName<Quaternion>(), (ushort)sizeof(Quaternion), buffer.GetSpan(4)), RuntimeTypeTable.GetHandle<Quaternion>());
             
             buffer[0] = new("M11", TypeLayout.GetFullName<float>());
             buffer[1] = new("M12", TypeLayout.GetFullName<float>());
@@ -59,7 +59,7 @@ namespace Types
             buffer[3] = new("M22", TypeLayout.GetFullName<float>());
             buffer[4] = new("M31", TypeLayout.GetFullName<float>());
             buffer[5] = new("M32", TypeLayout.GetFullName<float>());
-            Register(new(TypeLayout.GetFullName<Matrix3x2>(), (ushort)sizeof(Matrix3x2), buffer.Slice(0, 6)), RuntimeTypeTable.GetHandle<Matrix3x2>());
+            Register(new(TypeLayout.GetFullName<Matrix3x2>(), (ushort)sizeof(Matrix3x2), buffer.GetSpan(6)), RuntimeTypeTable.GetHandle<Matrix3x2>());
             
             buffer[0] = new("M11", TypeLayout.GetFullName<float>());
             buffer[1] = new("M12", TypeLayout.GetFullName<float>());
@@ -77,10 +77,10 @@ namespace Types
             buffer[13] = new("M42", TypeLayout.GetFullName<float>());
             buffer[14] = new("M43", TypeLayout.GetFullName<float>());
             buffer[15] = new("M44", TypeLayout.GetFullName<float>());
-            Register(new(TypeLayout.GetFullName<Matrix4x4>(), (ushort)sizeof(Matrix4x4), buffer.Slice(0, 16)), RuntimeTypeTable.GetHandle<Matrix4x4>());
+            Register(new(TypeLayout.GetFullName<Matrix4x4>(), (ushort)sizeof(Matrix4x4), buffer.GetSpan(16)), RuntimeTypeTable.GetHandle<Matrix4x4>());
 
             buffer[0] = new("_dateData", TypeLayout.GetFullName<ulong>());
-            Register(new(TypeLayout.GetFullName<DateTime>(), (ushort)sizeof(DateTime), buffer.Slice(0, 1)), RuntimeTypeTable.GetHandle<DateTime>());
+            Register(new(TypeLayout.GetFullName<DateTime>(), (ushort)sizeof(DateTime), buffer.GetSpan(1)), RuntimeTypeTable.GetHandle<DateTime>());
         }
 
         /// <summary>
@@ -117,6 +117,7 @@ namespace Types
         /// </summary>
         public unsafe static void Register<T>() where T : unmanaged
         {
+            //todo: need to add a warning here when trying to register a type bank itself
             ushort size = (ushort)sizeof(T);
             TypeLayout type = new(TypeLayout.GetFullName<T>(), size);
             Register(type, RuntimeTypeTable.GetHandle<T>());
