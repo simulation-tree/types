@@ -155,7 +155,7 @@ namespace Types
             source.Append(">(");
             if (count > 0)
             {
-                source.Append("buffer.Slice(0, ");
+                source.Append("buffer.GetSpan(");
                 source.Append(count);
                 source.Append(')');
             }
