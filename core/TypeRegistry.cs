@@ -14,7 +14,7 @@ namespace Types
     public static class TypeRegistry
     {
         private static readonly List<TypeLayout> types = new();
-        private static readonly Dictionary<RuntimeTypeHandle, TypeLayout> handleToType = new();
+        internal static readonly Dictionary<RuntimeTypeHandle, TypeLayout> handleToType = new();
         private static readonly Dictionary<long, RuntimeTypeHandle> typeToHandle = new();
         private static readonly Dictionary<long, TypeLayout> hashToType = new();
 
@@ -41,9 +41,10 @@ namespace Types
             Register(new(TypeLayout.GetFullName<nint>(), (ushort)sizeof(nint)), RuntimeTypeTable.GetHandle<nint>());
             Register(new(TypeLayout.GetFullName<nuint>(), (ushort)sizeof(nuint)), RuntimeTypeTable.GetHandle<nuint>());
             Register(new(TypeLayout.GetFullName<FixedString>(), (ushort)sizeof(FixedString)), RuntimeTypeTable.GetHandle<FixedString>());
+            Register(new(TypeLayout.GetFullName<Half>(), (ushort)sizeof(Half)), RuntimeTypeTable.GetHandle<Half>());
 
             USpan<TypeLayout.Variable> buffer = stackalloc TypeLayout.Variable[16];
-           
+
             buffer[0] = new("x", TypeLayout.GetFullName<float>());
             buffer[1] = new("y", TypeLayout.GetFullName<float>());
             buffer[2] = new("z", TypeLayout.GetFullName<float>());
@@ -52,7 +53,7 @@ namespace Types
             Register(new(TypeLayout.GetFullName<Vector3>(), (ushort)sizeof(Vector3), buffer.GetSpan(3)), RuntimeTypeTable.GetHandle<Vector3>());
             Register(new(TypeLayout.GetFullName<Vector4>(), (ushort)sizeof(Vector4), buffer.GetSpan(4)), RuntimeTypeTable.GetHandle<Vector4>());
             Register(new(TypeLayout.GetFullName<Quaternion>(), (ushort)sizeof(Quaternion), buffer.GetSpan(4)), RuntimeTypeTable.GetHandle<Quaternion>());
-            
+
             buffer[0] = new("M11", TypeLayout.GetFullName<float>());
             buffer[1] = new("M12", TypeLayout.GetFullName<float>());
             buffer[2] = new("M21", TypeLayout.GetFullName<float>());
@@ -60,7 +61,7 @@ namespace Types
             buffer[4] = new("M31", TypeLayout.GetFullName<float>());
             buffer[5] = new("M32", TypeLayout.GetFullName<float>());
             Register(new(TypeLayout.GetFullName<Matrix3x2>(), (ushort)sizeof(Matrix3x2), buffer.GetSpan(6)), RuntimeTypeTable.GetHandle<Matrix3x2>());
-            
+
             buffer[0] = new("M11", TypeLayout.GetFullName<float>());
             buffer[1] = new("M12", TypeLayout.GetFullName<float>());
             buffer[2] = new("M13", TypeLayout.GetFullName<float>());
@@ -105,11 +106,13 @@ namespace Types
         /// </summary>
         public static void Register(TypeLayout type, RuntimeTypeHandle handle)
         {
-            long hash = type.Hash;
-            types.Add(type);
-            handleToType.Add(handle, type);
-            typeToHandle.Add(hash, handle);
-            hashToType.Add(hash, type);
+            if (!types.Contains(type))
+            {
+                types.Add(type);
+                handleToType.Add(handle, type);
+                typeToHandle.Add(type.Hash, handle);
+                hashToType.Add(type.Hash, type);
+            }
         }
 
         /// <summary>
@@ -134,21 +137,21 @@ namespace Types
         }
 
         /// <summary>
-        /// Retrieves the metadata for the type with the given <paramref name="hash"/>.
+        /// Retrieves the metadata for the type with the given <paramref name="typeHash"/>.
         /// </summary>
-        public static TypeLayout Get(long hash)
+        public static TypeLayout Get(long typeHash)
         {
-            ThrowIfNotRegistered(hash);
+            ThrowIfNotRegistered(typeHash);
 
-            return hashToType[hash];
+            return hashToType[typeHash];
         }
 
         /// <summary>
-        /// Tries to get the metadata for the type with the given <paramref name="hash"/>.
+        /// Tries to get the metadata for the type with the given <paramref name="typeHash"/>.
         /// </summary>
-        public static bool TryGet(long hash, out TypeLayout type)
+        public static bool TryGet(long typeHash, out TypeLayout type)
         {
-            return hashToType.TryGetValue(hash, out type);
+            return hashToType.TryGetValue(typeHash, out type);
         }
 
         /// <summary>
@@ -162,13 +165,13 @@ namespace Types
         }
 
         /// <summary>
-        /// Retrieves the raw handle for the <paramref name="hash"/>.
+        /// Retrieves the raw handle for the <paramref name="typeHash"/>.
         /// </summary>
-        public static RuntimeTypeHandle GetRuntimeTypeHandle(long hash)
+        public static RuntimeTypeHandle GetRuntimeTypeHandle(long typeHash)
         {
-            ThrowIfNotRegistered(hash);
+            ThrowIfNotRegistered(typeHash);
 
-            return typeToHandle[hash];
+            return typeToHandle[typeHash];
         }
 
         /// <summary>
@@ -192,9 +195,10 @@ namespace Types
         /// </summary>
         public static bool IsRegistered(FixedString fullTypeName)
         {
+            long hash = fullTypeName.GetLongHashCode();
             foreach (TypeLayout type in types)
             {
-                if (type.FullName == fullTypeName)
+                if (type.Hash == hash)
                 {
                     return true;
                 }
