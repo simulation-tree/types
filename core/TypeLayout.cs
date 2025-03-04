@@ -80,7 +80,7 @@ namespace Types
         {
             get
             {
-                USpan<char> fullName = FullName;
+                USpan<char> fullName = TypeNames.Get(hash);
                 if (fullName.TryLastIndexOf('.', out uint index))
                 {
                     return fullName.Slice(index + 1);
@@ -179,8 +179,9 @@ namespace Types
         /// </summary>
         public readonly uint ToString(USpan<char> destination)
         {
-            FullName.CopyTo(destination);
-            return FullName.Length;
+            USpan<char> fullName = TypeNames.Get(hash);
+            fullName.CopyTo(destination);
+            return fullName.Length;
         }
 
         /// <summary>
@@ -188,14 +189,8 @@ namespace Types
         /// </summary>
         public readonly bool Is<T>() where T : unmanaged
         {
-            if (TypeRegistry.IsRegistered<T>())
-            {
-                return TypeRegistry.Get<T>() == this;
-            }
-            else
-            {
-                return false;
-            }
+            TypeRegistry.handleToType.TryGetValue(RuntimeTypeTable.GetHandle<T>(), out TypeLayout otherType);
+            return hash == otherType.hash;
         }
 
         /// <summary>
@@ -463,7 +458,7 @@ namespace Types
 
         readonly void ISerializable.Write(ByteWriter writer)
         {
-            USpan<char> fullName = FullName;
+            USpan<char> fullName = TypeNames.Get(hash);
             writer.WriteValue((ushort)fullName.Length);
             for (uint i = 0; i < fullName.Length; i++)
             {
