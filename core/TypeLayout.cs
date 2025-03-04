@@ -444,7 +444,7 @@ namespace Types
         /// <inheritdoc/>
         public readonly bool Equals(TypeLayout other)
         {
-            return hash == other.hash && variableCount == other.variableCount;
+            return hash == other.hash;
         }
 
         /// <inheritdoc/>
