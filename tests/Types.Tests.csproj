@@ -25,7 +25,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\unmanaged\tests\Unmanaged.Tests.csproj" />
 		<ProjectReference Include="..\core\Types.Core.csproj" />
 		<ProjectReference Include="..\generator\Types.Generator.csproj">
 			<OutputItemType>Analyzer</OutputItemType>

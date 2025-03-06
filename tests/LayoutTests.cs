@@ -1,5 +1,5 @@
-﻿using System.Numerics;
-using Unmanaged;
+﻿using Microsoft.VisualStudio.TestPlatform.PlatformAbstractions;
+using System.Numerics;
 
 namespace Types.Tests
 {
@@ -51,24 +51,6 @@ namespace Types.Tests
         }
 
         [Test]
-        public void SerializeTypes()
-        {
-            TypeLayout a = TypeRegistry.Get<Stress>();
-            using ByteWriter writer = new();
-            writer.WriteObject(a);
-
-            using ByteReader reader = new(writer);
-            TypeLayout b = reader.ReadObject<TypeLayout>();
-
-            Assert.That(a.Name.ToString(), Is.EqualTo(b.Name.ToString()));
-            Assert.That(a.Count, Is.EqualTo(5));
-            Assert.That(a.Count, Is.EqualTo(b.Count));
-            Assert.That(a[4].Name.ToString(), Is.EqualTo(b[4].Name.ToString()));
-            Assert.That(a[4].Type[0], Is.EqualTo(b[4].Type[0]));
-            Assert.That(a, Is.EqualTo(b));
-        }
-
-        [Test]
         public void CheckLayouts()
         {
             Assert.That(TypeRegistry.IsRegistered<bool>(), Is.True);
@@ -102,10 +84,13 @@ namespace Types.Tests
         [Test]
         public void GetFullNameOfType()
         {
-            ASCIIText256 a = TypeLayout.GetFullName<Dictionary<Cherry, Stress>>();
+            string c = TypeLayout.GetFullName<bool>();
+            Assert.That(c.ToString(), Is.EqualTo("System.Boolean"));
+
+            string a = TypeLayout.GetFullName<Dictionary<Cherry, Stress>>();
             Assert.That(a.ToString(), Is.EqualTo("Types.Tests.Dictionary<Types.Tests.Cherry, Types.Tests.Stress>"));
 
-            ASCIIText256 b = TypeLayout.GetFullName<Dictionary<Cherry, Dictionary<Cherry, Stress>>>();
+            string b = TypeLayout.GetFullName<Dictionary<Cherry, Dictionary<Cherry, Stress>>>();
             Assert.That(b.ToString(), Is.EqualTo("Types.Tests.Dictionary<Types.Tests.Cherry, Types.Tests.Dictionary<Types.Tests.Cherry, Types.Tests.Stress>>"));
         }
 
@@ -116,6 +101,15 @@ namespace Types.Tests
             object instance = layout.CreateInstance();
             Assert.That(instance, Is.InstanceOf<Stress>());
             Assert.That((Stress)instance, Is.EqualTo(default(Stress)));
+        }
+
+        [Test]
+        public void GetOrRegister()
+        {
+            Assert.That(TypeRegistry.IsRegistered<PlatformOperatingSystem>(), Is.False);
+            TypeLayout type = TypeRegistry.GetOrRegister<PlatformOperatingSystem>();
+            Assert.That(TypeRegistry.IsRegistered<PlatformOperatingSystem>(), Is.True);
+            Assert.That(type.Is<PlatformOperatingSystem>(), Is.True);
         }
     }
 }

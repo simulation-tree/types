@@ -1,5 +1,4 @@
-﻿using System;
-using Types.Functions;
+﻿using Types.Functions;
 
 namespace Types.Tests
 {

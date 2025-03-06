@@ -1,7 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
-using Unmanaged;
 
-namespace Types
+namespace Types.Generator
 {
     [Generator(LanguageNames.CSharp)]
     public class TypeRegistryLoaderGenerator : IIncrementalGenerator

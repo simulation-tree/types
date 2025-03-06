@@ -31,7 +31,6 @@
     <ItemGroup>
         <ProjectReference Include="..\generator\Types.Generator.csproj"/>
         <ProjectReference Include="..\core\Types.Core.csproj"/>
-        <ProjectReference Include="..\..\unmanaged\core\Unmanaged.Core.csproj"/>
     </ItemGroup>
 
 </Project>

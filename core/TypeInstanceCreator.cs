@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Unmanaged;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Types
 {
@@ -13,17 +13,18 @@ namespace Types
             {
                 T instance = default;
                 void* ptr = &instance;
-                bytes.CopyTo(ptr, (uint)sizeof(T));
+                Span<byte> instanceBytes = new(ptr, sizeof(T));
+                bytes.CopyTo(instanceBytes);
                 return instance;
             };
         }
 
-        public static object Do(TypeLayout type, USpan<byte> bytes)
+        public static object Do(TypeLayout type, ReadOnlySpan<byte> bytes)
         {
             Create action = functions[type];
             return action(bytes);
         }
 
-        public delegate object Create(USpan<byte> bytes);
+        public delegate object Create(ReadOnlySpan<byte> bytes);
     }
 }

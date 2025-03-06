@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 
-namespace Types
+namespace Types.Generator
 {
     public class InputType
     {

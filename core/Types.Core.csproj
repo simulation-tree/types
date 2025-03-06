@@ -15,7 +15,7 @@
         <IsTrimmable>True</IsTrimmable>
         <NoStandardLib>true</NoStandardLib>
         <RootNamespace>Types</RootNamespace>
-        <PackageId/>
+        <PackageId />
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -31,10 +31,6 @@
             <Pack>True</Pack>
             <PackagePath>\</PackagePath>
         </None>
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\..\unmanaged\core\Unmanaged.Core.csproj"/>
     </ItemGroup>
 
 </Project>

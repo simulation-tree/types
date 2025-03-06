@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using Unmanaged;
 
 namespace Types
 {
@@ -9,7 +8,7 @@ namespace Types
     /// Describes metadata for a type.
     /// </summary>
     [SkipLocalsInit]
-    public struct TypeLayout : IEquatable<TypeLayout>, ISerializable
+    public struct TypeLayout : IEquatable<TypeLayout>
     {
         /// <summary>
         /// Maximum amount of variables per type.
@@ -32,7 +31,7 @@ namespace Types
             get
             {
                 Variable[] variables = new Variable[variableCount];
-                for (uint i = 0; i < variableCount; i++)
+                for (int i = 0; i < variableCount; i++)
                 {
                     variables[i] = this.variables[i];
                 }
@@ -61,7 +60,7 @@ namespace Types
         /// <summary>
         /// Full name of the type including the namespace.
         /// </summary>
-        public readonly USpan<char> FullName => TypeNames.Get(hash);
+        public readonly ReadOnlySpan<char> FullName => TypeNames.Get(hash);
 
         /// <summary>
         /// Size of the type in bytes.
@@ -76,12 +75,13 @@ namespace Types
         /// <summary>
         /// Name of the type.
         /// </summary>
-        public readonly USpan<char> Name
+        public readonly ReadOnlySpan<char> Name
         {
             get
             {
-                USpan<char> fullName = TypeNames.Get(hash);
-                if (fullName.TryLastIndexOf('.', out uint index))
+                ReadOnlySpan<char> fullName = TypeNames.Get(hash);
+                int index = fullName.LastIndexOf('.');
+                if (index != -1)
                 {
                     return fullName.Slice(index + 1);
                 }
@@ -95,7 +95,12 @@ namespace Types
         /// <summary>
         /// Indexer for variables.
         /// </summary>
-        public readonly Variable this[uint index] => variables[index];
+        public readonly Variable this[int index] => variables[index];
+
+        /// <summary>
+        /// Indexer for variables.
+        /// </summary>
+        public readonly Variable this[uint index] => variables[(int)index];
 
 #if NET
         /// <summary>
@@ -111,7 +116,7 @@ namespace Types
         /// <summary>
         /// Creates a new type layout without any variables set.
         /// </summary>
-        public TypeLayout(USpan<char> fullName, ushort size)
+        public TypeLayout(ReadOnlySpan<char> fullName, ushort size)
         {
             this.size = size;
             variableCount = 0;
@@ -122,7 +127,7 @@ namespace Types
         /// <summary>
         /// Creates a new type layout without any variables set.
         /// </summary>
-        public TypeLayout(ASCIIText256 fullName, ushort size)
+        public TypeLayout(string fullName, ushort size)
         {
             this.size = size;
             variableCount = 0;
@@ -133,14 +138,14 @@ namespace Types
         /// <summary>
         /// Creates a new type layout.
         /// </summary>
-        public TypeLayout(USpan<char> fullName, ushort size, USpan<Variable> variables)
+        public TypeLayout(ReadOnlySpan<char> fullName, ushort size, ReadOnlySpan<Variable> variables)
         {
             ThrowIfGreaterThanCapacity(variables.Length);
 
             this.size = size;
             variableCount = (byte)variables.Length;
             this.variables = new();
-            for (uint i = 0; i < variableCount; i++)
+            for (int i = 0; i < variableCount; i++)
             {
                 this.variables[i] = variables[i];
             }
@@ -151,14 +156,14 @@ namespace Types
         /// <summary>
         /// Creates a new type layout.
         /// </summary>
-        public TypeLayout(ASCIIText256 fullName, ushort size, USpan<Variable> variables)
+        public TypeLayout(string fullName, ushort size, ReadOnlySpan<Variable> variables)
         {
             ThrowIfGreaterThanCapacity(variables.Length);
 
             this.size = size;
             variableCount = (byte)variables.Length;
             this.variables = new();
-            for (uint i = 0; i < variableCount; i++)
+            for (int i = 0; i < variableCount; i++)
             {
                 this.variables[i] = variables[i];
             }
@@ -169,19 +174,17 @@ namespace Types
         /// <inheritdoc/>
         public readonly override string ToString()
         {
-            USpan<char> buffer = stackalloc char[256];
-            uint length = ToString(buffer);
-            return buffer.GetSpan(length).ToString();
+            return TypeNames.Get(hash).ToString();
         }
 
         /// <summary>
         /// Writes a string representation of this type layout to <paramref name="destination"/>.
         /// </summary>
-        public readonly uint ToString(USpan<char> destination)
+        public readonly uint ToString(Span<char> destination)
         {
-            USpan<char> fullName = TypeNames.Get(hash);
+            ReadOnlySpan<char> fullName = TypeNames.Get(hash);
             fullName.CopyTo(destination);
-            return fullName.Length;
+            return (uint)fullName.Length;
         }
 
         /// <summary>
@@ -196,7 +199,7 @@ namespace Types
         /// <summary>
         /// Creates an <see cref="object"/> instance of this type.
         /// </summary>
-        public readonly object CreateInstance(USpan<byte> bytes)
+        public readonly object CreateInstance(ReadOnlySpan<byte> bytes)
         {
             return TypeInstanceCreator.Do(this, bytes);
         }
@@ -207,7 +210,7 @@ namespace Types
         /// </summary>
         public readonly object CreateInstance()
         {
-            USpan<byte> bytes = stackalloc byte[size];
+            Span<byte> bytes = stackalloc byte[size];
             bytes.Clear();
             return CreateInstance(bytes);
         }
@@ -215,9 +218,9 @@ namespace Types
         /// <summary>
         /// Copies all variables in this type to the <paramref name="destination"/>.
         /// </summary>
-        public readonly byte CopyVariablesTo(USpan<Variable> destination)
+        public readonly byte CopyVariablesTo(Span<Variable> destination)
         {
-            for (uint i = 0; i < variableCount; i++)
+            for (int i = 0; i < variableCount; i++)
             {
                 destination[i] = variables[i];
             }
@@ -228,26 +231,10 @@ namespace Types
         /// <summary>
         /// Checks if this type contains a variable with the given <paramref name="name"/>.
         /// </summary>
-        public readonly bool ContainsVariable(ASCIIText256 name)
-        {
-            for (uint i = 0; i < variableCount; i++)
-            {
-                if (variables[i].Name == name)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Checks if this type contains a variable with the given <paramref name="name"/>.
-        /// </summary>
         public readonly bool ContainsVariable(string name)
         {
-            USpan<char> nameSpan = name.AsSpan();
-            for (uint i = 0; i < variableCount; i++)
+            ReadOnlySpan<char> nameSpan = name.AsSpan();
+            for (int i = 0; i < variableCount; i++)
             {
                 if (variables[i].Name.SequenceEqual(nameSpan))
                 {
@@ -261,10 +248,10 @@ namespace Types
         /// <summary>
         /// Checks if this type contains a variable with the given <paramref name="name"/>.
         /// </summary>
-        public readonly bool ContainsVariable(USpan<char> name)
+        public readonly bool ContainsVariable(ReadOnlySpan<char> name)
         {
-            USpan<char> nameSpan = name;
-            for (uint i = 0; i < variableCount; i++)
+            ReadOnlySpan<char> nameSpan = name;
+            for (int i = 0; i < variableCount; i++)
             {
                 if (variables[i].Name.SequenceEqual(nameSpan))
                 {
@@ -278,14 +265,14 @@ namespace Types
         /// <summary>
         /// Retrieves the variable in this type with the given <paramref name="name"/>.
         /// </summary>
-        public readonly Variable GetVariable(ASCIIText256 name)
+        public readonly Variable GetVariable(string name)
         {
             ThrowIfVariableIsMissing(name);
 
-            for (uint i = 0; i < variableCount; i++)
+            for (int i = 0; i < variableCount; i++)
             {
                 Variable variable = variables[i];
-                if (new ASCIIText256(variable.Name).Equals(name))
+                if (variable.Name.SequenceEqual(name))
                 {
                     return variable;
                 }
@@ -297,11 +284,11 @@ namespace Types
         /// <summary>
         /// Retrieves the variable in this type with the given <paramref name="name"/>.
         /// </summary>
-        public readonly Variable GetVariable(USpan<char> name)
+        public readonly Variable GetVariable(ReadOnlySpan<char> name)
         {
             ThrowIfVariableIsMissing(name);
 
-            for (uint i = 0; i < variableCount; i++)
+            for (int i = 0; i < variableCount; i++)
             {
                 Variable variable = variables[i];
                 if (variable.Name.SequenceEqual(name))
@@ -316,30 +303,11 @@ namespace Types
         /// <summary>
         /// Retrieves the index of the variable with the given <paramref name="name"/>.
         /// </summary>
-        public readonly uint IndexOf(ASCIIText256 name)
+        public readonly int IndexOf(string name)
         {
             ThrowIfVariableIsMissing(name);
 
-            for (uint i = 0; i < variableCount; i++)
-            {
-                Variable variable = variables[i];
-                if (new ASCIIText256(variable.Name).Equals(name))
-                {
-                    return i;
-                }
-            }
-
-            return uint.MaxValue;
-        }
-
-        /// <summary>
-        /// Retrieves the index of the variable with the given <paramref name="name"/>.
-        /// </summary>
-        public readonly uint IndexOf(USpan<char> name)
-        {
-            ThrowIfVariableIsMissing(name);
-
-            for (uint i = 0; i < variableCount; i++)
+            for (int i = 0; i < variableCount; i++)
             {
                 Variable variable = variables[i];
                 if (variable.Name.SequenceEqual(name))
@@ -348,19 +316,52 @@ namespace Types
                 }
             }
 
-            return uint.MaxValue;
+            return -1;
+        }
+
+        /// <summary>
+        /// Retrieves the index of the variable with the given <paramref name="name"/>.
+        /// </summary>
+        public readonly int IndexOf(ReadOnlySpan<char> name)
+        {
+            ThrowIfVariableIsMissing(name);
+
+            for (int i = 0; i < variableCount; i++)
+            {
+                Variable variable = variables[i];
+                if (variable.Name.SequenceEqual(name))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         /// <summary>
         /// Retrieves the full type name for the given <paramref name="type"/>.
         /// </summary>
-        public static ASCIIText256 GetFullName(Type type)
+        public static int GetFullName(Type type, Span<char> buffer)
         {
-            ASCIIText256 fullName = default;
-            AppendType(ref fullName, type);
-            return fullName;
+            int length = 0;
+            AppendType(buffer, ref length, type);
+            return length;
 
-            static void AppendType(ref ASCIIText256 text, Type type)
+            static void Insert(Span<char> buffer, char character, ref int length)
+            {
+                buffer.Slice(0, length).CopyTo(buffer.Slice(1));
+                buffer[0] = character;
+                length++;
+            }
+
+            static void InsertSpan(Span<char> buffer, ReadOnlySpan<char> text, ref int length)
+            {
+                buffer.Slice(0, length).CopyTo(buffer.Slice(text.Length));
+                text.CopyTo(buffer);
+                length += text.Length;
+            }
+
+            static void AppendType(Span<char> fullName, ref int length, Type type)
             {
                 //todo: handle case where the type name is System.Collections.Generic.List`1+Enumerator[etc, etc]
                 Type? current = type;
@@ -371,40 +372,40 @@ namespace Types
                     string name = current.Name;
                     if (genericTypes.Length > 0)
                     {
-                        text.Insert(0, '>');
+                        Insert(fullName, '>', ref length);
                         for (int i = genericTypes.Length - 1; i >= 0; i--)
                         {
-                            AppendType(ref text, genericTypes[i]);
+                            AppendType(fullName, ref length, genericTypes[i]);
                             if (i > 0)
                             {
-                                text.Insert(0, ", ");
+                                InsertSpan(fullName, ", ", ref length);
                             }
                         }
 
-                        text.Insert(0, '<');
+                        Insert(fullName, '<', ref length);
                         int index = name.IndexOf('`');
                         if (index != -1)
                         {
                             string trimmedName = name[..index];
-                            text.Insert(0, trimmedName);
+                            InsertSpan(fullName, trimmedName, ref length);
                         }
                     }
                     else
                     {
-                        text.Insert(0, name);
+                        InsertSpan(fullName, name, ref length);
                     }
 
                     current = current.DeclaringType;
                     if (current is not null)
                     {
-                        text.Insert(0, '.');
+                        Insert(fullName, '.', ref length);
                     }
                 }
 
                 if (currentNameSpace is not null)
                 {
-                    text.Insert(0, '.');
-                    text.Insert(0, currentNameSpace);
+                    Insert(fullName, '.', ref length);
+                    InsertSpan(fullName, currentNameSpace, ref length);
                 }
             }
         }
@@ -412,13 +413,15 @@ namespace Types
         /// <summary>
         /// Retrieves the full type name for the type <typeparamref name="T"/>.
         /// </summary>
-        public static ASCIIText256 GetFullName<T>()
+        public static string GetFullName<T>()
         {
-            return GetFullName(typeof(T));
+            Span<char> buffer = stackalloc char[512];
+            int length = GetFullName(typeof(T), buffer);
+            return buffer.Slice(0, length).ToString();
         }
 
         [Conditional("DEBUG")]
-        private readonly void ThrowIfVariableIsMissing(ASCIIText256 name)
+        private readonly void ThrowIfVariableIsMissing(ReadOnlySpan<char> name)
         {
             if (!ContainsVariable(name))
             {
@@ -427,7 +430,7 @@ namespace Types
         }
 
         [Conditional("DEBUG")]
-        private static void ThrowIfGreaterThanCapacity(uint length)
+        private static void ThrowIfGreaterThanCapacity(int length)
         {
             if (length > Capacity)
             {
@@ -456,41 +459,6 @@ namespace Types
             }
         }
 
-        readonly void ISerializable.Write(ByteWriter writer)
-        {
-            USpan<char> fullName = TypeNames.Get(hash);
-            writer.WriteValue((ushort)fullName.Length);
-            for (uint i = 0; i < fullName.Length; i++)
-            {
-                writer.WriteValue((byte)fullName[i]);
-            }
-
-            writer.WriteValue(size);
-            writer.WriteValue(variableCount);
-            for (uint i = 0; i < variableCount; i++)
-            {
-                writer.WriteObject(variables[i]);
-            }
-        }
-
-        void ISerializable.Read(ByteReader reader)
-        {
-            ushort fullNameLength = reader.ReadValue<ushort>();
-            USpan<char> fullName = stackalloc char[fullNameLength];
-            for (uint i = 0; i < fullNameLength; i++)
-            {
-                fullName[i] = (char)reader.ReadValue<byte>();
-            }
-
-            hash = TypeNames.Set(fullName);
-            size = reader.ReadValue<ushort>();
-            variableCount = reader.ReadValue<byte>();
-            for (uint i = 0; i < variableCount; i++)
-            {
-                variables[i] = reader.ReadObject<Variable>();
-            }
-        }
-
         /// <inheritdoc/>
         public static bool operator ==(TypeLayout left, TypeLayout right)
         {
@@ -506,7 +474,7 @@ namespace Types
         /// <summary>
         /// Describes a variable part of a <see cref="TypeLayout"/>.
         /// </summary>
-        public struct Variable : IEquatable<Variable>, ISerializable
+        public struct Variable : IEquatable<Variable>
         {
             private long nameHash;
             private long typeFullNameHash;
@@ -514,7 +482,7 @@ namespace Types
             /// <summary>
             /// Name of the variable.
             /// </summary>
-            public readonly USpan<char> Name => TypeNames.Get(nameHash);
+            public readonly ReadOnlySpan<char> Name => TypeNames.Get(nameHash);
 
             /// <summary>
             /// Type layout of the variable.
@@ -529,7 +497,7 @@ namespace Types
             /// <summary>
             /// Creates a new variable with the given <paramref name="name"/> and <paramref name="fullTypeName"/>.
             /// </summary>
-            public Variable(ASCIIText256 name, ASCIIText256 fullTypeName)
+            public Variable(string name, string fullTypeName)
             {
                 this.nameHash = TypeNames.Set(name);
                 typeFullNameHash = fullTypeName.GetLongHashCode();
@@ -538,16 +506,16 @@ namespace Types
             /// <summary>
             /// Creates a new variable with the given <paramref name="name"/> and <paramref name="fullTypeName"/>.
             /// </summary>
-            public Variable(string name, string fullTypeName)
+            public Variable(ReadOnlySpan<char> name, ReadOnlySpan<char> fullTypeName)
             {
                 this.nameHash = TypeNames.Set(name);
-                typeFullNameHash = ASCIIText256.GetLongHashCode(fullTypeName);
+                typeFullNameHash = fullTypeName.GetLongHashCode();
             }
 
             /// <summary>
             /// Creates a new variable with the given <paramref name="name"/> and <paramref name="typeHash"/>.
             /// </summary>
-            public Variable(ASCIIText256 name, int typeHash)
+            public Variable(string name, int typeHash)
             {
                 this.nameHash = TypeNames.Set(name);
                 this.typeFullNameHash = typeHash;
@@ -556,20 +524,20 @@ namespace Types
             /// <inheritdoc/>
             public readonly override string ToString()
             {
-                USpan<char> buffer = stackalloc char[256];
-                uint length = ToString(buffer);
-                return buffer.GetSpan(length).ToString();
+                Span<char> buffer = stackalloc char[256];
+                int length = ToString(buffer);
+                return buffer.Slice(0, length).ToString();
             }
 
             /// <summary>
             /// Builds a string representation of this variable and writes it to <paramref name="buffer"/>.
             /// </summary>
             /// <returns>Amount of characters written.</returns>
-            public readonly uint ToString(USpan<char> buffer)
+            public readonly int ToString(Span<char> buffer)
             {
                 TypeLayout typeLayout = Type;
                 typeLayout.Name.CopyTo(buffer);
-                uint length = typeLayout.Name.Length;
+                int length = typeLayout.Name.Length;
                 buffer[length++] = '=';
                 Name.CopyTo(buffer.Slice(length));
                 length += Name.Length;
@@ -594,8 +562,8 @@ namespace Types
                 unchecked
                 {
                     int hashCode = 17;
-                    USpan<char> name = Name;
-                    for (uint i = 0; i < name.Length; i++)
+                    ReadOnlySpan<char> name = Name;
+                    for (int i = 0; i < name.Length; i++)
                     {
                         hashCode = hashCode * 31 + name[i];
                     }
@@ -603,31 +571,6 @@ namespace Types
                     hashCode = hashCode * 31 + (int)typeFullNameHash;
                     return hashCode;
                 }
-            }
-
-            readonly void ISerializable.Write(ByteWriter writer)
-            {
-                USpan<char> name = Name;
-                writer.WriteValue((ushort)name.Length);
-                for (uint i = 0; i < name.Length; i++)
-                {
-                    writer.WriteValue((byte)name[i]);
-                }
-
-                writer.WriteValue(typeFullNameHash);
-            }
-
-            void ISerializable.Read(ByteReader reader)
-            {
-                ushort nameLength = reader.ReadValue<ushort>();
-                USpan<char> name = stackalloc char[nameLength];
-                for (uint i = 0; i < nameLength; i++)
-                {
-                    name[i] = (char)reader.ReadValue<byte>();
-                }
-
-                nameHash = TypeNames.Set(name);
-                typeFullNameHash = reader.ReadValue<long>();
             }
 
             /// <inheritdoc/>
@@ -650,7 +593,7 @@ namespace Types
             public Variable c;
             public Variable d;
 
-            public Variable this[uint index]
+            public Variable this[int index]
             {
                 readonly get
                 {
@@ -701,12 +644,12 @@ namespace Types
             public Variables4 c;
             public Variables4 d;
 
-            public Variable this[uint index]
+            public Variable this[int index]
             {
                 readonly get
                 {
-                    uint innerIndex = index & 3;
-                    uint outerIndex = index >> 2;
+                    int innerIndex = index & 3;
+                    int outerIndex = index >> 2;
                     return outerIndex switch
                     {
                         0 => a[innerIndex],
@@ -718,8 +661,8 @@ namespace Types
                 }
                 set
                 {
-                    uint innerIndex = index & 3;
-                    uint outerIndex = index >> 2;
+                    int innerIndex = index & 3;
+                    int outerIndex = index >> 2;
                     switch (outerIndex)
                     {
                         case 0:

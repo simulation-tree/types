@@ -4,9 +4,8 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
-using Unmanaged;
 
-namespace Types
+namespace Types.Generator
 {
     [Generator(LanguageNames.CSharp)]
     public class TypeBankGenerator : IIncrementalGenerator
@@ -88,7 +87,7 @@ namespace Types
             SourceBuilder source = new();
             source.AppendLine("using Types;");
             source.AppendLine("using Types.Functions;");
-            source.AppendLine("using Unmanaged;");
+            source.AppendLine("using System;");
             source.AppendLine();
 
             if (assemblyName is not null)
@@ -114,7 +113,7 @@ namespace Types
                 source.AppendLine("readonly void ITypeBank.Load(Register register)");
                 source.BeginGroup();
                 {
-                    source.AppendLine("USpan<TypeLayout.Variable> buffer = stackalloc TypeLayout.Variable[(int)TypeLayout.Capacity];");
+                    source.AppendLine("Span<TypeLayout.Variable> buffer = stackalloc TypeLayout.Variable[(int)TypeLayout.Capacity];");
                     foreach (ITypeSymbol type in types)
                     {
                         AppendRegister(source, type);
@@ -155,7 +154,7 @@ namespace Types
             source.Append(">(");
             if (count > 0)
             {
-                source.Append("buffer.GetSpan(");
+                source.Append("buffer.Slice(0, ");
                 source.Append(count);
                 source.Append(')');
             }

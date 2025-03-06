@@ -1,5 +1,4 @@
 ﻿using System;
-using Unmanaged;
 
 namespace Types.Functions
 {
@@ -18,7 +17,7 @@ namespace Types.Functions
         /// <summary>
         /// Registers a type with the given <paramref name="variables"/>.
         /// </summary>
-        public unsafe readonly void Invoke<T>(USpan<TypeLayout.Variable> variables) where T : unmanaged
+        public unsafe readonly void Invoke<T>(ReadOnlySpan<TypeLayout.Variable> variables) where T : unmanaged
         {
             TypeLayout type = new(TypeLayout.GetFullName<T>(), (ushort)sizeof(T), variables);
             Input input = new(type, RuntimeTypeTable.GetHandle<T>());
