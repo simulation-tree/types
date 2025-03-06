@@ -40,7 +40,7 @@ namespace Types
             Register(new(TypeLayout.GetFullName<bool>(), sizeof(bool)), RuntimeTypeTable.GetHandle<bool>());
             Register(new(TypeLayout.GetFullName<nint>(), (ushort)sizeof(nint)), RuntimeTypeTable.GetHandle<nint>());
             Register(new(TypeLayout.GetFullName<nuint>(), (ushort)sizeof(nuint)), RuntimeTypeTable.GetHandle<nuint>());
-            Register(new(TypeLayout.GetFullName<FixedString>(), (ushort)sizeof(FixedString)), RuntimeTypeTable.GetHandle<FixedString>());
+            Register(new(TypeLayout.GetFullName<ASCIIText256>(), (ushort)sizeof(ASCIIText256)), RuntimeTypeTable.GetHandle<ASCIIText256>());
             Register(new(TypeLayout.GetFullName<Half>(), (ushort)sizeof(Half)), RuntimeTypeTable.GetHandle<Half>());
 
             USpan<TypeLayout.Variable> buffer = stackalloc TypeLayout.Variable[16];
@@ -193,7 +193,7 @@ namespace Types
         /// <summary>
         /// Checks if a type with <paramref name="fullTypeName"/> is registered.
         /// </summary>
-        public static bool IsRegistered(FixedString fullTypeName)
+        public static bool IsRegistered(ASCIIText256 fullTypeName)
         {
             long hash = fullTypeName.GetLongHashCode();
             foreach (TypeLayout type in types)

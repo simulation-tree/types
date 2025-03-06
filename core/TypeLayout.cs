@@ -122,7 +122,7 @@ namespace Types
         /// <summary>
         /// Creates a new type layout without any variables set.
         /// </summary>
-        public TypeLayout(FixedString fullName, ushort size)
+        public TypeLayout(ASCIIText256 fullName, ushort size)
         {
             this.size = size;
             variableCount = 0;
@@ -151,7 +151,7 @@ namespace Types
         /// <summary>
         /// Creates a new type layout.
         /// </summary>
-        public TypeLayout(FixedString fullName, ushort size, USpan<Variable> variables)
+        public TypeLayout(ASCIIText256 fullName, ushort size, USpan<Variable> variables)
         {
             ThrowIfGreaterThanCapacity(variables.Length);
 
@@ -228,7 +228,7 @@ namespace Types
         /// <summary>
         /// Checks if this type contains a variable with the given <paramref name="name"/>.
         /// </summary>
-        public readonly bool ContainsVariable(FixedString name)
+        public readonly bool ContainsVariable(ASCIIText256 name)
         {
             for (uint i = 0; i < variableCount; i++)
             {
@@ -278,14 +278,14 @@ namespace Types
         /// <summary>
         /// Retrieves the variable in this type with the given <paramref name="name"/>.
         /// </summary>
-        public readonly Variable GetVariable(FixedString name)
+        public readonly Variable GetVariable(ASCIIText256 name)
         {
             ThrowIfVariableIsMissing(name);
 
             for (uint i = 0; i < variableCount; i++)
             {
                 Variable variable = variables[i];
-                if (new FixedString(variable.Name).Equals(name))
+                if (new ASCIIText256(variable.Name).Equals(name))
                 {
                     return variable;
                 }
@@ -316,14 +316,14 @@ namespace Types
         /// <summary>
         /// Retrieves the index of the variable with the given <paramref name="name"/>.
         /// </summary>
-        public readonly uint IndexOf(FixedString name)
+        public readonly uint IndexOf(ASCIIText256 name)
         {
             ThrowIfVariableIsMissing(name);
 
             for (uint i = 0; i < variableCount; i++)
             {
                 Variable variable = variables[i];
-                if (new FixedString(variable.Name).Equals(name))
+                if (new ASCIIText256(variable.Name).Equals(name))
                 {
                     return i;
                 }
@@ -354,13 +354,13 @@ namespace Types
         /// <summary>
         /// Retrieves the full type name for the given <paramref name="type"/>.
         /// </summary>
-        public static FixedString GetFullName(Type type)
+        public static ASCIIText256 GetFullName(Type type)
         {
-            FixedString fullName = default;
+            ASCIIText256 fullName = default;
             AppendType(ref fullName, type);
             return fullName;
 
-            static void AppendType(ref FixedString text, Type type)
+            static void AppendType(ref ASCIIText256 text, Type type)
             {
                 //todo: handle case where the type name is System.Collections.Generic.List`1+Enumerator[etc, etc]
                 Type? current = type;
@@ -412,13 +412,13 @@ namespace Types
         /// <summary>
         /// Retrieves the full type name for the type <typeparamref name="T"/>.
         /// </summary>
-        public static FixedString GetFullName<T>()
+        public static ASCIIText256 GetFullName<T>()
         {
             return GetFullName(typeof(T));
         }
 
         [Conditional("DEBUG")]
-        private readonly void ThrowIfVariableIsMissing(FixedString name)
+        private readonly void ThrowIfVariableIsMissing(ASCIIText256 name)
         {
             if (!ContainsVariable(name))
             {
@@ -529,7 +529,7 @@ namespace Types
             /// <summary>
             /// Creates a new variable with the given <paramref name="name"/> and <paramref name="fullTypeName"/>.
             /// </summary>
-            public Variable(FixedString name, FixedString fullTypeName)
+            public Variable(ASCIIText256 name, ASCIIText256 fullTypeName)
             {
                 this.nameHash = TypeNames.Set(name);
                 typeFullNameHash = fullTypeName.GetLongHashCode();
@@ -541,13 +541,13 @@ namespace Types
             public Variable(string name, string fullTypeName)
             {
                 this.nameHash = TypeNames.Set(name);
-                typeFullNameHash = FixedString.GetLongHashCode(fullTypeName);
+                typeFullNameHash = ASCIIText256.GetLongHashCode(fullTypeName);
             }
 
             /// <summary>
             /// Creates a new variable with the given <paramref name="name"/> and <paramref name="typeHash"/>.
             /// </summary>
-            public Variable(FixedString name, int typeHash)
+            public Variable(ASCIIText256 name, int typeHash)
             {
                 this.nameHash = TypeNames.Set(name);
                 this.typeFullNameHash = typeHash;

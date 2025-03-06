@@ -102,10 +102,10 @@ namespace Types.Tests
         [Test]
         public void GetFullNameOfType()
         {
-            FixedString a = TypeLayout.GetFullName<Dictionary<Cherry, Stress>>();
+            ASCIIText256 a = TypeLayout.GetFullName<Dictionary<Cherry, Stress>>();
             Assert.That(a.ToString(), Is.EqualTo("Types.Tests.Dictionary<Types.Tests.Cherry, Types.Tests.Stress>"));
 
-            FixedString b = TypeLayout.GetFullName<Dictionary<Cherry, Dictionary<Cherry, Stress>>>();
+            ASCIIText256 b = TypeLayout.GetFullName<Dictionary<Cherry, Dictionary<Cherry, Stress>>>();
             Assert.That(b.ToString(), Is.EqualTo("Types.Tests.Dictionary<Types.Tests.Cherry, Types.Tests.Dictionary<Types.Tests.Cherry, Types.Tests.Stress>>"));
         }
 

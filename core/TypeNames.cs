@@ -16,13 +16,13 @@ namespace Types
 
         internal static long Set(USpan<char> value)
         {
-            long hash = FixedString.GetLongHashCode(value);
+            long hash = ASCIIText256.GetLongHashCode(value);
             hashToValue[hash] = value.ToString();
             return hash;
         }
 
         [SkipLocalsInit]
-        internal static long Set(FixedString value)
+        internal static long Set(ASCIIText256 value)
         {
             USpan<char> span = stackalloc char[value.Length];
             value.CopyTo(span);
