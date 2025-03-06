@@ -27,13 +27,7 @@ jobs:
         uses: actions/checkout@v4.1.2
         with:
           path: ${{ github.event.repository.name }}
-            
-      - name: Checkout `unmanaged`
-        uses: actions/checkout@v4.1.2
-        with:
-          repository: game-simulations/unmanaged
-          token: ${{ secrets.PAT }}
-          path: unmanaged
+      
             
       - name: Setup
         uses: actions/setup-dotnet@v4
