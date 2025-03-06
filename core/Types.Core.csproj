@@ -8,14 +8,14 @@
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
         <Title>Types Core</Title>
         <Authors>popcron</Authors>
-        <Company>game-simulation</Company>
+        <Company>game-simulations</Company>
         <RepositoryUrl>https://github.com/game-simulations/types</RepositoryUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <IsAotCompatible>True</IsAotCompatible>
         <IsTrimmable>True</IsTrimmable>
         <NoStandardLib>true</NoStandardLib>
         <RootNamespace>Types</RootNamespace>
-        <PackageId />
+        <PackageId/>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
