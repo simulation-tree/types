@@ -8,8 +8,8 @@
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
         <Title>Types Core</Title>
         <Authors>popcron</Authors>
-        <Company>game-simulations</Company>
-        <RepositoryUrl>https://github.com/game-simulations/types</RepositoryUrl>
+        <Company>simulation-tree</Company>
+        <RepositoryUrl>https://github.com/simulation-tree/types</RepositoryUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <IsAotCompatible>True</IsAotCompatible>
         <IsTrimmable>True</IsTrimmable>

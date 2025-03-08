@@ -12,10 +12,10 @@
         <IsRoslynComponent>true</IsRoslynComponent>
         <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
         <Title>Types Generator</Title>
-        <Company>game-simulations</Company>
+        <Company>simulation-tree</Company>
         <Authors>popcron</Authors>
         <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-        <RepositoryUrl>https://github.com/game-simulations/types</RepositoryUrl>
+        <RepositoryUrl>https://github.com/simulation-tree/types</RepositoryUrl>
         <PackageId/>
     </PropertyGroup>
 

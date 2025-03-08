@@ -12,9 +12,9 @@
         <NoStandardLib>true</NoStandardLib>
         <Title>Types</Title>
         <Authors>popcron</Authors>
-        <Company>game-simulations</Company>
+        <Company>simulation-tree</Company>
         <Description>Assists programming with value types</Description>
-        <RepositoryUrl>https://github.com/game-simulations/types</RepositoryUrl>
+        <RepositoryUrl>https://github.com/simulation-tree/types</RepositoryUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <IsAotCompatible>True</IsAotCompatible>
         <IsTrimmable>True</IsTrimmable>

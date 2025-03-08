@@ -1,6 +1,6 @@
 # Types
 
-[![Test](https://github.com/game-simulations/types/actions/workflows/test.yml/badge.svg)](https://github.com/game-simulations/types/actions/workflows/test.yml)
+[![Test](https://github.com/simulation-tree/types/actions/workflows/test.yml/badge.svg)](https://github.com/simulation-tree/types/actions/workflows/test.yml)
 
 Assists programming with value types in C#.
 
