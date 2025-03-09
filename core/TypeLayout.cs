@@ -411,6 +411,16 @@ namespace Types
         }
 
         /// <summary>
+        /// Retrieves the full type name for the given <paramref name="type"/>.
+        /// </summary>
+        public static string GetFullName(Type type)
+        {
+            Span<char> buffer = stackalloc char[512];
+            int length = GetFullName(type, buffer);
+            return buffer.Slice(0, length).ToString();
+        }
+
+        /// <summary>
         /// Retrieves the full type name for the type <typeparamref name="T"/>.
         /// </summary>
         public static string GetFullName<T>()
@@ -425,7 +435,7 @@ namespace Types
         {
             if (!ContainsVariable(name))
             {
-                throw new InvalidOperationException($"Variable `{name}` not found in type {FullName}");
+                throw new InvalidOperationException($"Variable `{name.ToString()}` not found in type {FullName.ToString()}");
             }
         }
 

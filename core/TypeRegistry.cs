@@ -39,7 +39,9 @@ namespace Types
             Register(new(TypeLayout.GetFullName<bool>(), sizeof(bool)), RuntimeTypeTable.GetHandle<bool>());
             Register(new(TypeLayout.GetFullName<nint>(), (ushort)sizeof(nint)), RuntimeTypeTable.GetHandle<nint>());
             Register(new(TypeLayout.GetFullName<nuint>(), (ushort)sizeof(nuint)), RuntimeTypeTable.GetHandle<nuint>());
+#if NET
             Register(new(TypeLayout.GetFullName<Half>(), (ushort)sizeof(Half)), RuntimeTypeTable.GetHandle<Half>());
+#endif
 
             Span<TypeLayout.Variable> buffer = stackalloc TypeLayout.Variable[16];
 
