@@ -180,11 +180,11 @@ namespace Types
         /// <summary>
         /// Writes a string representation of this type layout to <paramref name="destination"/>.
         /// </summary>
-        public readonly uint ToString(Span<char> destination)
+        public readonly int ToString(Span<char> destination)
         {
             ReadOnlySpan<char> fullName = TypeNames.Get(hash);
             fullName.CopyTo(destination);
-            return (uint)fullName.Length;
+            return fullName.Length;
         }
 
         /// <summary>
