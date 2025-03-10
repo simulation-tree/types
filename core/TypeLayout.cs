@@ -65,7 +65,7 @@ namespace Types
         /// <summary>
         /// Size of the type in bytes.
         /// </summary>
-        public readonly ushort Size => size;
+        public readonly int Size => size;
 
         /// <summary>
         /// Amount of <see cref="Variable"/>s the type has.
@@ -502,7 +502,7 @@ namespace Types
             /// <summary>
             /// Size of the variable in bytes.
             /// </summary>
-            public readonly ushort Size => Type.Size;
+            public readonly int Size => Type.Size;
 
             /// <summary>
             /// Creates a new variable with the given <paramref name="name"/> and <paramref name="fullTypeName"/>.
