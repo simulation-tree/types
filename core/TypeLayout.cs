@@ -188,7 +188,7 @@ namespace Types
         }
 
         /// <summary>
-        /// Checks if this type layout matches <typeparamref name="T"/>.
+        /// Checks if this type metadata represents type <typeparamref name="T"/>.
         /// </summary>
         public readonly bool Is<T>() where T : unmanaged
         {
