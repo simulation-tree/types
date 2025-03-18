@@ -8,17 +8,25 @@ namespace Types
     /// Describes metadata for a type.
     /// </summary>
     [SkipLocalsInit]
-    public struct TypeLayout : IEquatable<TypeLayout>
+    public readonly struct TypeLayout : IEquatable<TypeLayout>
     {
         /// <summary>
         /// Maximum amount of variables per type.
         /// </summary>
-        public const byte Capacity = 16;
+        public const byte Capacity = 32;
 
-        private long hash;
-        private ushort size;
-        private byte variableCount;
-        private Variables16 variables;
+        /// <summary>
+        /// Size of the type in bytes.
+        /// </summary>
+        public readonly ushort size;
+        
+        /// <summary>
+        /// Amount of <see cref="Variable"/>s the type has.
+        /// </summary>
+        public readonly byte variableCount;
+        
+        private readonly long hash;
+        private readonly VariablesCollection variables;
 
         /// <summary>
         /// Hash value unique to this type.
@@ -61,16 +69,6 @@ namespace Types
         /// Full name of the type including the namespace.
         /// </summary>
         public readonly ReadOnlySpan<char> FullName => TypeNames.Get(hash);
-
-        /// <summary>
-        /// Size of the type in bytes.
-        /// </summary>
-        public readonly int Size => size;
-
-        /// <summary>
-        /// Amount of <see cref="Variable"/>s the type has.
-        /// </summary>
-        public readonly byte Count => variableCount;
 
         /// <summary>
         /// Name of the type.
@@ -484,10 +482,10 @@ namespace Types
         /// <summary>
         /// Describes a variable part of a <see cref="TypeLayout"/>.
         /// </summary>
-        public struct Variable : IEquatable<Variable>
+        public readonly struct Variable : IEquatable<Variable>
         {
-            private long nameHash;
-            private long typeFullNameHash;
+            internal readonly long nameHash;
+            internal readonly long typeHash;
 
             /// <summary>
             /// Name of the variable.
@@ -497,12 +495,12 @@ namespace Types
             /// <summary>
             /// Type layout of the variable.
             /// </summary>
-            public readonly TypeLayout Type => TypeRegistry.Get(typeFullNameHash);
+            public readonly TypeLayout Type => TypeRegistry.Get(typeHash);
 
             /// <summary>
             /// Size of the variable in bytes.
             /// </summary>
-            public readonly int Size => Type.Size;
+            public readonly ushort Size => Type.size;
 
             /// <summary>
             /// Creates a new variable with the given <paramref name="name"/> and <paramref name="fullTypeName"/>.
@@ -510,7 +508,13 @@ namespace Types
             public Variable(string name, string fullTypeName)
             {
                 this.nameHash = TypeNames.Set(name);
-                typeFullNameHash = fullTypeName.GetLongHashCode();
+                typeHash = fullTypeName.GetLongHashCode();
+            }
+
+            internal Variable(long typeHash, long nameHash)
+            {
+                this.typeHash = typeHash;
+                this.nameHash = nameHash;
             }
 
             /// <summary>
@@ -519,7 +523,7 @@ namespace Types
             public Variable(ReadOnlySpan<char> name, ReadOnlySpan<char> fullTypeName)
             {
                 this.nameHash = TypeNames.Set(name);
-                typeFullNameHash = fullTypeName.GetLongHashCode();
+                typeHash = fullTypeName.GetLongHashCode();
             }
 
             /// <summary>
@@ -528,7 +532,7 @@ namespace Types
             public Variable(string name, int typeHash)
             {
                 this.nameHash = TypeNames.Set(name);
-                this.typeFullNameHash = typeHash;
+                this.typeHash = typeHash;
             }
 
             /// <inheritdoc/>
@@ -563,7 +567,7 @@ namespace Types
             /// <inheritdoc/>
             public readonly bool Equals(Variable other)
             {
-                return nameHash == other.nameHash && typeFullNameHash == other.typeFullNameHash;
+                return nameHash == other.nameHash && typeHash == other.typeHash;
             }
 
             /// <inheritdoc/>
@@ -578,7 +582,7 @@ namespace Types
                         hashCode = hashCode * 31 + name[i];
                     }
 
-                    hashCode = hashCode * 31 + (int)typeFullNameHash;
+                    hashCode = hashCode * 31 + (int)typeHash;
                     return hashCode;
                 }
             }
@@ -596,109 +600,23 @@ namespace Types
             }
         }
 
-        internal struct Variables4
+        internal unsafe struct VariablesCollection
         {
-            public Variable a;
-            public Variable b;
-            public Variable c;
-            public Variable d;
+            private fixed long variables[TypeLayout.Capacity * 2];
 
             public Variable this[int index]
             {
                 readonly get
                 {
-                    return index switch
-                    {
-                        0 => a,
-                        1 => b,
-                        2 => c,
-                        3 => d,
-                        _ => throw new IndexOutOfRangeException()
-                    };
+                    long typeHash = variables[index * 2 + 0];
+                    long nameHash = variables[index * 2 + 1];
+                    return new(typeHash, nameHash);
                 }
                 set
                 {
-                    switch (index)
-                    {
-                        case 0:
-                            a = value;
-                            break;
-                        case 1:
-                            b = value;
-                            break;
-                        case 2:
-                            c = value;
-                            break;
-                        case 3:
-                            d = value;
-                            break;
-                        default:
-                            throw new IndexOutOfRangeException();
-                    }
+                    variables[index * 2 + 0] = value.typeHash;
+                    variables[index * 2 + 1] = value.nameHash;
                 }
-            }
-
-            private Variables4(Variable a, Variable b, Variable c, Variable d)
-            {
-                this.a = a;
-                this.b = b;
-                this.c = c;
-                this.d = d;
-            }
-        }
-
-        internal struct Variables16
-        {
-            public Variables4 a;
-            public Variables4 b;
-            public Variables4 c;
-            public Variables4 d;
-
-            public Variable this[int index]
-            {
-                readonly get
-                {
-                    int innerIndex = index & 3;
-                    int outerIndex = index >> 2;
-                    return outerIndex switch
-                    {
-                        0 => a[innerIndex],
-                        1 => b[innerIndex],
-                        2 => c[innerIndex],
-                        3 => d[innerIndex],
-                        _ => throw new IndexOutOfRangeException()
-                    };
-                }
-                set
-                {
-                    int innerIndex = index & 3;
-                    int outerIndex = index >> 2;
-                    switch (outerIndex)
-                    {
-                        case 0:
-                            a[innerIndex] = value;
-                            break;
-                        case 1:
-                            b[innerIndex] = value;
-                            break;
-                        case 2:
-                            c[innerIndex] = value;
-                            break;
-                        case 3:
-                            d[innerIndex] = value;
-                            break;
-                        default:
-                            throw new IndexOutOfRangeException();
-                    }
-                }
-            }
-
-            private Variables16(Variables4 a, Variables4 b, Variables4 c, Variables4 d)
-            {
-                this.a = a;
-                this.b = b;
-                this.c = c;
-                this.d = d;
             }
         }
     }

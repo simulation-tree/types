@@ -1,9 +1,6 @@
 {
     "name": "Types",
     "rootNamespace": "Types",
-    "references": [
-        "Unmanaged"
-    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": true,

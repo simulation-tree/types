@@ -11,8 +11,8 @@ namespace Types.Tests
             TypeLayout type = TypeRegistry.Get<Stress>();
             Assert.That(type.SystemType, Is.EqualTo(typeof(Stress)));
             Assert.That(type.Name.ToString(), Is.EqualTo("Stress"));
-            Assert.That(type.Size, Is.EqualTo((uint)sizeof(Stress)));
-            Assert.That(type.Count, Is.EqualTo(5));
+            Assert.That(type.size, Is.EqualTo((uint)sizeof(Stress)));
+            Assert.That(type.variableCount, Is.EqualTo(5));
             Assert.That(type[0].Size, Is.EqualTo(1));
             Assert.That(type[0].Name.ToString(), Is.EqualTo("first"));
             Assert.That(type[1].Size, Is.EqualTo(2));
@@ -46,8 +46,8 @@ namespace Types.Tests
             Assert.That(TypeRegistry.IsRegistered(typeof(sbyte).FullName ?? typeof(sbyte).Name), Is.True);
             Assert.That(TypeRegistry.IsRegistered(typeof(short).FullName ?? typeof(short).Name), Is.True);
 
-            Assert.That(TypeRegistry.Get<Vector3>().Size, Is.EqualTo((uint)sizeof(Vector3)));
-            Assert.That(TypeRegistry.Get<Vector3>().Count, Is.EqualTo(3));
+            Assert.That(TypeRegistry.Get<Vector3>().size, Is.EqualTo((uint)sizeof(Vector3)));
+            Assert.That(TypeRegistry.Get<Vector3>().variableCount, Is.EqualTo(3));
         }
 
         [Test]
@@ -57,8 +57,8 @@ namespace Types.Tests
             Assert.That(TypeRegistry.IsRegistered<byte>(), Is.True);
             TypeLayout boolean = TypeRegistry.Get<bool>();
             TypeLayout byteType = TypeRegistry.Get<byte>();
-            Assert.That(boolean.Size, Is.EqualTo(1));
-            Assert.That(byteType.Size, Is.EqualTo(1));
+            Assert.That(boolean.size, Is.EqualTo(1));
+            Assert.That(byteType.size, Is.EqualTo(1));
             Assert.That(boolean.GetHashCode(), Is.EqualTo(TypeRegistry.Get<bool>().GetHashCode()));
             Assert.That(byteType.GetHashCode(), Is.EqualTo(TypeRegistry.Get<byte>().GetHashCode()));
         }
