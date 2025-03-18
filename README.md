@@ -25,8 +25,8 @@ namespace Example
 
 TypeLayout layout = TypeRegistry.Get<Apple>();
 Assert.That(layout.FullName.ToString(), Is.EqualTo("Example.Apple"));
-Assert.That(layout.Size, Is.EqualTo(7));
-Assert.That(layout.Count, Is.EqualTo(3));
+Assert.That(layout.size, Is.EqualTo(7));
+Assert.That(layout.variableCount, Is.EqualTo(3));
 Assert.That(layout[0].Name.ToString(), Is.EqualTo("first"));
 Assert.That(layout[1].Name.ToString(), Is.EqualTo("second"));
 Assert.That(layout[2].Name.ToString(), Is.EqualTo("item"));
