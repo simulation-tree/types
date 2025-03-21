@@ -174,10 +174,19 @@ namespace Types.Generator
         private static void AppendRegisterInterface(SourceBuilder source, ITypeSymbol interfaceType)
         {
             string fullName = interfaceType.GetFullTypeName();
-            source.Append("register.RegisterInterface<");
+            source.Append("if (!TypeRegistry.IsInterfaceRegistered<");
             source.Append(fullName);
-            source.Append(">();");
+            source.Append(">())");
             source.AppendLine();
+
+            source.BeginGroup();
+            {
+                source.Append("register.RegisterInterface<");
+                source.Append(fullName);
+                source.Append(">();");
+                source.AppendLine();
+            }
+            source.EndGroup();
         }
 
         private static void AppendRegisterType(SourceBuilder source, ITypeSymbol type)
@@ -188,46 +197,55 @@ namespace Types.Generator
                 return;
             }
 
-            byte variableCount = 0;
-            byte interfaceCount = 0;
-            HashSet<string> fieldNames = new();
-            foreach (IFieldSymbol field in type.GetFields())
-            {
-                if (fieldNames.Add(field.Name))
-                {
-                    AppendVariable(source, field, ref variableCount);
-                }
-            }
-
-            foreach (INamedTypeSymbol interfaceType in type.AllInterfaces)
-            {
-                if (interfaceType.IsGenericType)
-                {
-                    continue;
-                }
-
-                AppendInterface(source, interfaceType, ref interfaceCount);
-            }
-
-            source.Append("register.RegisterType<");
+            source.Append("if (!TypeRegistry.IsTypeRegistered<");
             source.Append(fullName);
-            source.Append(">(");
-            if (variableCount > 0 || interfaceCount > 0)
-            {
-                source.Append(FieldBufferVariableName);
-                source.Append(',');
-                source.Append(' ');
-                source.Append(variableCount);
-                source.Append(',');
-                source.Append(' ');
-                source.Append(InterfaceBufferVariableName);
-                source.Append(',');
-                source.Append(' ');
-                source.Append(interfaceCount);
-            }
-
-            source.Append(");");
+            source.Append(">())");
             source.AppendLine();
+
+            source.BeginGroup();
+            {
+                byte variableCount = 0;
+                byte interfaceCount = 0;
+                HashSet<string> fieldNames = new();
+                foreach (IFieldSymbol field in type.GetFields())
+                {
+                    if (fieldNames.Add(field.Name))
+                    {
+                        AppendVariable(source, field, ref variableCount);
+                    }
+                }
+
+                foreach (INamedTypeSymbol interfaceType in type.AllInterfaces)
+                {
+                    if (interfaceType.IsGenericType)
+                    {
+                        continue;
+                    }
+
+                    AppendInterface(source, interfaceType, ref interfaceCount);
+                }
+
+                source.Append("register.RegisterType<");
+                source.Append(fullName);
+                source.Append(">(");
+                if (variableCount > 0 || interfaceCount > 0)
+                {
+                    source.Append(FieldBufferVariableName);
+                    source.Append(',');
+                    source.Append(' ');
+                    source.Append(variableCount);
+                    source.Append(',');
+                    source.Append(' ');
+                    source.Append(InterfaceBufferVariableName);
+                    source.Append(',');
+                    source.Append(' ');
+                    source.Append(interfaceCount);
+                }
+
+                source.Append(");");
+                source.AppendLine();
+            }
+            source.EndGroup();
 
             static void AppendVariable(SourceBuilder source, IFieldSymbol field, ref byte count)
             {
