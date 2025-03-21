@@ -40,6 +40,11 @@ namespace Types
         }
 
         /// <summary>
+        /// Retrieves the raw handle for this interface.
+        /// </summary>
+        public readonly RuntimeTypeHandle TypeHandle => TypeRegistry.GetRuntimeInterfaceHandle(hash);
+
+        /// <summary>
         /// Initializes an existing interface.
         /// </summary>
         public Interface(string fullTypeName)

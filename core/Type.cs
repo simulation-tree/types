@@ -194,6 +194,41 @@ namespace Types
         }
 
         /// <summary>
+        /// Checks if the type implements the given <typeparamref name="T"/>
+        /// <see langword="interface"/>.
+        /// </summary>
+        public readonly bool Implements<T>()
+        {
+            RuntimeTypeHandle interfaceHandle = RuntimeTypeTable.GetHandle<T>();
+            for (int i = 0; i < interfaceCount; i++)
+            {
+                if (interfaces[i].TypeHandle.Equals(interfaceHandle))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Checks if the type implements the given <paramref name="interfaceValue"/>.
+        /// </summary>
+        public readonly bool Implements(Interface interfaceValue)
+        {
+            long hash = interfaceValue.Hash;
+            for (int i = 0; i < interfaceCount; i++)
+            {
+                if (interfaces[i].Hash == hash)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Creates an <see cref="object"/> instance of this type.
         /// </summary>
         public readonly object CreateInstance(ReadOnlySpan<byte> bytes)

@@ -17,8 +17,8 @@ namespace Types
         internal static readonly Dictionary<RuntimeTypeHandle, Interface> handleToInterface = new();
         private static readonly Dictionary<long, RuntimeTypeHandle> typeToHandle = new();
         private static readonly Dictionary<long, RuntimeTypeHandle> interfaceToHandle = new();
-        private static readonly Dictionary<long, Type> hashToValueType = new();
-        private static readonly Dictionary<long, Interface> hashToInterfaceType = new();
+        private static readonly Dictionary<long, Type> hashToType = new();
+        private static readonly Dictionary<long, Interface> hashToInterface = new();
 
         /// <summary>
         /// All registered types.
@@ -106,7 +106,7 @@ namespace Types
             types.Add(type);
             handleToType.Add(handle, type);
             typeToHandle.Add(type.Hash, handle);
-            hashToValueType.Add(type.Hash, type);
+            hashToType.Add(type.Hash, type);
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace Types
             interfaces.Add(interfaceValue);
             handleToInterface.Add(handle, interfaceValue);
             interfaceToHandle.Add(interfaceValue.Hash, handle);
-            hashToInterfaceType.Add(interfaceValue.Hash, interfaceValue);
+            hashToInterface.Add(interfaceValue.Hash, interfaceValue);
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace Types
             types.Add(type);
             handleToType.Add(handle, type);
             typeToHandle.Add(type.Hash, handle);
-            hashToValueType.Add(type.Hash, type);
+            hashToType.Add(type.Hash, type);
             return true;
         }
 
@@ -205,7 +205,7 @@ namespace Types
         {
             ThrowIfTypeNotRegistered(typeHash);
 
-            return hashToValueType[typeHash];
+            return hashToType[typeHash];
         }
 
         /// <summary>
@@ -215,7 +215,7 @@ namespace Types
         {
             ThrowIfTypeNotRegistered(typeHash);
 
-            return hashToInterfaceType[typeHash];
+            return hashToInterface[typeHash];
         }
 
         /// <summary>
@@ -223,7 +223,7 @@ namespace Types
         /// </summary>
         public static bool TryGetType(long typeHash, out Type type)
         {
-            return hashToValueType.TryGetValue(typeHash, out type);
+            return hashToType.TryGetValue(typeHash, out type);
         }
 
         /// <summary>
@@ -244,6 +244,16 @@ namespace Types
             ThrowIfTypeNotRegistered(typeHash);
 
             return typeToHandle[typeHash];
+        }
+
+        /// <summary>
+        /// Retrieves the raw handle for the <paramref name="typeHash"/>.
+        /// </summary>
+        public static RuntimeTypeHandle GetRuntimeInterfaceHandle(long typeHash)
+        {
+            ThrowIfInterfaceNotRegistered(typeHash);
+
+            return interfaceToHandle[typeHash];
         }
 
         /// <summary>
@@ -408,9 +418,19 @@ namespace Types
         [Conditional("DEBUG")]
         private static void ThrowIfTypeNotRegistered(long hash)
         {
-            if (!hashToValueType.ContainsKey(hash))
+            if (!hashToType.ContainsKey(hash))
             {
                 throw new InvalidOperationException($"Type with hash `{hash}` is not registered");
+            }
+        }
+
+
+        [Conditional("DEBUG")]
+        private static void ThrowIfInterfaceNotRegistered(long hash)
+        {
+            if (!hashToInterface.ContainsKey(hash))
+            {
+                throw new InvalidOperationException($"Interface with hash `{hash}` is not registered");
             }
         }
 
