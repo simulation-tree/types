@@ -1,5 +1,4 @@
-﻿using Microsoft.VisualStudio.TestPlatform.PlatformAbstractions;
-using System;
+﻿using System;
 using System.Numerics;
 
 namespace Types.Tests
@@ -109,10 +108,10 @@ namespace Types.Tests
         [Test]
         public void GetOrRegister()
         {
-            Assert.That(TypeRegistry.IsRegistered<PlatformOperatingSystem>(), Is.False);
-            Type type = TypeRegistry.GetOrRegister<PlatformOperatingSystem>();
-            Assert.That(TypeRegistry.IsRegistered<PlatformOperatingSystem>(), Is.True);
-            Assert.That(type.Is<PlatformOperatingSystem>(), Is.True);
+            Assert.That(TypeRegistry.IsRegistered<DayOfWeek>(), Is.False);
+            Type type = TypeRegistry.GetOrRegister<DayOfWeek>();
+            Assert.That(TypeRegistry.IsRegistered<DayOfWeek>(), Is.True);
+            Assert.That(type.Is<DayOfWeek>(), Is.True);
         }
     }
 }
