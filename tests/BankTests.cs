@@ -2,7 +2,7 @@
 
 namespace Types.Tests
 {
-    public unsafe class BankTests : TypeTests
+    public unsafe class BankTests : Tests
     {
         [Test]
         public void LoadCustomBank()
