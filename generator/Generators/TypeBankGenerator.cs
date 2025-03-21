@@ -113,7 +113,8 @@ namespace Types.Generator
                 source.AppendLine("readonly void ITypeBank.Load(Register register)");
                 source.BeginGroup();
                 {
-                    source.AppendLine("Span<TypeLayout.Variable> buffer = stackalloc TypeLayout.Variable[(int)TypeLayout.Capacity];");
+                    source.AppendLine("VariableBuffer variableBuffer = new();");
+                    source.AppendLine("TypeBuffer interfaceBuffer = new();");
                     foreach (ITypeSymbol type in types)
                     {
                         AppendRegister(source, type);
@@ -139,24 +140,26 @@ namespace Types.Generator
                 return;
             }
 
-            byte count = 0;
+            byte variableCount = 0;
+            byte interfaceCount = 0;
             HashSet<string> fieldNames = new();
             foreach (IFieldSymbol field in type.GetFields())
             {
                 if (fieldNames.Add(field.Name))
                 {
-                    AppendVariable(source, field, ref count);
+                    AppendVariable(source, field, ref variableCount);
                 }
             }
 
             source.Append("register.Invoke<");
             source.Append(fullName);
             source.Append(">(");
-            if (count > 0)
+            if (variableCount > 0)
             {
-                source.Append("buffer.Slice(0, ");
-                source.Append(count);
-                source.Append(')');
+                source.Append("variableBuffer, ");
+                source.Append(variableCount);
+                source.Append(", interfaceBuffer, ");
+                source.Append(interfaceCount);
             }
 
             source.Append(");");
@@ -164,7 +167,7 @@ namespace Types.Generator
 
             static void AppendVariable(SourceBuilder source, IFieldSymbol field, ref byte count)
             {
-                source.Append("buffer[");
+                source.Append("variableBuffer[");
                 source.Append(count);
                 source.Append("] = new(\"");
                 source.Append(field.Name);

@@ -13,16 +13,16 @@ namespace Types.Tests
             Assert.That(type.Name.ToString(), Is.EqualTo("Stress"));
             Assert.That(type.size, Is.EqualTo((uint)sizeof(Stress)));
             Assert.That(type.variableCount, Is.EqualTo(5));
-            Assert.That(type[0].Size, Is.EqualTo(1));
-            Assert.That(type[0].Name.ToString(), Is.EqualTo("first"));
-            Assert.That(type[1].Size, Is.EqualTo(2));
-            Assert.That(type[1].Name.ToString(), Is.EqualTo("second"));
-            Assert.That(type[2].Size, Is.EqualTo(4));
-            Assert.That(type[2].Name.ToString(), Is.EqualTo("third"));
-            Assert.That(type[3].Size, Is.EqualTo(4));
-            Assert.That(type[3].Name.ToString(), Is.EqualTo("fourth"));
-            Assert.That(type[4].Size, Is.EqualTo((uint)sizeof(Cherry)));
-            Assert.That(type[4].Name.ToString(), Is.EqualTo("cherry"));
+            Assert.That(type.Variables[0].Size, Is.EqualTo(1));
+            Assert.That(type.Variables[0].Name.ToString(), Is.EqualTo("first"));
+            Assert.That(type.Variables[1].Size, Is.EqualTo(2));
+            Assert.That(type.Variables[1].Name.ToString(), Is.EqualTo("second"));
+            Assert.That(type.Variables[2].Size, Is.EqualTo(4));
+            Assert.That(type.Variables[2].Name.ToString(), Is.EqualTo("third"));
+            Assert.That(type.Variables[3].Size, Is.EqualTo(4));
+            Assert.That(type.Variables[3].Name.ToString(), Is.EqualTo("fourth"));
+            Assert.That(type.Variables[4].Size, Is.EqualTo((uint)sizeof(Cherry)));
+            Assert.That(type.Variables[4].Name.ToString(), Is.EqualTo("cherry"));
         }
 
         [Test]

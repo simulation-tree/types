@@ -11,40 +11,54 @@ namespace Types
     public readonly struct TypeLayout : IEquatable<TypeLayout>
     {
         /// <summary>
-        /// Maximum amount of variables per type.
-        /// </summary>
-        public const byte Capacity = 32;
-
-        /// <summary>
         /// Size of the type in bytes.
         /// </summary>
         public readonly ushort size;
-        
+
         /// <summary>
         /// Amount of <see cref="Variable"/>s the type has.
         /// </summary>
         public readonly byte variableCount;
-        
+
+        /// <summary>
+        /// Amount of interfaces the type implements.
+        /// </summary>
+        public readonly byte interfaceCount;
+
         private readonly long hash;
-        private readonly VariablesCollection variables;
+        private readonly VariableBuffer variables;
+        private readonly TypeBuffer interfaces;
 
         /// <summary>
         /// Hash value unique to this type.
         /// </summary>
         public readonly long Hash => hash;
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
-        private readonly Variable[] Variables
+        /// <summary>
+        /// All variables declared in the type.
+        /// </summary>
+        public unsafe readonly ReadOnlySpan<Variable> Variables
         {
             get
             {
-                Variable[] variables = new Variable[variableCount];
-                for (int i = 0; i < variableCount; i++)
+                fixed (void* pointer = &variables)
                 {
-                    variables[i] = this.variables[i];
+                    return new ReadOnlySpan<Variable>(pointer, variableCount);
                 }
+            }
+        }
 
-                return variables;
+        /// <summary>
+        /// All interfaces implemented by this type.
+        /// </summary>
+        public unsafe readonly ReadOnlySpan<TypeLayout> Interfaces
+        {
+            get
+            {
+                fixed (void* pointer = &interfaces)
+                {
+                    return new ReadOnlySpan<TypeLayout>(pointer, interfaceCount);
+                }
             }
         }
 
@@ -90,16 +104,6 @@ namespace Types
             }
         }
 
-        /// <summary>
-        /// Indexer for variables.
-        /// </summary>
-        public readonly Variable this[int index] => variables[index];
-
-        /// <summary>
-        /// Indexer for variables.
-        /// </summary>
-        public readonly Variable this[uint index] => variables[(int)index];
-
 #if NET
         /// <summary>
         /// Default constructor not supported.
@@ -136,36 +140,39 @@ namespace Types
         /// <summary>
         /// Creates a new type layout.
         /// </summary>
-        public TypeLayout(ReadOnlySpan<char> fullName, ushort size, ReadOnlySpan<Variable> variables)
+        public TypeLayout(ReadOnlySpan<char> fullName, ushort size, ReadOnlySpan<Variable> variables, ReadOnlySpan<TypeLayout> interfaces)
         {
-            ThrowIfGreaterThanCapacity(variables.Length);
-
             this.size = size;
             variableCount = (byte)variables.Length;
-            this.variables = new();
-            for (int i = 0; i < variableCount; i++)
-            {
-                this.variables[i] = variables[i];
-            }
-
+            this.variables = new(variables);
+            interfaceCount = (byte)interfaces.Length;
+            this.interfaces = new(interfaces);
             hash = TypeNames.Set(fullName);
         }
 
         /// <summary>
         /// Creates a new type layout.
         /// </summary>
-        public TypeLayout(string fullName, ushort size, ReadOnlySpan<Variable> variables)
+        public TypeLayout(ReadOnlySpan<char> fullName, ushort size, VariableBuffer variables, byte variableCount, TypeBuffer interfaces, byte interfaceCount)
         {
-            ThrowIfGreaterThanCapacity(variables.Length);
+            this.size = size;
+            this.variableCount = variableCount;
+            this.variables = variables;
+            this.interfaceCount = interfaceCount;
+            this.interfaces = interfaces;
+            hash = TypeNames.Set(fullName);
+        }
 
+        /// <summary>
+        /// Creates a new type layout.
+        /// </summary>
+        public TypeLayout(string fullName, ushort size, ReadOnlySpan<Variable> variables, ReadOnlySpan<TypeLayout> interfaces)
+        {
             this.size = size;
             variableCount = (byte)variables.Length;
-            this.variables = new();
-            for (int i = 0; i < variableCount; i++)
-            {
-                this.variables[i] = variables[i];
-            }
-
+            this.variables = new(variables);
+            interfaceCount = (byte)interfaces.Length;
+            this.interfaces = new(interfaces);
             hash = TypeNames.Set(fullName);
         }
 
@@ -183,6 +190,26 @@ namespace Types
             ReadOnlySpan<char> fullName = TypeNames.Get(hash);
             fullName.CopyTo(destination);
             return fullName.Length;
+        }
+
+        /// <summary>
+        /// Retrieves the field at the given <paramref name="index"/>.
+        /// </summary>
+        public readonly Variable GetVariable(int index)
+        {
+            ThrowIfVariableIndexOutOfRange(index);
+
+            return variables[index];
+        }
+
+        /// <summary>
+        /// Retrieves the implemented interface at the given <paramref name="index"/>.
+        /// </summary>
+        public readonly TypeLayout GetInterface(int index)
+        {
+            ThrowIfInterfaceIndexOutOfRange(index);
+
+            return interfaces[index];
         }
 
         /// <summary>
@@ -438,11 +465,20 @@ namespace Types
         }
 
         [Conditional("DEBUG")]
-        private static void ThrowIfGreaterThanCapacity(int length)
+        private readonly void ThrowIfVariableIndexOutOfRange(int index)
         {
-            if (length > Capacity)
+            if (index < 0 || index >= variableCount)
             {
-                throw new InvalidOperationException($"TypeLayout has reached its capacity of {Capacity} variables");
+                throw new IndexOutOfRangeException($"Variable index {index} is out of range for type {FullName.ToString()}");
+            }
+        }
+
+        [Conditional("DEBUG")]
+        private readonly void ThrowIfInterfaceIndexOutOfRange(int index)
+        {
+            if (index < 0 || index >= interfaceCount)
+            {
+                throw new IndexOutOfRangeException($"Interface index {index} is out of range for type {FullName.ToString()}");
             }
         }
 
@@ -477,147 +513,6 @@ namespace Types
         public static bool operator !=(TypeLayout left, TypeLayout right)
         {
             return !(left == right);
-        }
-
-        /// <summary>
-        /// Describes a variable part of a <see cref="TypeLayout"/>.
-        /// </summary>
-        public readonly struct Variable : IEquatable<Variable>
-        {
-            internal readonly long nameHash;
-            internal readonly long typeHash;
-
-            /// <summary>
-            /// Name of the variable.
-            /// </summary>
-            public readonly ReadOnlySpan<char> Name => TypeNames.Get(nameHash);
-
-            /// <summary>
-            /// Type layout of the variable.
-            /// </summary>
-            public readonly TypeLayout Type => TypeRegistry.Get(typeHash);
-
-            /// <summary>
-            /// Size of the variable in bytes.
-            /// </summary>
-            public readonly ushort Size => Type.size;
-
-            /// <summary>
-            /// Creates a new variable with the given <paramref name="name"/> and <paramref name="fullTypeName"/>.
-            /// </summary>
-            public Variable(string name, string fullTypeName)
-            {
-                this.nameHash = TypeNames.Set(name);
-                typeHash = fullTypeName.GetLongHashCode();
-            }
-
-            internal Variable(long typeHash, long nameHash)
-            {
-                this.typeHash = typeHash;
-                this.nameHash = nameHash;
-            }
-
-            /// <summary>
-            /// Creates a new variable with the given <paramref name="name"/> and <paramref name="fullTypeName"/>.
-            /// </summary>
-            public Variable(ReadOnlySpan<char> name, ReadOnlySpan<char> fullTypeName)
-            {
-                this.nameHash = TypeNames.Set(name);
-                typeHash = fullTypeName.GetLongHashCode();
-            }
-
-            /// <summary>
-            /// Creates a new variable with the given <paramref name="name"/> and <paramref name="typeHash"/>.
-            /// </summary>
-            public Variable(string name, int typeHash)
-            {
-                this.nameHash = TypeNames.Set(name);
-                this.typeHash = typeHash;
-            }
-
-            /// <inheritdoc/>
-            public readonly override string ToString()
-            {
-                Span<char> buffer = stackalloc char[256];
-                int length = ToString(buffer);
-                return buffer.Slice(0, length).ToString();
-            }
-
-            /// <summary>
-            /// Builds a string representation of this variable and writes it to <paramref name="buffer"/>.
-            /// </summary>
-            /// <returns>Amount of characters written.</returns>
-            public readonly int ToString(Span<char> buffer)
-            {
-                TypeLayout typeLayout = Type;
-                typeLayout.Name.CopyTo(buffer);
-                int length = typeLayout.Name.Length;
-                buffer[length++] = '=';
-                Name.CopyTo(buffer.Slice(length));
-                length += Name.Length;
-                return length;
-            }
-
-            /// <inheritdoc/>
-            public readonly override bool Equals(object? obj)
-            {
-                return obj is Variable variable && Equals(variable);
-            }
-
-            /// <inheritdoc/>
-            public readonly bool Equals(Variable other)
-            {
-                return nameHash == other.nameHash && typeHash == other.typeHash;
-            }
-
-            /// <inheritdoc/>
-            public readonly override int GetHashCode()
-            {
-                unchecked
-                {
-                    int hashCode = 17;
-                    ReadOnlySpan<char> name = Name;
-                    for (int i = 0; i < name.Length; i++)
-                    {
-                        hashCode = hashCode * 31 + name[i];
-                    }
-
-                    hashCode = hashCode * 31 + (int)typeHash;
-                    return hashCode;
-                }
-            }
-
-            /// <inheritdoc/>
-            public static bool operator ==(Variable left, Variable right)
-            {
-                return left.Equals(right);
-            }
-
-            /// <inheritdoc/>
-            public static bool operator !=(Variable left, Variable right)
-            {
-                return !(left == right);
-            }
-        }
-
-        internal unsafe struct VariablesCollection
-        {
-            private fixed long variables[TypeLayout.Capacity * 2];
-
-            public Variable this[int index]
-            {
-                readonly get
-                {
-                    long typeHash = variables[index * 2 + 0];
-                    long nameHash = variables[index * 2 + 1];
-                    return new(typeHash, nameHash);
-                }
-                set
-                {
-                    variables[index * 2 + 0] = value.typeHash;
-                    variables[index * 2 + 1] = value.nameHash;
-                }
-            }
         }
     }
 }

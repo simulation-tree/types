@@ -7,16 +7,16 @@ namespace Types.Tests
         [Test]
         public void LoadCustomBank()
         {
-            Assert.That(TypeRegistry.IsRegistered<TypeLayout.Variable>(), Is.False);
+            Assert.That(TypeRegistry.IsRegistered<Variable>(), Is.False);
             TypeRegistry.Load<CustomTypeBank>();
-            Assert.That(TypeRegistry.IsRegistered<TypeLayout.Variable>(), Is.True);
+            Assert.That(TypeRegistry.IsRegistered<Variable>(), Is.True);
         }
 
         public readonly struct CustomTypeBank : ITypeBank
         {
             void ITypeBank.Load(Register register)
             {
-                register.Invoke<TypeLayout.Variable>();
+                register.Invoke<Variable>();
             }
         }
     }

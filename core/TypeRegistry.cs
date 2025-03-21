@@ -43,45 +43,45 @@ namespace Types
             Register(new(TypeLayout.GetFullName<Half>(), (ushort)sizeof(Half)), RuntimeTypeTable.GetHandle<Half>());
 #endif
 
-            Span<TypeLayout.Variable> buffer = stackalloc TypeLayout.Variable[16];
+            VariableBuffer variableBuffer = new();
+            TypeBuffer interfaceBuffer = new();
+            variableBuffer[0] = new("x", TypeLayout.GetFullName<float>());
+            variableBuffer[1] = new("y", TypeLayout.GetFullName<float>());
+            variableBuffer[2] = new("z", TypeLayout.GetFullName<float>());
+            variableBuffer[3] = new("w", TypeLayout.GetFullName<float>());
+            Register(new(TypeLayout.GetFullName<Vector2>(), (ushort)sizeof(Vector2), variableBuffer, 2, interfaceBuffer, 0), RuntimeTypeTable.GetHandle<Vector2>());
+            Register(new(TypeLayout.GetFullName<Vector3>(), (ushort)sizeof(Vector3), variableBuffer, 3, interfaceBuffer, 0), RuntimeTypeTable.GetHandle<Vector3>());
+            Register(new(TypeLayout.GetFullName<Vector4>(), (ushort)sizeof(Vector4), variableBuffer, 4, interfaceBuffer, 0), RuntimeTypeTable.GetHandle<Vector4>());
+            Register(new(TypeLayout.GetFullName<Quaternion>(), (ushort)sizeof(Quaternion), variableBuffer, 4, interfaceBuffer, 0), RuntimeTypeTable.GetHandle<Quaternion>());
 
-            buffer[0] = new("x", TypeLayout.GetFullName<float>());
-            buffer[1] = new("y", TypeLayout.GetFullName<float>());
-            buffer[2] = new("z", TypeLayout.GetFullName<float>());
-            buffer[3] = new("w", TypeLayout.GetFullName<float>());
-            Register(new(TypeLayout.GetFullName<Vector2>(), (ushort)sizeof(Vector2), buffer.Slice(0, 2)), RuntimeTypeTable.GetHandle<Vector2>());
-            Register(new(TypeLayout.GetFullName<Vector3>(), (ushort)sizeof(Vector3), buffer.Slice(0, 3)), RuntimeTypeTable.GetHandle<Vector3>());
-            Register(new(TypeLayout.GetFullName<Vector4>(), (ushort)sizeof(Vector4), buffer.Slice(0, 4)), RuntimeTypeTable.GetHandle<Vector4>());
-            Register(new(TypeLayout.GetFullName<Quaternion>(), (ushort)sizeof(Quaternion), buffer.Slice(0, 4)), RuntimeTypeTable.GetHandle<Quaternion>());
+            variableBuffer[0] = new("M11", TypeLayout.GetFullName<float>());
+            variableBuffer[1] = new("M12", TypeLayout.GetFullName<float>());
+            variableBuffer[2] = new("M21", TypeLayout.GetFullName<float>());
+            variableBuffer[3] = new("M22", TypeLayout.GetFullName<float>());
+            variableBuffer[4] = new("M31", TypeLayout.GetFullName<float>());
+            variableBuffer[5] = new("M32", TypeLayout.GetFullName<float>());
+            Register(new(TypeLayout.GetFullName<Matrix3x2>(), (ushort)sizeof(Matrix3x2), variableBuffer, 6, interfaceBuffer, 0), RuntimeTypeTable.GetHandle<Matrix3x2>());
 
-            buffer[0] = new("M11", TypeLayout.GetFullName<float>());
-            buffer[1] = new("M12", TypeLayout.GetFullName<float>());
-            buffer[2] = new("M21", TypeLayout.GetFullName<float>());
-            buffer[3] = new("M22", TypeLayout.GetFullName<float>());
-            buffer[4] = new("M31", TypeLayout.GetFullName<float>());
-            buffer[5] = new("M32", TypeLayout.GetFullName<float>());
-            Register(new(TypeLayout.GetFullName<Matrix3x2>(), (ushort)sizeof(Matrix3x2), buffer.Slice(0, 6)), RuntimeTypeTable.GetHandle<Matrix3x2>());
+            variableBuffer[0] = new("M11", TypeLayout.GetFullName<float>());
+            variableBuffer[1] = new("M12", TypeLayout.GetFullName<float>());
+            variableBuffer[2] = new("M13", TypeLayout.GetFullName<float>());
+            variableBuffer[3] = new("M14", TypeLayout.GetFullName<float>());
+            variableBuffer[4] = new("M21", TypeLayout.GetFullName<float>());
+            variableBuffer[5] = new("M22", TypeLayout.GetFullName<float>());
+            variableBuffer[6] = new("M23", TypeLayout.GetFullName<float>());
+            variableBuffer[7] = new("M24", TypeLayout.GetFullName<float>());
+            variableBuffer[8] = new("M31", TypeLayout.GetFullName<float>());
+            variableBuffer[9] = new("M32", TypeLayout.GetFullName<float>());
+            variableBuffer[10] = new("M33", TypeLayout.GetFullName<float>());
+            variableBuffer[11] = new("M34", TypeLayout.GetFullName<float>());
+            variableBuffer[12] = new("M41", TypeLayout.GetFullName<float>());
+            variableBuffer[13] = new("M42", TypeLayout.GetFullName<float>());
+            variableBuffer[14] = new("M43", TypeLayout.GetFullName<float>());
+            variableBuffer[15] = new("M44", TypeLayout.GetFullName<float>());
+            Register(new(TypeLayout.GetFullName<Matrix4x4>(), (ushort)sizeof(Matrix4x4), variableBuffer, 16, interfaceBuffer, 0), RuntimeTypeTable.GetHandle<Matrix4x4>());
 
-            buffer[0] = new("M11", TypeLayout.GetFullName<float>());
-            buffer[1] = new("M12", TypeLayout.GetFullName<float>());
-            buffer[2] = new("M13", TypeLayout.GetFullName<float>());
-            buffer[3] = new("M14", TypeLayout.GetFullName<float>());
-            buffer[4] = new("M21", TypeLayout.GetFullName<float>());
-            buffer[5] = new("M22", TypeLayout.GetFullName<float>());
-            buffer[6] = new("M23", TypeLayout.GetFullName<float>());
-            buffer[7] = new("M24", TypeLayout.GetFullName<float>());
-            buffer[8] = new("M31", TypeLayout.GetFullName<float>());
-            buffer[9] = new("M32", TypeLayout.GetFullName<float>());
-            buffer[10] = new("M33", TypeLayout.GetFullName<float>());
-            buffer[11] = new("M34", TypeLayout.GetFullName<float>());
-            buffer[12] = new("M41", TypeLayout.GetFullName<float>());
-            buffer[13] = new("M42", TypeLayout.GetFullName<float>());
-            buffer[14] = new("M43", TypeLayout.GetFullName<float>());
-            buffer[15] = new("M44", TypeLayout.GetFullName<float>());
-            Register(new(TypeLayout.GetFullName<Matrix4x4>(), (ushort)sizeof(Matrix4x4), buffer.Slice(0, 16)), RuntimeTypeTable.GetHandle<Matrix4x4>());
-
-            buffer[0] = new("_dateData", TypeLayout.GetFullName<ulong>());
-            Register(new(TypeLayout.GetFullName<DateTime>(), (ushort)sizeof(DateTime), buffer.Slice(0, 1)), RuntimeTypeTable.GetHandle<DateTime>());
+            variableBuffer[0] = new("_dateData", TypeLayout.GetFullName<ulong>());
+            Register(new(TypeLayout.GetFullName<DateTime>(), (ushort)sizeof(DateTime), variableBuffer, 1, interfaceBuffer, 0), RuntimeTypeTable.GetHandle<DateTime>());
         }
 
         /// <summary>

@@ -15,11 +15,22 @@ namespace Types.Functions
         }
 
         /// <summary>
-        /// Registers a type with the given <paramref name="variables"/>.
+        /// Registers a type with the given <paramref name="variables"/> and <paramref name="interfaces"/>.
         /// </summary>
-        public unsafe readonly void Invoke<T>(ReadOnlySpan<TypeLayout.Variable> variables) where T : unmanaged
+        public unsafe readonly void Invoke<T>(ReadOnlySpan<Variable> variables, ReadOnlySpan<TypeLayout> interfaces) where T : unmanaged
         {
-            TypeLayout type = new(TypeLayout.GetFullName<T>(), (ushort)sizeof(T), variables);
+            TypeLayout type = new(TypeLayout.GetFullName<T>(), (ushort)sizeof(T), variables, interfaces);
+            Input input = new(type, RuntimeTypeTable.GetHandle<T>());
+            action(input);
+            TypeInstanceCreator.Initialize<T>(type);
+        }
+
+        /// <summary>
+        /// Registers a type with the given <paramref name="variables"/> and <paramref name="interfaces"/>.
+        /// </summary>
+        public unsafe readonly void Invoke<T>(VariableBuffer variables, byte variableCount, TypeBuffer interfaces, byte interfaceCount) where T : unmanaged
+        {
+            TypeLayout type = new(TypeLayout.GetFullName<T>(), (ushort)sizeof(T), variables, variableCount, interfaces, interfaceCount);
             Input input = new(type, RuntimeTypeTable.GetHandle<T>());
             action(input);
             TypeInstanceCreator.Initialize<T>(type);
