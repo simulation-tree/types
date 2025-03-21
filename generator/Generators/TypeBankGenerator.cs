@@ -11,6 +11,11 @@ namespace Types.Generator
     public class TypeBankGenerator : IIncrementalGenerator
     {
         public const string TypeNameFormat = "{0}TypeBank";
+        public const string FieldBufferTypeName = "FieldBuffer";
+        public const string InterfaceBufferTypeName = "InterfaceTypeBuffer";
+        public const string FieldBufferVariableName = "fields";
+        public const string InterfaceBufferVariableName = "interfaces";
+        public const string RegisterFunctionTypeName = "RegisterFunction";
 
         void IIncrementalGenerator.Initialize(IncrementalGeneratorInitializationContext context)
         {
@@ -110,13 +115,48 @@ namespace Types.Generator
 
             source.BeginGroup();
             {
-                source.AppendLine("readonly void ITypeBank.Load(Register register)");
+                source.Append("readonly void ITypeBank.Load(");
+                source.Append(RegisterFunctionTypeName);
+                source.Append(" register)");
+                source.AppendLine();
+
                 source.BeginGroup();
                 {
-                    source.AppendLine("Span<TypeLayout.Variable> buffer = stackalloc TypeLayout.Variable[(int)TypeLayout.Capacity];");
+                    source.Append(FieldBufferTypeName);
+                    source.Append(' ');
+                    source.Append(FieldBufferVariableName);
+                    source.Append(" = new();");
+                    source.AppendLine();
+
+                    source.Append(InterfaceBufferTypeName);
+                    source.Append(' ');
+                    source.Append(InterfaceBufferVariableName);
+                    source.Append(" = new();");
+                    source.AppendLine();
+
+                    //register all interfaces first
+                    HashSet<ITypeSymbol> interfaceTypes = [];
                     foreach (ITypeSymbol type in types)
                     {
-                        AppendRegister(source, type);
+                        foreach (INamedTypeSymbol interfaceType in type.AllInterfaces)
+                        {
+                            if (interfaceType.IsGenericType)
+                            {
+                                continue;
+                            }
+
+                            interfaceTypes.Add(interfaceType);
+                        }
+                    }
+
+                    foreach (ITypeSymbol interfaceType in interfaceTypes)
+                    {
+                        AppendRegisterInterface(source, interfaceType);
+                    }
+
+                    foreach (ITypeSymbol type in types)
+                    {
+                        AppendRegisterType(source, type);
                     }
                 }
                 source.EndGroup();
@@ -131,7 +171,25 @@ namespace Types.Generator
             return source.ToString();
         }
 
-        private static void AppendRegister(SourceBuilder source, ITypeSymbol type)
+        private static void AppendRegisterInterface(SourceBuilder source, ITypeSymbol interfaceType)
+        {
+            string fullName = interfaceType.GetFullTypeName();
+            source.Append("if (!TypeRegistry.IsInterfaceRegistered<");
+            source.Append(fullName);
+            source.Append(">())");
+            source.AppendLine();
+
+            source.BeginGroup();
+            {
+                source.Append("register.RegisterInterface<");
+                source.Append(fullName);
+                source.Append(">();");
+                source.AppendLine();
+            }
+            source.EndGroup();
+        }
+
+        private static void AppendRegisterType(SourceBuilder source, ITypeSymbol type)
         {
             string fullName = type.GetFullTypeName();
             if (fullName.EndsWith("e__FixedBuffer"))
@@ -139,32 +197,60 @@ namespace Types.Generator
                 return;
             }
 
-            byte count = 0;
-            HashSet<string> fieldNames = new();
-            foreach (IFieldSymbol field in type.GetFields())
-            {
-                if (fieldNames.Add(field.Name))
-                {
-                    AppendVariable(source, field, ref count);
-                }
-            }
-
-            source.Append("register.Invoke<");
+            source.Append("if (!TypeRegistry.IsTypeRegistered<");
             source.Append(fullName);
-            source.Append(">(");
-            if (count > 0)
-            {
-                source.Append("buffer.Slice(0, ");
-                source.Append(count);
-                source.Append(')');
-            }
-
-            source.Append(");");
+            source.Append(">())");
             source.AppendLine();
+
+            source.BeginGroup();
+            {
+                byte variableCount = 0;
+                byte interfaceCount = 0;
+                HashSet<string> fieldNames = new();
+                foreach (IFieldSymbol field in type.GetFields())
+                {
+                    if (fieldNames.Add(field.Name))
+                    {
+                        AppendVariable(source, field, ref variableCount);
+                    }
+                }
+
+                foreach (INamedTypeSymbol interfaceType in type.AllInterfaces)
+                {
+                    if (interfaceType.IsGenericType)
+                    {
+                        continue;
+                    }
+
+                    AppendInterface(source, interfaceType, ref interfaceCount);
+                }
+
+                source.Append("register.RegisterType<");
+                source.Append(fullName);
+                source.Append(">(");
+                if (variableCount > 0 || interfaceCount > 0)
+                {
+                    source.Append(FieldBufferVariableName);
+                    source.Append(',');
+                    source.Append(' ');
+                    source.Append(variableCount);
+                    source.Append(',');
+                    source.Append(' ');
+                    source.Append(InterfaceBufferVariableName);
+                    source.Append(',');
+                    source.Append(' ');
+                    source.Append(interfaceCount);
+                }
+
+                source.Append(");");
+                source.AppendLine();
+            }
+            source.EndGroup();
 
             static void AppendVariable(SourceBuilder source, IFieldSymbol field, ref byte count)
             {
-                source.Append("buffer[");
+                source.Append(FieldBufferVariableName);
+                source.Append('[');
                 source.Append(count);
                 source.Append("] = new(\"");
                 source.Append(field.Name);
@@ -182,6 +268,18 @@ namespace Types.Generator
                     source.Append(field.Type.GetFullTypeName());
                 }
 
+                source.Append("\");");
+                source.AppendLine();
+                count++;
+            }
+
+            static void AppendInterface(SourceBuilder source, INamedTypeSymbol interfaceType, ref byte count)
+            {
+                source.Append(InterfaceBufferVariableName);
+                source.Append('[');
+                source.Append(count);
+                source.Append("] = new(\"");
+                source.Append(interfaceType.GetFullTypeName());
                 source.Append("\");");
                 source.AppendLine();
                 count++;

@@ -10,6 +10,6 @@ namespace Types
         /// <summary>
         /// Loads type metadata into <see cref="TypeRegistry"/>.
         /// </summary>
-        void Load(Register register);
+        void Load(RegisterFunction register);
     }
 }
