@@ -123,6 +123,8 @@ namespace Types.Tests
             Assert.That(interfaces[0].Name.ToString(), Is.EqualTo("IDisposable"));
             Assert.That(type.Implements<IDisposable>(), Is.True);
             Assert.That(type.Implements<ICloneable>(), Is.False);
+            Assert.That(interfaces[0].Is<IDisposable>(), Is.True);
+            Assert.That(interfaces[0].Is<ICloneable>(), Is.False);
         }
     }
 }

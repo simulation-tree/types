@@ -61,6 +61,32 @@ namespace Types
         }
 
         /// <inheritdoc/>
+        public readonly override string ToString()
+        {
+            return FullName.ToString();
+        }
+
+        /// <summary>
+        /// Writes a string representation of this interface to <paramref name="destination"/>.
+        /// </summary>
+        public readonly int ToString(Span<char> destination)
+        {
+            ReadOnlySpan<char> fullName = FullName;
+            fullName.CopyTo(destination);
+            return fullName.Length;
+        }
+
+        /// <summary>
+        /// Checks if this interface is <typeparamref name="T"/>.
+        /// </summary>
+        public readonly bool Is<T>()
+        {
+            Span<char> buffer = stackalloc char[512];
+            int length = TypeRegistry.GetFullName(typeof(T), buffer);
+            return hash == buffer.Slice(0, length).GetLongHashCode();
+        }
+
+        /// <inheritdoc/>
         public readonly override bool Equals(object? obj)
         {
             return obj is Interface type && Equals(type);

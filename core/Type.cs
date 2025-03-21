@@ -171,7 +171,7 @@ namespace Types
         /// <inheritdoc/>
         public readonly override string ToString()
         {
-            return TypeNames.Get(hash).ToString();
+            return FullName.ToString();
         }
 
         /// <summary>
@@ -179,7 +179,7 @@ namespace Types
         /// </summary>
         public readonly int ToString(Span<char> destination)
         {
-            ReadOnlySpan<char> fullName = TypeNames.Get(hash);
+            ReadOnlySpan<char> fullName = FullName;
             fullName.CopyTo(destination);
             return fullName.Length;
         }
@@ -199,10 +199,12 @@ namespace Types
         /// </summary>
         public readonly bool Implements<T>()
         {
-            RuntimeTypeHandle interfaceHandle = RuntimeTypeTable.GetHandle<T>();
+            Span<char> buffer = stackalloc char[512];
+            int length = TypeRegistry.GetFullName(typeof(T), buffer);
+            long hash = buffer.Slice(0, length).GetLongHashCode();
             for (int i = 0; i < interfaceCount; i++)
             {
-                if (interfaces[i].TypeHandle.Equals(interfaceHandle))
+                if (interfaces.Get(i) == hash)
                 {
                     return true;
                 }

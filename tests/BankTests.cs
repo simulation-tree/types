@@ -1,4 +1,5 @@
-﻿using Types.Functions;
+﻿using System;
+using Types.Functions;
 
 namespace Types.Tests
 {
@@ -11,6 +12,17 @@ namespace Types.Tests
             TypeRegistry.Load<CustomTypeBank>();
             Assert.That(TypeRegistry.IsTypeRegistered<Field>(), Is.True);
         }
+
+#if DEBUG
+        [Test]
+        public void ThrowWhenRegisteringTwice()
+        {
+            Assert.That(TypeRegistry.IsInterfaceRegistered<IComparable>(), Is.False);
+            TypeRegistry.RegisterInterface<IComparable>();
+            Assert.That(TypeRegistry.IsInterfaceRegistered<IComparable>(), Is.True);
+            Assert.Throws<InvalidOperationException>(() => TypeRegistry.RegisterInterface<IComparable>());
+        }
+#endif
 
         public readonly struct CustomTypeBank : ITypeBank
         {

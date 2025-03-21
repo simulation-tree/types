@@ -44,6 +44,14 @@ namespace Types
             }
         }
 
+        /// <summary>
+        /// Retrieves the raw interface hash at the given <paramref name="index"/>.
+        /// </summary>
+        public readonly long Get(int index)
+        {
+            return buffer[index];
+        }
+
         [Conditional("DEBUG")]
         private static void ThrowIfCantFit(int length)
         {

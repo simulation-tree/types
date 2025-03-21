@@ -153,7 +153,7 @@ namespace Types
         /// <summary>
         /// Manually registers the interface of type <typeparamref name="T"/>.
         /// </summary>
-        public static void RegisterInterface<T>() where T : unmanaged
+        public static void RegisterInterface<T>()
         {
             Interface interfaceValue = new(GetFullName<T>());
             RegisterInterface(interfaceValue, RuntimeTypeTable.GetHandle<T>());
@@ -267,7 +267,7 @@ namespace Types
         /// <summary>
         /// Checks if type <typeparamref name="T"/> is registered.
         /// </summary>
-        public static bool IsInterfaceRegistered<T>() where T : unmanaged
+        public static bool IsInterfaceRegistered<T>()
         {
             return handleToInterface.ContainsKey(RuntimeTypeTable.GetHandle<T>());
         }
