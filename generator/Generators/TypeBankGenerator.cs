@@ -15,6 +15,7 @@ namespace Types.Generator
         public const string InterfaceBufferTypeName = "InterfaceTypeBuffer";
         public const string FieldBufferVariableName = "fields";
         public const string InterfaceBufferVariableName = "interfaces";
+        public const string RegisterFunctionTypeName = "RegisterFunction";
 
         void IIncrementalGenerator.Initialize(IncrementalGeneratorInitializationContext context)
         {
@@ -114,7 +115,11 @@ namespace Types.Generator
 
             source.BeginGroup();
             {
-                source.AppendLine("readonly void ITypeBank.Load(Register register)");
+                source.Append("readonly void ITypeBank.Load(");
+                source.Append(RegisterFunctionTypeName);
+                source.Append(" register)");
+                source.AppendLine();
+
                 source.BeginGroup();
                 {
                     source.Append(FieldBufferTypeName);

@@ -5,23 +5,15 @@ namespace Types.Functions
     /// <summary>
     /// Function to register a type.
     /// </summary>
-    public readonly struct Register
+    public readonly struct RegisterFunction
     {
-        private readonly Action<Input> action;
-
-        internal Register(Action<Input> action)
-        {
-            this.action = action;
-        }
-
         /// <summary>
         /// Registers a type with the given <paramref name="variables"/> and <paramref name="interfaces"/>.
         /// </summary>
         public unsafe readonly void RegisterType<T>(ReadOnlySpan<Field> variables, ReadOnlySpan<Interface> interfaces) where T : unmanaged
         {
             Type type = new(TypeRegistry.GetFullName<T>(), (ushort)sizeof(T), variables, interfaces);
-            Input input = new(type, RuntimeTypeTable.GetHandle<T>());
-            action(input);
+            TypeRegistry.RegisterType(type, RuntimeTypeTable.GetHandle<T>());
             TypeInstanceCreator.Initialize<T>(type);
         }
 
@@ -31,8 +23,7 @@ namespace Types.Functions
         public unsafe readonly void RegisterType<T>(FieldBuffer variables, byte variableCount, InterfaceTypeBuffer interfaces, byte interfaceCount) where T : unmanaged
         {
             Type type = new(TypeRegistry.GetFullName<T>(), (ushort)sizeof(T), variables, variableCount, interfaces, interfaceCount);
-            Input input = new(type, RuntimeTypeTable.GetHandle<T>());
-            action(input);
+            TypeRegistry.RegisterType(type, RuntimeTypeTable.GetHandle<T>());
             TypeInstanceCreator.Initialize<T>(type);
         }
 
@@ -42,8 +33,7 @@ namespace Types.Functions
         public unsafe readonly void RegisterType<T>() where T : unmanaged
         {
             Type type = new(TypeRegistry.GetFullName<T>(), (ushort)sizeof(T));
-            Input input = new(type, RuntimeTypeTable.GetHandle<T>());
-            action(input);
+            TypeRegistry.RegisterType(type, RuntimeTypeTable.GetHandle<T>());
             TypeInstanceCreator.Initialize<T>(type);
         }
 

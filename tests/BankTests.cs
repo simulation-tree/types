@@ -14,7 +14,7 @@ namespace Types.Tests
 
         public readonly struct CustomTypeBank : ITypeBank
         {
-            void ITypeBank.Load(Register register)
+            void ITypeBank.Load(RegisterFunction register)
             {
                 register.RegisterType<Field>();
             }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using Types.Functions;
 
 namespace Types
 {
@@ -94,12 +93,7 @@ namespace Types
         public unsafe static void Load<T>() where T : unmanaged, ITypeBank
         {
             T bank = default;
-            bank.Load(new(Register));
-
-            static void Register(Register.Input input)
-            {
-                RegisterType(input.type, input.Handle);
-            }
+            bank.Load(new());
         }
 
         /// <summary>
