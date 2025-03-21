@@ -17,9 +17,9 @@ namespace Types.Functions
         /// <summary>
         /// Registers a type with the given <paramref name="variables"/> and <paramref name="interfaces"/>.
         /// </summary>
-        public unsafe readonly void Invoke<T>(ReadOnlySpan<Field> variables, ReadOnlySpan<Type> interfaces) where T : unmanaged
+        public unsafe readonly void RegisterType<T>(ReadOnlySpan<Field> variables, ReadOnlySpan<Interface> interfaces) where T : unmanaged
         {
-            Type type = new(Type.GetFullName<T>(), (ushort)sizeof(T), variables, interfaces);
+            Type type = new(TypeRegistry.GetFullName<T>(), (ushort)sizeof(T), variables, interfaces);
             Input input = new(type, RuntimeTypeTable.GetHandle<T>());
             action(input);
             TypeInstanceCreator.Initialize<T>(type);
@@ -28,9 +28,9 @@ namespace Types.Functions
         /// <summary>
         /// Registers a type with the given <paramref name="variables"/> and <paramref name="interfaces"/>.
         /// </summary>
-        public unsafe readonly void Invoke<T>(FieldBuffer variables, byte variableCount, TypeBuffer interfaces, byte interfaceCount) where T : unmanaged
+        public unsafe readonly void RegisterType<T>(FieldBuffer variables, byte variableCount, InterfaceTypeBuffer interfaces, byte interfaceCount) where T : unmanaged
         {
-            Type type = new(Type.GetFullName<T>(), (ushort)sizeof(T), variables, variableCount, interfaces, interfaceCount);
+            Type type = new(TypeRegistry.GetFullName<T>(), (ushort)sizeof(T), variables, variableCount, interfaces, interfaceCount);
             Input input = new(type, RuntimeTypeTable.GetHandle<T>());
             action(input);
             TypeInstanceCreator.Initialize<T>(type);
@@ -39,12 +39,21 @@ namespace Types.Functions
         /// <summary>
         /// Registers a type without variables specified.
         /// </summary>
-        public unsafe readonly void Invoke<T>() where T : unmanaged
+        public unsafe readonly void RegisterType<T>() where T : unmanaged
         {
-            Type type = new(Type.GetFullName<T>(), (ushort)sizeof(T));
+            Type type = new(TypeRegistry.GetFullName<T>(), (ushort)sizeof(T));
             Input input = new(type, RuntimeTypeTable.GetHandle<T>());
             action(input);
             TypeInstanceCreator.Initialize<T>(type);
+        }
+
+        /// <summary>
+        /// Registers a type without variables specified.
+        /// </summary>
+        public readonly void RegisterInterface<T>()
+        {
+            Interface interfaceValue = new(TypeRegistry.GetFullName<T>());
+            TypeRegistry.RegisterInterface(interfaceValue, RuntimeTypeTable.GetHandle<T>());
         }
 
         /// <summary>

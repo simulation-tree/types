@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 namespace Types
 {
     /// <summary>
-    /// Describes metadata for a type.
+    /// Describes metadata for a <see langword="struct"/> type.
     /// </summary>
     [SkipLocalsInit]
     public readonly struct Type : IEquatable<Type>
@@ -19,7 +19,7 @@ namespace Types
         private readonly byte interfaceCount;
         private readonly long hash;
         private readonly FieldBuffer fields;
-        private readonly TypeBuffer interfaces;
+        private readonly InterfaceTypeBuffer interfaces;
 
         /// <summary>
         /// Hash value unique to this type.
@@ -43,13 +43,13 @@ namespace Types
         /// <summary>
         /// All interfaces implemented by this type.
         /// </summary>
-        public unsafe readonly ReadOnlySpan<Type> Interfaces
+        public unsafe readonly ReadOnlySpan<Interface> Interfaces
         {
             get
             {
                 fixed (void* pointer = &interfaces)
                 {
-                    return new ReadOnlySpan<Type>(pointer, interfaceCount);
+                    return new ReadOnlySpan<Interface>(pointer, interfaceCount);
                 }
             }
         }
@@ -108,7 +108,7 @@ namespace Types
 #endif
 
         /// <summary>
-        /// Creates a new type without any fields or interfaces set.
+        /// Initializes an existing value type.
         /// </summary>
         public Type(ReadOnlySpan<char> fullName, ushort size)
         {
@@ -119,7 +119,7 @@ namespace Types
         }
 
         /// <summary>
-        /// Creates a new type without any fields or interfaces set.
+        /// Initializes an existing value type.
         /// </summary>
         public Type(string fullName, ushort size)
         {
@@ -132,7 +132,7 @@ namespace Types
         /// <summary>
         /// Creates a new type.
         /// </summary>
-        public Type(ReadOnlySpan<char> fullName, ushort size, ReadOnlySpan<Field> fields, ReadOnlySpan<Type> interfaces)
+        public Type(ReadOnlySpan<char> fullName, ushort size, ReadOnlySpan<Field> fields, ReadOnlySpan<Interface> interfaces)
         {
             this.size = size;
             fieldCount = (byte)fields.Length;
@@ -145,7 +145,7 @@ namespace Types
         /// <summary>
         /// Creates a new type.
         /// </summary>
-        public Type(ReadOnlySpan<char> fullName, ushort size, FieldBuffer fields, byte fieldCount, TypeBuffer interfaces, byte interfaceCount)
+        public Type(ReadOnlySpan<char> fullName, ushort size, FieldBuffer fields, byte fieldCount, InterfaceTypeBuffer interfaces, byte interfaceCount)
         {
             this.size = size;
             this.fieldCount = fieldCount;
@@ -158,7 +158,7 @@ namespace Types
         /// <summary>
         /// Creates a new type.
         /// </summary>
-        public Type(string fullName, ushort size, ReadOnlySpan<Field> fields, ReadOnlySpan<Type> interfaces)
+        public Type(string fullName, ushort size, ReadOnlySpan<Field> fields, ReadOnlySpan<Interface> interfaces)
         {
             this.size = size;
             fieldCount = (byte)fields.Length;
@@ -333,98 +333,6 @@ namespace Types
             }
 
             return -1;
-        }
-
-        /// <summary>
-        /// Retrieves the full type name for the given <paramref name="type"/>.
-        /// </summary>
-        public static int GetFullName(System.Type type, Span<char> buffer)
-        {
-            int length = 0;
-            AppendType(buffer, ref length, type);
-            return length;
-
-            static void Insert(Span<char> buffer, char character, ref int length)
-            {
-                buffer.Slice(0, length).CopyTo(buffer.Slice(1));
-                buffer[0] = character;
-                length++;
-            }
-
-            static void InsertSpan(Span<char> buffer, ReadOnlySpan<char> text, ref int length)
-            {
-                buffer.Slice(0, length).CopyTo(buffer.Slice(text.Length));
-                text.CopyTo(buffer);
-                length += text.Length;
-            }
-
-            static void AppendType(Span<char> fullName, ref int length, System.Type type)
-            {
-                //todo: handle case where the type name is System.Collections.Generic.List`1+Enumerator[etc, etc]
-                System.Type? current = type;
-                string? currentNameSpace = current.Namespace;
-                while (current is not null)
-                {
-                    System.Type[] genericTypes = current.GenericTypeArguments;
-                    string name = current.Name;
-                    if (genericTypes.Length > 0)
-                    {
-                        Insert(fullName, '>', ref length);
-                        for (int i = genericTypes.Length - 1; i >= 0; i--)
-                        {
-                            AppendType(fullName, ref length, genericTypes[i]);
-                            if (i > 0)
-                            {
-                                InsertSpan(fullName, ", ", ref length);
-                            }
-                        }
-
-                        Insert(fullName, '<', ref length);
-                        int index = name.IndexOf('`');
-                        if (index != -1)
-                        {
-                            string trimmedName = name[..index];
-                            InsertSpan(fullName, trimmedName, ref length);
-                        }
-                    }
-                    else
-                    {
-                        InsertSpan(fullName, name, ref length);
-                    }
-
-                    current = current.DeclaringType;
-                    if (current is not null)
-                    {
-                        Insert(fullName, '.', ref length);
-                    }
-                }
-
-                if (currentNameSpace is not null)
-                {
-                    Insert(fullName, '.', ref length);
-                    InsertSpan(fullName, currentNameSpace, ref length);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Retrieves the full type name for the given <paramref name="type"/>.
-        /// </summary>
-        public static string GetFullName(System.Type type)
-        {
-            Span<char> buffer = stackalloc char[512];
-            int length = GetFullName(type, buffer);
-            return buffer.Slice(0, length).ToString();
-        }
-
-        /// <summary>
-        /// Retrieves the full type name for the type <typeparamref name="T"/>.
-        /// </summary>
-        public static string GetFullName<T>()
-        {
-            Span<char> buffer = stackalloc char[512];
-            int length = GetFullName(typeof(T), buffer);
-            return buffer.Slice(0, length).ToString();
         }
 
         [Conditional("DEBUG")]

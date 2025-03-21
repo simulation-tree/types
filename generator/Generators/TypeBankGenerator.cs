@@ -12,9 +12,9 @@ namespace Types.Generator
     {
         public const string TypeNameFormat = "{0}TypeBank";
         public const string FieldBufferTypeName = "FieldBuffer";
-        public const string InterfaceBufferTypeName = "TypeBuffer";
+        public const string InterfaceBufferTypeName = "InterfaceTypeBuffer";
         public const string FieldBufferVariableName = "fields";
-        public const string InterfaceBufferVariableName = "types";
+        public const string InterfaceBufferVariableName = "interfaces";
 
         void IIncrementalGenerator.Initialize(IncrementalGeneratorInitializationContext context)
         {
@@ -129,9 +129,29 @@ namespace Types.Generator
                     source.Append(" = new();");
                     source.AppendLine();
 
+                    //register all interfaces first
+                    HashSet<ITypeSymbol> interfaceTypes = [];
                     foreach (ITypeSymbol type in types)
                     {
-                        AppendRegister(source, type);
+                        foreach (INamedTypeSymbol interfaceType in type.AllInterfaces)
+                        {
+                            if (interfaceType.IsGenericType)
+                            {
+                                continue;
+                            }
+
+                            interfaceTypes.Add(interfaceType);
+                        }
+                    }
+
+                    foreach (ITypeSymbol interfaceType in interfaceTypes)
+                    {
+                        AppendRegisterInterface(source, interfaceType);
+                    }
+
+                    foreach (ITypeSymbol type in types)
+                    {
+                        AppendRegisterType(source, type);
                     }
                 }
                 source.EndGroup();
@@ -146,7 +166,16 @@ namespace Types.Generator
             return source.ToString();
         }
 
-        private static void AppendRegister(SourceBuilder source, ITypeSymbol type)
+        private static void AppendRegisterInterface(SourceBuilder source, ITypeSymbol interfaceType)
+        {
+            string fullName = interfaceType.GetFullTypeName();
+            source.Append("register.RegisterInterface<");
+            source.Append(fullName);
+            source.Append(">();");
+            source.AppendLine();
+        }
+
+        private static void AppendRegisterType(SourceBuilder source, ITypeSymbol type)
         {
             string fullName = type.GetFullTypeName();
             if (fullName.EndsWith("e__FixedBuffer"))
@@ -165,10 +194,20 @@ namespace Types.Generator
                 }
             }
 
-            source.Append("register.Invoke<");
+            foreach (INamedTypeSymbol interfaceType in type.AllInterfaces)
+            {
+                if (interfaceType.IsGenericType)
+                {
+                    continue;
+                }
+
+                AppendInterface(source, interfaceType, ref interfaceCount);
+            }
+
+            source.Append("register.RegisterType<");
             source.Append(fullName);
             source.Append(">(");
-            if (variableCount > 0)
+            if (variableCount > 0 || interfaceCount > 0)
             {
                 source.Append(FieldBufferVariableName);
                 source.Append(',');
@@ -206,6 +245,18 @@ namespace Types.Generator
                     source.Append(field.Type.GetFullTypeName());
                 }
 
+                source.Append("\");");
+                source.AppendLine();
+                count++;
+            }
+
+            static void AppendInterface(SourceBuilder source, INamedTypeSymbol interfaceType, ref byte count)
+            {
+                source.Append(InterfaceBufferVariableName);
+                source.Append('[');
+                source.Append(count);
+                source.Append("] = new(\"");
+                source.Append(interfaceType.GetFullTypeName());
                 source.Append("\");");
                 source.AppendLine();
                 count++;

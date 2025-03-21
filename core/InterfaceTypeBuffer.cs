@@ -4,9 +4,9 @@ using System.Diagnostics;
 namespace Types
 {
     /// <summary>
-    /// Buffer for storing <see cref="Type"/> values.
+    /// Buffer for storing <see cref="Interface"/> values.
     /// </summary>
-    public unsafe struct TypeBuffer
+    public unsafe struct InterfaceTypeBuffer
     {
         /// <summary>
         /// Maximum amount of values that can be stored.
@@ -18,12 +18,12 @@ namespace Types
         /// <summary>
         /// Indexer for accessing a value at the given <paramref name="index"/>.
         /// </summary>
-        public Type this[int index]
+        public Interface this[int index]
         {
             readonly get
             {
                 long hash = buffer[index];
-                return TypeRegistry.Get(hash);
+                return TypeRegistry.GetInterface(hash);
             }
             set
             {
@@ -34,7 +34,7 @@ namespace Types
         /// <summary>
         /// Creates a new buffer containing the given <paramref name="types"/>.
         /// </summary>
-        public TypeBuffer(ReadOnlySpan<Type> types)
+        public InterfaceTypeBuffer(ReadOnlySpan<Interface> types)
         {
             ThrowIfCantFit(types.Length);
 
