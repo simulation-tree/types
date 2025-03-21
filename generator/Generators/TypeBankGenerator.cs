@@ -11,6 +11,10 @@ namespace Types.Generator
     public class TypeBankGenerator : IIncrementalGenerator
     {
         public const string TypeNameFormat = "{0}TypeBank";
+        public const string FieldBufferTypeName = "FieldBuffer";
+        public const string InterfaceBufferTypeName = "TypeBuffer";
+        public const string FieldBufferVariableName = "fields";
+        public const string InterfaceBufferVariableName = "types";
 
         void IIncrementalGenerator.Initialize(IncrementalGeneratorInitializationContext context)
         {
@@ -113,8 +117,18 @@ namespace Types.Generator
                 source.AppendLine("readonly void ITypeBank.Load(Register register)");
                 source.BeginGroup();
                 {
-                    source.AppendLine("VariableBuffer variableBuffer = new();");
-                    source.AppendLine("TypeBuffer interfaceBuffer = new();");
+                    source.Append(FieldBufferTypeName);
+                    source.Append(' ');
+                    source.Append(FieldBufferVariableName);
+                    source.Append(" = new();");
+                    source.AppendLine();
+
+                    source.Append(InterfaceBufferTypeName);
+                    source.Append(' ');
+                    source.Append(InterfaceBufferVariableName);
+                    source.Append(" = new();");
+                    source.AppendLine();
+
                     foreach (ITypeSymbol type in types)
                     {
                         AppendRegister(source, type);
@@ -156,9 +170,15 @@ namespace Types.Generator
             source.Append(">(");
             if (variableCount > 0)
             {
-                source.Append("variableBuffer, ");
+                source.Append(FieldBufferVariableName);
+                source.Append(',');
+                source.Append(' ');
                 source.Append(variableCount);
-                source.Append(", interfaceBuffer, ");
+                source.Append(',');
+                source.Append(' ');
+                source.Append(InterfaceBufferVariableName);
+                source.Append(',');
+                source.Append(' ');
                 source.Append(interfaceCount);
             }
 
@@ -167,7 +187,8 @@ namespace Types.Generator
 
             static void AppendVariable(SourceBuilder source, IFieldSymbol field, ref byte count)
             {
-                source.Append("variableBuffer[");
+                source.Append(FieldBufferVariableName);
+                source.Append('[');
                 source.Append(count);
                 source.Append("] = new(\"");
                 source.Append(field.Name);

@@ -4,7 +4,7 @@ using System.Diagnostics;
 namespace Types
 {
     /// <summary>
-    /// Buffer for storing <see cref="TypeLayout"/> values.
+    /// Buffer for storing <see cref="Type"/> values.
     /// </summary>
     public unsafe struct TypeBuffer
     {
@@ -13,34 +13,34 @@ namespace Types
         /// </summary>
         public const int Capacity = 32;
 
-        private fixed long hashes[Capacity];
+        private fixed long buffer[Capacity];
 
         /// <summary>
         /// Indexer for accessing a value at the given <paramref name="index"/>.
         /// </summary>
-        public TypeLayout this[int index]
+        public Type this[int index]
         {
             readonly get
             {
-                long hash = hashes[index];
+                long hash = buffer[index];
                 return TypeRegistry.Get(hash);
             }
             set
             {
-                hashes[index] = value.Hash;
+                buffer[index] = value.Hash;
             }
         }
 
         /// <summary>
         /// Creates a new buffer containing the given <paramref name="types"/>.
         /// </summary>
-        public TypeBuffer(ReadOnlySpan<TypeLayout> types)
+        public TypeBuffer(ReadOnlySpan<Type> types)
         {
             ThrowIfCantFit(types.Length);
 
             for (int i = 0; i < types.Length; i++)
             {
-                hashes[i] = types[i].Hash;
+                buffer[i] = types[i].Hash;
             }
         }
 

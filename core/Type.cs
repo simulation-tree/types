@@ -8,25 +8,17 @@ namespace Types
     /// Describes metadata for a type.
     /// </summary>
     [SkipLocalsInit]
-    public readonly struct TypeLayout : IEquatable<TypeLayout>
+    public readonly struct Type : IEquatable<Type>
     {
         /// <summary>
         /// Size of the type in bytes.
         /// </summary>
         public readonly ushort size;
 
-        /// <summary>
-        /// Amount of <see cref="Variable"/>s the type has.
-        /// </summary>
-        public readonly byte variableCount;
-
-        /// <summary>
-        /// Amount of interfaces the type implements.
-        /// </summary>
-        public readonly byte interfaceCount;
-
+        private readonly byte fieldCount;
+        private readonly byte interfaceCount;
         private readonly long hash;
-        private readonly VariableBuffer variables;
+        private readonly FieldBuffer fields;
         private readonly TypeBuffer interfaces;
 
         /// <summary>
@@ -35,15 +27,15 @@ namespace Types
         public readonly long Hash => hash;
 
         /// <summary>
-        /// All variables declared in the type.
+        /// All fields declared in the type.
         /// </summary>
-        public unsafe readonly ReadOnlySpan<Variable> Variables
+        public unsafe readonly ReadOnlySpan<Field> Fields
         {
             get
             {
-                fixed (void* pointer = &variables)
+                fixed (void* pointer = &fields)
                 {
-                    return new ReadOnlySpan<Variable>(pointer, variableCount);
+                    return new ReadOnlySpan<Field>(pointer, fieldCount);
                 }
             }
         }
@@ -51,26 +43,26 @@ namespace Types
         /// <summary>
         /// All interfaces implemented by this type.
         /// </summary>
-        public unsafe readonly ReadOnlySpan<TypeLayout> Interfaces
+        public unsafe readonly ReadOnlySpan<Type> Interfaces
         {
             get
             {
                 fixed (void* pointer = &interfaces)
                 {
-                    return new ReadOnlySpan<TypeLayout>(pointer, interfaceCount);
+                    return new ReadOnlySpan<Type>(pointer, interfaceCount);
                 }
             }
         }
 
         /// <summary>
-        /// The underlying system type that this layout represents.
+        /// The underlying system type that this represents.
         /// </summary>
-        public readonly Type SystemType
+        public readonly System.Type SystemType
         {
             get
             {
                 RuntimeTypeHandle handle = TypeHandle;
-                return Type.GetTypeFromHandle(handle) ?? throw new InvalidOperationException($"System type not found for handle {handle}");
+                return System.Type.GetTypeFromHandle(handle) ?? throw new InvalidOperationException($"System type not found for handle {handle}");
             }
         }
 
@@ -109,68 +101,68 @@ namespace Types
         /// Default constructor not supported.
         /// </summary>
         [Obsolete("Default constructor not supported", true)]
-        public TypeLayout()
+        public Type()
         {
             throw new NotSupportedException();
         }
 #endif
 
         /// <summary>
-        /// Creates a new type layout without any variables set.
+        /// Creates a new type without any fields or interfaces set.
         /// </summary>
-        public TypeLayout(ReadOnlySpan<char> fullName, ushort size)
+        public Type(ReadOnlySpan<char> fullName, ushort size)
         {
             this.size = size;
-            variableCount = 0;
-            variables = default;
+            fieldCount = 0;
+            fields = default;
             hash = TypeNames.Set(fullName);
         }
 
         /// <summary>
-        /// Creates a new type layout without any variables set.
+        /// Creates a new type without any fields or interfaces set.
         /// </summary>
-        public TypeLayout(string fullName, ushort size)
+        public Type(string fullName, ushort size)
         {
             this.size = size;
-            variableCount = 0;
-            variables = default;
+            fieldCount = 0;
+            fields = default;
             hash = TypeNames.Set(fullName);
         }
 
         /// <summary>
-        /// Creates a new type layout.
+        /// Creates a new type.
         /// </summary>
-        public TypeLayout(ReadOnlySpan<char> fullName, ushort size, ReadOnlySpan<Variable> variables, ReadOnlySpan<TypeLayout> interfaces)
+        public Type(ReadOnlySpan<char> fullName, ushort size, ReadOnlySpan<Field> fields, ReadOnlySpan<Type> interfaces)
         {
             this.size = size;
-            variableCount = (byte)variables.Length;
-            this.variables = new(variables);
+            fieldCount = (byte)fields.Length;
+            this.fields = new(fields);
             interfaceCount = (byte)interfaces.Length;
             this.interfaces = new(interfaces);
             hash = TypeNames.Set(fullName);
         }
 
         /// <summary>
-        /// Creates a new type layout.
+        /// Creates a new type.
         /// </summary>
-        public TypeLayout(ReadOnlySpan<char> fullName, ushort size, VariableBuffer variables, byte variableCount, TypeBuffer interfaces, byte interfaceCount)
+        public Type(ReadOnlySpan<char> fullName, ushort size, FieldBuffer fields, byte fieldCount, TypeBuffer interfaces, byte interfaceCount)
         {
             this.size = size;
-            this.variableCount = variableCount;
-            this.variables = variables;
+            this.fieldCount = fieldCount;
+            this.fields = fields;
             this.interfaceCount = interfaceCount;
             this.interfaces = interfaces;
             hash = TypeNames.Set(fullName);
         }
 
         /// <summary>
-        /// Creates a new type layout.
+        /// Creates a new type.
         /// </summary>
-        public TypeLayout(string fullName, ushort size, ReadOnlySpan<Variable> variables, ReadOnlySpan<TypeLayout> interfaces)
+        public Type(string fullName, ushort size, ReadOnlySpan<Field> fields, ReadOnlySpan<Type> interfaces)
         {
             this.size = size;
-            variableCount = (byte)variables.Length;
-            this.variables = new(variables);
+            fieldCount = (byte)fields.Length;
+            this.fields = new(fields);
             interfaceCount = (byte)interfaces.Length;
             this.interfaces = new(interfaces);
             hash = TypeNames.Set(fullName);
@@ -183,7 +175,7 @@ namespace Types
         }
 
         /// <summary>
-        /// Writes a string representation of this type layout to <paramref name="destination"/>.
+        /// Writes a string representation of this type to <paramref name="destination"/>.
         /// </summary>
         public readonly int ToString(Span<char> destination)
         {
@@ -193,31 +185,11 @@ namespace Types
         }
 
         /// <summary>
-        /// Retrieves the field at the given <paramref name="index"/>.
-        /// </summary>
-        public readonly Variable GetVariable(int index)
-        {
-            ThrowIfVariableIndexOutOfRange(index);
-
-            return variables[index];
-        }
-
-        /// <summary>
-        /// Retrieves the implemented interface at the given <paramref name="index"/>.
-        /// </summary>
-        public readonly TypeLayout GetInterface(int index)
-        {
-            ThrowIfInterfaceIndexOutOfRange(index);
-
-            return interfaces[index];
-        }
-
-        /// <summary>
         /// Checks if this type metadata represents type <typeparamref name="T"/>.
         /// </summary>
         public readonly bool Is<T>() where T : unmanaged
         {
-            TypeRegistry.handleToType.TryGetValue(RuntimeTypeTable.GetHandle<T>(), out TypeLayout otherType);
+            TypeRegistry.handleToType.TryGetValue(RuntimeTypeTable.GetHandle<T>(), out Type otherType);
             return hash == otherType.hash;
         }
 
@@ -241,27 +213,27 @@ namespace Types
         }
 
         /// <summary>
-        /// Copies all variables in this type to the <paramref name="destination"/>.
+        /// Copies all fields in this type to the <paramref name="destination"/>.
         /// </summary>
-        public readonly byte CopyVariablesTo(Span<Variable> destination)
+        public readonly byte CopyFieldsTo(Span<Field> destination)
         {
-            for (int i = 0; i < variableCount; i++)
+            for (int i = 0; i < fieldCount; i++)
             {
-                destination[i] = variables[i];
+                destination[i] = fields[i];
             }
 
-            return variableCount;
+            return fieldCount;
         }
 
         /// <summary>
-        /// Checks if this type contains a variable with the given <paramref name="name"/>.
+        /// Checks if this type contains a fields with the given <paramref name="fieldName"/>.
         /// </summary>
-        public readonly bool ContainsVariable(string name)
+        public readonly bool ContainsField(string fieldName)
         {
-            ReadOnlySpan<char> nameSpan = name.AsSpan();
-            for (int i = 0; i < variableCount; i++)
+            ReadOnlySpan<char> nameSpan = fieldName.AsSpan();
+            for (int i = 0; i < fieldCount; i++)
             {
-                if (variables[i].Name.SequenceEqual(nameSpan))
+                if (fields[i].Name.SequenceEqual(nameSpan))
                 {
                     return true;
                 }
@@ -271,14 +243,14 @@ namespace Types
         }
 
         /// <summary>
-        /// Checks if this type contains a variable with the given <paramref name="name"/>.
+        /// Checks if this type contains a fields with the given <paramref name="fieldName"/>.
         /// </summary>
-        public readonly bool ContainsVariable(ReadOnlySpan<char> name)
+        public readonly bool ContainsField(ReadOnlySpan<char> fieldName)
         {
-            ReadOnlySpan<char> nameSpan = name;
-            for (int i = 0; i < variableCount; i++)
+            ReadOnlySpan<char> nameSpan = fieldName;
+            for (int i = 0; i < fieldCount; i++)
             {
-                if (variables[i].Name.SequenceEqual(nameSpan))
+                if (fields[i].Name.SequenceEqual(nameSpan))
                 {
                     return true;
                 }
@@ -288,18 +260,18 @@ namespace Types
         }
 
         /// <summary>
-        /// Retrieves the variable in this type with the given <paramref name="name"/>.
+        /// Retrieves the field in this type with the given <paramref name="fieldName"/>.
         /// </summary>
-        public readonly Variable GetVariable(string name)
+        public readonly Field GetField(string fieldName)
         {
-            ThrowIfVariableIsMissing(name);
+            ThrowIfFieldIsMissing(fieldName);
 
-            for (int i = 0; i < variableCount; i++)
+            for (int i = 0; i < fieldCount; i++)
             {
-                Variable variable = variables[i];
-                if (variable.Name.SequenceEqual(name))
+                Field field = fields[i];
+                if (field.Name.SequenceEqual(fieldName))
                 {
-                    return variable;
+                    return field;
                 }
             }
 
@@ -307,18 +279,18 @@ namespace Types
         }
 
         /// <summary>
-        /// Retrieves the variable in this type with the given <paramref name="name"/>.
+        /// Retrieves the field in this type with the given <paramref name="fieldName"/>.
         /// </summary>
-        public readonly Variable GetVariable(ReadOnlySpan<char> name)
+        public readonly Field GetField(ReadOnlySpan<char> fieldName)
         {
-            ThrowIfVariableIsMissing(name);
+            ThrowIfFieldIsMissing(fieldName);
 
-            for (int i = 0; i < variableCount; i++)
+            for (int i = 0; i < fieldCount; i++)
             {
-                Variable variable = variables[i];
-                if (variable.Name.SequenceEqual(name))
+                Field field = fields[i];
+                if (field.Name.SequenceEqual(fieldName))
                 {
-                    return variable;
+                    return field;
                 }
             }
 
@@ -326,16 +298,16 @@ namespace Types
         }
 
         /// <summary>
-        /// Retrieves the index of the variable with the given <paramref name="name"/>.
+        /// Retrieves the index of the field with the given <paramref name="fieldName"/>.
         /// </summary>
-        public readonly int IndexOf(string name)
+        public readonly int IndexOf(string fieldName)
         {
-            ThrowIfVariableIsMissing(name);
+            ThrowIfFieldIsMissing(fieldName);
 
-            for (int i = 0; i < variableCount; i++)
+            for (int i = 0; i < fieldCount; i++)
             {
-                Variable variable = variables[i];
-                if (variable.Name.SequenceEqual(name))
+                Field field = fields[i];
+                if (field.Name.SequenceEqual(fieldName))
                 {
                     return i;
                 }
@@ -345,16 +317,16 @@ namespace Types
         }
 
         /// <summary>
-        /// Retrieves the index of the variable with the given <paramref name="name"/>.
+        /// Retrieves the index of the field with the given <paramref name="fieldName"/>.
         /// </summary>
-        public readonly int IndexOf(ReadOnlySpan<char> name)
+        public readonly int IndexOf(ReadOnlySpan<char> fieldName)
         {
-            ThrowIfVariableIsMissing(name);
+            ThrowIfFieldIsMissing(fieldName);
 
-            for (int i = 0; i < variableCount; i++)
+            for (int i = 0; i < fieldCount; i++)
             {
-                Variable variable = variables[i];
-                if (variable.Name.SequenceEqual(name))
+                Field field = fields[i];
+                if (field.Name.SequenceEqual(fieldName))
                 {
                     return i;
                 }
@@ -366,7 +338,7 @@ namespace Types
         /// <summary>
         /// Retrieves the full type name for the given <paramref name="type"/>.
         /// </summary>
-        public static int GetFullName(Type type, Span<char> buffer)
+        public static int GetFullName(System.Type type, Span<char> buffer)
         {
             int length = 0;
             AppendType(buffer, ref length, type);
@@ -386,14 +358,14 @@ namespace Types
                 length += text.Length;
             }
 
-            static void AppendType(Span<char> fullName, ref int length, Type type)
+            static void AppendType(Span<char> fullName, ref int length, System.Type type)
             {
                 //todo: handle case where the type name is System.Collections.Generic.List`1+Enumerator[etc, etc]
-                Type? current = type;
+                System.Type? current = type;
                 string? currentNameSpace = current.Namespace;
                 while (current is not null)
                 {
-                    Type[] genericTypes = current.GenericTypeArguments;
+                    System.Type[] genericTypes = current.GenericTypeArguments;
                     string name = current.Name;
                     if (genericTypes.Length > 0)
                     {
@@ -438,7 +410,7 @@ namespace Types
         /// <summary>
         /// Retrieves the full type name for the given <paramref name="type"/>.
         /// </summary>
-        public static string GetFullName(Type type)
+        public static string GetFullName(System.Type type)
         {
             Span<char> buffer = stackalloc char[512];
             int length = GetFullName(type, buffer);
@@ -456,40 +428,22 @@ namespace Types
         }
 
         [Conditional("DEBUG")]
-        private readonly void ThrowIfVariableIsMissing(ReadOnlySpan<char> name)
+        private readonly void ThrowIfFieldIsMissing(ReadOnlySpan<char> fieldName)
         {
-            if (!ContainsVariable(name))
+            if (!ContainsField(fieldName))
             {
-                throw new InvalidOperationException($"Variable `{name.ToString()}` not found in type {FullName.ToString()}");
-            }
-        }
-
-        [Conditional("DEBUG")]
-        private readonly void ThrowIfVariableIndexOutOfRange(int index)
-        {
-            if (index < 0 || index >= variableCount)
-            {
-                throw new IndexOutOfRangeException($"Variable index {index} is out of range for type {FullName.ToString()}");
-            }
-        }
-
-        [Conditional("DEBUG")]
-        private readonly void ThrowIfInterfaceIndexOutOfRange(int index)
-        {
-            if (index < 0 || index >= interfaceCount)
-            {
-                throw new IndexOutOfRangeException($"Interface index {index} is out of range for type {FullName.ToString()}");
+                throw new InvalidOperationException($"Field with name `{fieldName.ToString()}` not found in type {FullName.ToString()}");
             }
         }
 
         /// <inheritdoc/>
         public readonly override bool Equals(object? obj)
         {
-            return obj is TypeLayout layout && Equals(layout);
+            return obj is Type type && Equals(type);
         }
 
         /// <inheritdoc/>
-        public readonly bool Equals(TypeLayout other)
+        public readonly bool Equals(Type other)
         {
             return hash == other.hash;
         }
@@ -504,13 +458,13 @@ namespace Types
         }
 
         /// <inheritdoc/>
-        public static bool operator ==(TypeLayout left, TypeLayout right)
+        public static bool operator ==(Type left, Type right)
         {
             return left.Equals(right);
         }
 
         /// <inheritdoc/>
-        public static bool operator !=(TypeLayout left, TypeLayout right)
+        public static bool operator !=(Type left, Type right)
         {
             return !(left == right);
         }

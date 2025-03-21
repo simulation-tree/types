@@ -4,46 +4,46 @@ using System.Diagnostics;
 namespace Types
 {
     /// <summary>
-    /// Buffer for storing <see cref="Variable"/> values.
+    /// Buffer for storing <see cref="Field"/> values.
     /// </summary>
-    public unsafe struct VariableBuffer
+    public unsafe struct FieldBuffer
     {
         /// <summary>
         /// Maximum amount that can be stored.
         /// </summary>
         public const int Capacity = 32;
 
-        private fixed long variables[Capacity];
+        private fixed long buffer[Capacity];
 
         /// <summary>
         /// Indexer for accessing the value at the given <paramref name="index"/>.
         /// </summary>
-        public Variable this[int index]
+        public Field this[int index]
         {
             readonly get
             {
-                long typeHash = variables[index * 2 + 0];
-                long nameHash = variables[index * 2 + 1];
+                long typeHash = buffer[index * 2 + 0];
+                long nameHash = buffer[index * 2 + 1];
                 return new(typeHash, nameHash);
             }
             set
             {
-                variables[index * 2 + 0] = value.typeHash;
-                variables[index * 2 + 1] = value.nameHash;
+                buffer[index * 2 + 0] = value.typeHash;
+                buffer[index * 2 + 1] = value.nameHash;
             }
         }
 
         /// <summary>
-        /// Creates a new buffer containing the given <paramref name="variables"/>.
+        /// Creates a new buffer containing the given <paramref name="fields"/>.
         /// </summary>
-        public VariableBuffer(ReadOnlySpan<Variable> variables)
+        public FieldBuffer(ReadOnlySpan<Field> fields)
         {
-            ThrowIfCantFit(variables.Length);
+            ThrowIfCantFit(fields.Length);
 
-            for (int i = 0; i < variables.Length; i++)
+            for (int i = 0; i < fields.Length; i++)
             {
-                this.variables[i * 2 + 0] = variables[i].typeHash;
-                this.variables[i * 2 + 1] = variables[i].nameHash;
+                buffer[i * 2 + 0] = fields[i].typeHash;
+                buffer[i * 2 + 1] = fields[i].nameHash;
             }
         }
 

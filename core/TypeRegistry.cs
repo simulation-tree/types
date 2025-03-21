@@ -12,80 +12,80 @@ namespace Types
     /// </summary>
     public static class TypeRegistry
     {
-        private static readonly List<TypeLayout> types = new();
-        internal static readonly Dictionary<RuntimeTypeHandle, TypeLayout> handleToType = new();
+        private static readonly List<Type> types = new();
+        internal static readonly Dictionary<RuntimeTypeHandle, Type> handleToType = new();
         private static readonly Dictionary<long, RuntimeTypeHandle> typeToHandle = new();
-        private static readonly Dictionary<long, TypeLayout> hashToType = new();
+        private static readonly Dictionary<long, Type> hashToType = new();
 
         /// <summary>
-        /// All registered type layouts.
+        /// All registered types.
         /// </summary>
-        public static IReadOnlyCollection<TypeLayout> All => types;
+        public static IReadOnlyCollection<Type> All => types;
 
         [SkipLocalsInit]
         static unsafe TypeRegistry()
         {
-            Register(new(TypeLayout.GetFullName<byte>(), sizeof(byte)), RuntimeTypeTable.GetHandle<byte>());
-            Register(new(TypeLayout.GetFullName<sbyte>(), sizeof(sbyte)), RuntimeTypeTable.GetHandle<sbyte>());
-            Register(new(TypeLayout.GetFullName<short>(), sizeof(short)), RuntimeTypeTable.GetHandle<short>());
-            Register(new(TypeLayout.GetFullName<ushort>(), sizeof(ushort)), RuntimeTypeTable.GetHandle<ushort>());
-            Register(new(TypeLayout.GetFullName<int>(), sizeof(int)), RuntimeTypeTable.GetHandle<int>());
-            Register(new(TypeLayout.GetFullName<uint>(), sizeof(uint)), RuntimeTypeTable.GetHandle<uint>());
-            Register(new(TypeLayout.GetFullName<long>(), sizeof(long)), RuntimeTypeTable.GetHandle<long>());
-            Register(new(TypeLayout.GetFullName<ulong>(), sizeof(ulong)), RuntimeTypeTable.GetHandle<ulong>());
-            Register(new(TypeLayout.GetFullName<float>(), sizeof(float)), RuntimeTypeTable.GetHandle<float>());
-            Register(new(TypeLayout.GetFullName<double>(), sizeof(double)), RuntimeTypeTable.GetHandle<double>());
-            Register(new(TypeLayout.GetFullName<char>(), sizeof(char)), RuntimeTypeTable.GetHandle<char>());
-            Register(new(TypeLayout.GetFullName<bool>(), sizeof(bool)), RuntimeTypeTable.GetHandle<bool>());
-            Register(new(TypeLayout.GetFullName<nint>(), (ushort)sizeof(nint)), RuntimeTypeTable.GetHandle<nint>());
-            Register(new(TypeLayout.GetFullName<nuint>(), (ushort)sizeof(nuint)), RuntimeTypeTable.GetHandle<nuint>());
+            Register(new(Type.GetFullName<byte>(), sizeof(byte)), RuntimeTypeTable.GetHandle<byte>());
+            Register(new(Type.GetFullName<sbyte>(), sizeof(sbyte)), RuntimeTypeTable.GetHandle<sbyte>());
+            Register(new(Type.GetFullName<short>(), sizeof(short)), RuntimeTypeTable.GetHandle<short>());
+            Register(new(Type.GetFullName<ushort>(), sizeof(ushort)), RuntimeTypeTable.GetHandle<ushort>());
+            Register(new(Type.GetFullName<int>(), sizeof(int)), RuntimeTypeTable.GetHandle<int>());
+            Register(new(Type.GetFullName<uint>(), sizeof(uint)), RuntimeTypeTable.GetHandle<uint>());
+            Register(new(Type.GetFullName<long>(), sizeof(long)), RuntimeTypeTable.GetHandle<long>());
+            Register(new(Type.GetFullName<ulong>(), sizeof(ulong)), RuntimeTypeTable.GetHandle<ulong>());
+            Register(new(Type.GetFullName<float>(), sizeof(float)), RuntimeTypeTable.GetHandle<float>());
+            Register(new(Type.GetFullName<double>(), sizeof(double)), RuntimeTypeTable.GetHandle<double>());
+            Register(new(Type.GetFullName<char>(), sizeof(char)), RuntimeTypeTable.GetHandle<char>());
+            Register(new(Type.GetFullName<bool>(), sizeof(bool)), RuntimeTypeTable.GetHandle<bool>());
+            Register(new(Type.GetFullName<nint>(), (ushort)sizeof(nint)), RuntimeTypeTable.GetHandle<nint>());
+            Register(new(Type.GetFullName<nuint>(), (ushort)sizeof(nuint)), RuntimeTypeTable.GetHandle<nuint>());
 #if NET
-            Register(new(TypeLayout.GetFullName<Half>(), (ushort)sizeof(Half)), RuntimeTypeTable.GetHandle<Half>());
+            Register(new(Type.GetFullName<Half>(), (ushort)sizeof(Half)), RuntimeTypeTable.GetHandle<Half>());
 #endif
 
-            VariableBuffer variableBuffer = new();
-            TypeBuffer interfaceBuffer = new();
-            variableBuffer[0] = new("x", TypeLayout.GetFullName<float>());
-            variableBuffer[1] = new("y", TypeLayout.GetFullName<float>());
-            variableBuffer[2] = new("z", TypeLayout.GetFullName<float>());
-            variableBuffer[3] = new("w", TypeLayout.GetFullName<float>());
-            Register(new(TypeLayout.GetFullName<Vector2>(), (ushort)sizeof(Vector2), variableBuffer, 2, interfaceBuffer, 0), RuntimeTypeTable.GetHandle<Vector2>());
-            Register(new(TypeLayout.GetFullName<Vector3>(), (ushort)sizeof(Vector3), variableBuffer, 3, interfaceBuffer, 0), RuntimeTypeTable.GetHandle<Vector3>());
-            Register(new(TypeLayout.GetFullName<Vector4>(), (ushort)sizeof(Vector4), variableBuffer, 4, interfaceBuffer, 0), RuntimeTypeTable.GetHandle<Vector4>());
-            Register(new(TypeLayout.GetFullName<Quaternion>(), (ushort)sizeof(Quaternion), variableBuffer, 4, interfaceBuffer, 0), RuntimeTypeTable.GetHandle<Quaternion>());
+            FieldBuffer fields = new();
+            TypeBuffer interfaces = new();
+            fields[0] = new("x", Type.GetFullName<float>());
+            fields[1] = new("y", Type.GetFullName<float>());
+            fields[2] = new("z", Type.GetFullName<float>());
+            fields[3] = new("w", Type.GetFullName<float>());
+            Register(new(Type.GetFullName<Vector2>(), (ushort)sizeof(Vector2), fields, 2, interfaces, 0), RuntimeTypeTable.GetHandle<Vector2>());
+            Register(new(Type.GetFullName<Vector3>(), (ushort)sizeof(Vector3), fields, 3, interfaces, 0), RuntimeTypeTable.GetHandle<Vector3>());
+            Register(new(Type.GetFullName<Vector4>(), (ushort)sizeof(Vector4), fields, 4, interfaces, 0), RuntimeTypeTable.GetHandle<Vector4>());
+            Register(new(Type.GetFullName<Quaternion>(), (ushort)sizeof(Quaternion), fields, 4, interfaces, 0), RuntimeTypeTable.GetHandle<Quaternion>());
 
-            variableBuffer[0] = new("M11", TypeLayout.GetFullName<float>());
-            variableBuffer[1] = new("M12", TypeLayout.GetFullName<float>());
-            variableBuffer[2] = new("M21", TypeLayout.GetFullName<float>());
-            variableBuffer[3] = new("M22", TypeLayout.GetFullName<float>());
-            variableBuffer[4] = new("M31", TypeLayout.GetFullName<float>());
-            variableBuffer[5] = new("M32", TypeLayout.GetFullName<float>());
-            Register(new(TypeLayout.GetFullName<Matrix3x2>(), (ushort)sizeof(Matrix3x2), variableBuffer, 6, interfaceBuffer, 0), RuntimeTypeTable.GetHandle<Matrix3x2>());
+            fields[0] = new("M11", Type.GetFullName<float>());
+            fields[1] = new("M12", Type.GetFullName<float>());
+            fields[2] = new("M21", Type.GetFullName<float>());
+            fields[3] = new("M22", Type.GetFullName<float>());
+            fields[4] = new("M31", Type.GetFullName<float>());
+            fields[5] = new("M32", Type.GetFullName<float>());
+            Register(new(Type.GetFullName<Matrix3x2>(), (ushort)sizeof(Matrix3x2), fields, 6, interfaces, 0), RuntimeTypeTable.GetHandle<Matrix3x2>());
 
-            variableBuffer[0] = new("M11", TypeLayout.GetFullName<float>());
-            variableBuffer[1] = new("M12", TypeLayout.GetFullName<float>());
-            variableBuffer[2] = new("M13", TypeLayout.GetFullName<float>());
-            variableBuffer[3] = new("M14", TypeLayout.GetFullName<float>());
-            variableBuffer[4] = new("M21", TypeLayout.GetFullName<float>());
-            variableBuffer[5] = new("M22", TypeLayout.GetFullName<float>());
-            variableBuffer[6] = new("M23", TypeLayout.GetFullName<float>());
-            variableBuffer[7] = new("M24", TypeLayout.GetFullName<float>());
-            variableBuffer[8] = new("M31", TypeLayout.GetFullName<float>());
-            variableBuffer[9] = new("M32", TypeLayout.GetFullName<float>());
-            variableBuffer[10] = new("M33", TypeLayout.GetFullName<float>());
-            variableBuffer[11] = new("M34", TypeLayout.GetFullName<float>());
-            variableBuffer[12] = new("M41", TypeLayout.GetFullName<float>());
-            variableBuffer[13] = new("M42", TypeLayout.GetFullName<float>());
-            variableBuffer[14] = new("M43", TypeLayout.GetFullName<float>());
-            variableBuffer[15] = new("M44", TypeLayout.GetFullName<float>());
-            Register(new(TypeLayout.GetFullName<Matrix4x4>(), (ushort)sizeof(Matrix4x4), variableBuffer, 16, interfaceBuffer, 0), RuntimeTypeTable.GetHandle<Matrix4x4>());
+            fields[0] = new("M11", Type.GetFullName<float>());
+            fields[1] = new("M12", Type.GetFullName<float>());
+            fields[2] = new("M13", Type.GetFullName<float>());
+            fields[3] = new("M14", Type.GetFullName<float>());
+            fields[4] = new("M21", Type.GetFullName<float>());
+            fields[5] = new("M22", Type.GetFullName<float>());
+            fields[6] = new("M23", Type.GetFullName<float>());
+            fields[7] = new("M24", Type.GetFullName<float>());
+            fields[8] = new("M31", Type.GetFullName<float>());
+            fields[9] = new("M32", Type.GetFullName<float>());
+            fields[10] = new("M33", Type.GetFullName<float>());
+            fields[11] = new("M34", Type.GetFullName<float>());
+            fields[12] = new("M41", Type.GetFullName<float>());
+            fields[13] = new("M42", Type.GetFullName<float>());
+            fields[14] = new("M43", Type.GetFullName<float>());
+            fields[15] = new("M44", Type.GetFullName<float>());
+            Register(new(Type.GetFullName<Matrix4x4>(), (ushort)sizeof(Matrix4x4), fields, 16, interfaces, 0), RuntimeTypeTable.GetHandle<Matrix4x4>());
 
-            variableBuffer[0] = new("_dateData", TypeLayout.GetFullName<ulong>());
-            Register(new(TypeLayout.GetFullName<DateTime>(), (ushort)sizeof(DateTime), variableBuffer, 1, interfaceBuffer, 0), RuntimeTypeTable.GetHandle<DateTime>());
+            fields[0] = new("_dateData", Type.GetFullName<ulong>());
+            Register(new(Type.GetFullName<DateTime>(), (ushort)sizeof(DateTime), fields, 1, interfaces, 0), RuntimeTypeTable.GetHandle<DateTime>());
         }
 
         /// <summary>
-        /// Loads all <see cref="TypeLayout"/>s from the bank of type <typeparamref name="T"/>.
+        /// Loads all <see cref="Type"/>s from the bank of type <typeparamref name="T"/>.
         /// </summary>
         public unsafe static void Load<T>() where T : unmanaged, ITypeBank
         {
@@ -104,7 +104,7 @@ namespace Types
         /// <summary>
         /// Manually registers the given <paramref name="type"/>.
         /// </summary>
-        public static void Register(TypeLayout type, RuntimeTypeHandle handle)
+        public static void Register(Type type, RuntimeTypeHandle handle)
         {
             ThrowIfAlreadyRegistered(type);
 
@@ -117,7 +117,7 @@ namespace Types
         /// <summary>
         /// Tries to manually register the given <paramref name="type"/>.
         /// </summary>
-        public static bool TryRegister(TypeLayout type, RuntimeTypeHandle handle)
+        public static bool TryRegister(Type type, RuntimeTypeHandle handle)
         {
             if (types.Contains(type))
             {
@@ -132,30 +132,30 @@ namespace Types
         }
 
         /// <summary>
-        /// Manually registers type <typeparamref name="T"/> without any variables.
+        /// Manually registers type <typeparamref name="T"/> without any fields or interfaces.
         /// </summary>
         public unsafe static void Register<T>() where T : unmanaged
         {
             //todo: need to add a warning here when trying to register a type bank itself
             ushort size = (ushort)sizeof(T);
-            TypeLayout type = new(TypeLayout.GetFullName<T>(), size);
+            Type type = new(Type.GetFullName<T>(), size);
             Register(type, RuntimeTypeTable.GetHandle<T>());
         }
 
         /// <summary>
-        /// Tries to manually register type <typeparamref name="T"/> without any variables.
+        /// Tries to manually register type <typeparamref name="T"/> without any fields or interfaces.
         /// </summary>
         public unsafe static bool TryRegister<T>() where T : unmanaged
         {
             ushort size = (ushort)sizeof(T);
-            TypeLayout type = new(TypeLayout.GetFullName<T>(), size);
+            Type type = new(Type.GetFullName<T>(), size);
             return TryRegister(type, RuntimeTypeTable.GetHandle<T>());
         }
 
         /// <summary>
         /// Retrieves the metadata for <typeparamref name="T"/>.
         /// </summary>
-        public static TypeLayout Get<T>() where T : unmanaged
+        public static Type Get<T>() where T : unmanaged
         {
             ThrowIfNotRegistered<T>();
 
@@ -166,7 +166,7 @@ namespace Types
         /// Retrieves the metadata for <typeparamref name="T"/>, or registers
         /// it if it's not already registered without any variables.
         /// </summary>
-        public static TypeLayout GetOrRegister<T>() where T : unmanaged
+        public static Type GetOrRegister<T>() where T : unmanaged
         {
             return LazyCache<T>.value;
         }
@@ -174,7 +174,7 @@ namespace Types
         /// <summary>
         /// Retrieves the metadata for the type with the given <paramref name="typeHash"/>.
         /// </summary>
-        public static TypeLayout Get(long typeHash)
+        public static Type Get(long typeHash)
         {
             ThrowIfNotRegistered(typeHash);
 
@@ -184,7 +184,7 @@ namespace Types
         /// <summary>
         /// Tries to get the metadata for the type with the given <paramref name="typeHash"/>.
         /// </summary>
-        public static bool TryGet(long typeHash, out TypeLayout type)
+        public static bool TryGet(long typeHash, out Type type)
         {
             return hashToType.TryGetValue(typeHash, out type);
         }
@@ -192,7 +192,7 @@ namespace Types
         /// <summary>
         /// Retrieves the metadata for the <paramref name="handle"/> of the wanted type.
         /// </summary>
-        public static TypeLayout Get(RuntimeTypeHandle handle)
+        public static Type Get(RuntimeTypeHandle handle)
         {
             ThrowIfNotRegistered(handle);
 
@@ -220,7 +220,7 @@ namespace Types
         /// <summary>
         /// Checks if the given <paramref name="type"/> is registered.
         /// </summary>
-        public static bool IsRegistered(Type type)
+        public static bool IsRegistered(System.Type type)
         {
             return handleToType.ContainsKey(RuntimeTypeTable.GetHandle(type));
         }
@@ -231,7 +231,7 @@ namespace Types
         public static bool IsRegistered(ReadOnlySpan<char> fullTypeName)
         {
             long hash = fullTypeName.GetLongHashCode();
-            foreach (TypeLayout type in types)
+            foreach (Type type in types)
             {
                 if (type.Hash == hash)
                 {
@@ -248,7 +248,7 @@ namespace Types
         public static bool IsRegistered(string fullTypeName)
         {
             long hash = fullTypeName.GetLongHashCode();
-            foreach (TypeLayout type in types)
+            foreach (Type type in types)
             {
                 if (type.Hash == hash)
                 {
@@ -282,7 +282,7 @@ namespace Types
         {
             if (!handleToType.ContainsKey(handle))
             {
-                Type? type = Type.GetTypeFromHandle(handle);
+                System.Type? type = System.Type.GetTypeFromHandle(handle);
                 if (type is not null)
                 {
                     throw new InvalidOperationException($"Type `{type}` is not registered");
@@ -295,7 +295,7 @@ namespace Types
         }
 
         [Conditional("DEBUG")]
-        private static void ThrowIfAlreadyRegistered(TypeLayout type)
+        private static void ThrowIfAlreadyRegistered(Type type)
         {
             if (types.Contains(type))
             {
@@ -305,7 +305,7 @@ namespace Types
 
         private static class Cache<T> where T : unmanaged
         {
-            public static readonly TypeLayout value;
+            public static readonly Type value;
 
             static Cache()
             {
@@ -318,14 +318,14 @@ namespace Types
 
         private unsafe static class LazyCache<T> where T : unmanaged
         {
-            public static readonly TypeLayout value;
+            public static readonly Type value;
 
             static LazyCache()
             {
                 RuntimeTypeHandle key = RuntimeTypeTable.GetHandle<T>();
                 if (!handleToType.TryGetValue(key, out value))
                 {
-                    value = new(TypeLayout.GetFullName<T>(), (ushort)sizeof(T));
+                    value = new(Type.GetFullName<T>(), (ushort)sizeof(T));
                     Register(value, key);
                 }
             }

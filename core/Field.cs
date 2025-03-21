@@ -3,25 +3,25 @@
 namespace Types
 {
     /// <summary>
-    /// Describes a variable part of a <see cref="TypeLayout"/>.
+    /// Describes a field declared in a <see cref="Types.Type"/>.
     /// </summary>
-    public readonly struct Variable : IEquatable<Variable>
+    public readonly struct Field : IEquatable<Field>
     {
         internal readonly long typeHash;
         internal readonly long nameHash;
 
         /// <summary>
-        /// Type layout of the variable.
+        /// The type of the field.
         /// </summary>
-        public readonly TypeLayout Type => TypeRegistry.Get(typeHash);
+        public readonly Type Type => TypeRegistry.Get(typeHash);
 
         /// <summary>
-        /// Name of the variable.
+        /// Name of the field.
         /// </summary>
         public readonly ReadOnlySpan<char> Name => TypeNames.Get(nameHash);
 
         /// <summary>
-        /// Size of the variable in bytes.
+        /// Size of the field in bytes.
         /// </summary>
         public readonly ushort Size => Type.size;
 
@@ -30,41 +30,41 @@ namespace Types
         /// Not supported.
         /// </summary>
         [Obsolete("Default constructor not supported", true)]
-        public Variable()
+        public Field()
         {
         }
 #endif
 
-        /// <summary>
-        /// Creates a new variable with the given <paramref name="name"/> and <paramref name="fullTypeName"/>.
-        /// </summary>
-        public Variable(string name, string fullTypeName)
-        {
-            nameHash = TypeNames.Set(name);
-            typeHash = fullTypeName.GetLongHashCode();
-        }
-
-        internal Variable(long typeHash, long nameHash)
+        internal Field(long typeHash, long nameHash)
         {
             this.typeHash = typeHash;
             this.nameHash = nameHash;
         }
 
         /// <summary>
-        /// Creates a new variable with the given <paramref name="name"/> and <paramref name="fullTypeName"/>.
+        /// Creates a new field with the given <paramref name="fieldName"/> and <paramref name="fullTypeName"/>.
         /// </summary>
-        public Variable(ReadOnlySpan<char> name, ReadOnlySpan<char> fullTypeName)
+        public Field(string fieldName, string fullTypeName)
         {
-            nameHash = TypeNames.Set(name);
+            nameHash = TypeNames.Set(fieldName);
             typeHash = fullTypeName.GetLongHashCode();
         }
 
         /// <summary>
-        /// Creates a new variable with the given <paramref name="name"/> and <paramref name="typeHash"/>.
+        /// Creates a new field with the given <paramref name="fieldName"/> and <paramref name="fullTypeName"/>.
         /// </summary>
-        public Variable(string name, int typeHash)
+        public Field(ReadOnlySpan<char> fieldName, ReadOnlySpan<char> fullTypeName)
         {
-            nameHash = TypeNames.Set(name);
+            nameHash = TypeNames.Set(fieldName);
+            typeHash = fullTypeName.GetLongHashCode();
+        }
+
+        /// <summary>
+        /// Creates a new field with the given <paramref name="fieldName"/> and <paramref name="typeHash"/>.
+        /// </summary>
+        public Field(string fieldName, int typeHash)
+        {
+            nameHash = TypeNames.Set(fieldName);
             this.typeHash = typeHash;
         }
 
@@ -77,14 +77,14 @@ namespace Types
         }
 
         /// <summary>
-        /// Builds a string representation of this variable and writes it to <paramref name="buffer"/>.
+        /// Builds a string representation of this field and writes it to <paramref name="buffer"/>.
         /// </summary>
         /// <returns>Amount of characters written.</returns>
         public readonly int ToString(Span<char> buffer)
         {
-            TypeLayout typeLayout = Type;
-            typeLayout.Name.CopyTo(buffer);
-            int length = typeLayout.Name.Length;
+            Type type = Type;
+            type.Name.CopyTo(buffer);
+            int length = type.Name.Length;
             buffer[length++] = '=';
             Name.CopyTo(buffer.Slice(length));
             length += Name.Length;
@@ -94,11 +94,11 @@ namespace Types
         /// <inheritdoc/>
         public readonly override bool Equals(object? obj)
         {
-            return obj is Variable variable && Equals(variable);
+            return obj is Field field && Equals(field);
         }
 
         /// <inheritdoc/>
-        public readonly bool Equals(Variable other)
+        public readonly bool Equals(Field other)
         {
             return nameHash == other.nameHash && typeHash == other.typeHash;
         }
@@ -121,13 +121,13 @@ namespace Types
         }
 
         /// <inheritdoc/>
-        public static bool operator ==(Variable left, Variable right)
+        public static bool operator ==(Field left, Field right)
         {
             return left.Equals(right);
         }
 
         /// <inheritdoc/>
-        public static bool operator !=(Variable left, Variable right)
+        public static bool operator !=(Field left, Field right)
         {
             return !(left == right);
         }

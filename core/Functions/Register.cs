@@ -17,9 +17,9 @@ namespace Types.Functions
         /// <summary>
         /// Registers a type with the given <paramref name="variables"/> and <paramref name="interfaces"/>.
         /// </summary>
-        public unsafe readonly void Invoke<T>(ReadOnlySpan<Variable> variables, ReadOnlySpan<TypeLayout> interfaces) where T : unmanaged
+        public unsafe readonly void Invoke<T>(ReadOnlySpan<Field> variables, ReadOnlySpan<Type> interfaces) where T : unmanaged
         {
-            TypeLayout type = new(TypeLayout.GetFullName<T>(), (ushort)sizeof(T), variables, interfaces);
+            Type type = new(Type.GetFullName<T>(), (ushort)sizeof(T), variables, interfaces);
             Input input = new(type, RuntimeTypeTable.GetHandle<T>());
             action(input);
             TypeInstanceCreator.Initialize<T>(type);
@@ -28,9 +28,9 @@ namespace Types.Functions
         /// <summary>
         /// Registers a type with the given <paramref name="variables"/> and <paramref name="interfaces"/>.
         /// </summary>
-        public unsafe readonly void Invoke<T>(VariableBuffer variables, byte variableCount, TypeBuffer interfaces, byte interfaceCount) where T : unmanaged
+        public unsafe readonly void Invoke<T>(FieldBuffer variables, byte variableCount, TypeBuffer interfaces, byte interfaceCount) where T : unmanaged
         {
-            TypeLayout type = new(TypeLayout.GetFullName<T>(), (ushort)sizeof(T), variables, variableCount, interfaces, interfaceCount);
+            Type type = new(Type.GetFullName<T>(), (ushort)sizeof(T), variables, variableCount, interfaces, interfaceCount);
             Input input = new(type, RuntimeTypeTable.GetHandle<T>());
             action(input);
             TypeInstanceCreator.Initialize<T>(type);
@@ -41,7 +41,7 @@ namespace Types.Functions
         /// </summary>
         public unsafe readonly void Invoke<T>() where T : unmanaged
         {
-            TypeLayout type = new(TypeLayout.GetFullName<T>(), (ushort)sizeof(T));
+            Type type = new(Type.GetFullName<T>(), (ushort)sizeof(T));
             Input input = new(type, RuntimeTypeTable.GetHandle<T>());
             action(input);
             TypeInstanceCreator.Initialize<T>(type);
@@ -55,7 +55,7 @@ namespace Types.Functions
             /// <summary>
             /// Metadata of the type.
             /// </summary>
-            public readonly TypeLayout type;
+            public readonly Type type;
 
             private readonly nint handle;
 
@@ -67,7 +67,7 @@ namespace Types.Functions
             /// <summary>
             /// Creates the input argument.
             /// </summary>
-            public Input(TypeLayout type, RuntimeTypeHandle handle)
+            public Input(Type type, RuntimeTypeHandle handle)
             {
                 this.type = type;
                 this.handle = RuntimeTypeTable.GetAddress(handle);
