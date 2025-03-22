@@ -23,7 +23,7 @@ namespace Types
             readonly get
             {
                 long hash = buffer[index];
-                return TypeRegistry.GetInterface(hash);
+                return MetadataRegistry.GetInterface(hash);
             }
             set
             {

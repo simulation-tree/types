@@ -42,7 +42,7 @@ namespace Types
         /// <summary>
         /// Retrieves the raw handle for this interface.
         /// </summary>
-        public readonly RuntimeTypeHandle TypeHandle => TypeRegistry.GetRuntimeInterfaceHandle(hash);
+        public readonly RuntimeTypeHandle TypeHandle => MetadataRegistry.GetRuntimeInterfaceHandle(hash);
 
         /// <summary>
         /// Initializes an existing interface.
@@ -82,7 +82,7 @@ namespace Types
         public readonly bool Is<T>()
         {
             Span<char> buffer = stackalloc char[512];
-            int length = TypeRegistry.GetFullName(typeof(T), buffer);
+            int length = MetadataRegistry.GetFullName(typeof(T), buffer);
             return hash == buffer.Slice(0, length).GetLongHashCode();
         }
 

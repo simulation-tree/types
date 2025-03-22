@@ -8,19 +8,19 @@ namespace Types.Tests
         [Test]
         public void LoadCustomBank()
         {
-            Assert.That(TypeRegistry.IsTypeRegistered<Field>(), Is.False);
-            TypeRegistry.Load<CustomTypeBank>();
-            Assert.That(TypeRegistry.IsTypeRegistered<Field>(), Is.True);
+            Assert.That(MetadataRegistry.IsTypeRegistered<Field>(), Is.False);
+            MetadataRegistry.Load<CustomTypeBank>();
+            Assert.That(MetadataRegistry.IsTypeRegistered<Field>(), Is.True);
         }
 
 #if DEBUG
         [Test]
         public void ThrowWhenRegisteringTwice()
         {
-            Assert.That(TypeRegistry.IsInterfaceRegistered<IComparable>(), Is.False);
-            TypeRegistry.RegisterInterface<IComparable>();
-            Assert.That(TypeRegistry.IsInterfaceRegistered<IComparable>(), Is.True);
-            Assert.Throws<InvalidOperationException>(() => TypeRegistry.RegisterInterface<IComparable>());
+            Assert.That(MetadataRegistry.IsInterfaceRegistered<IComparable>(), Is.False);
+            MetadataRegistry.RegisterInterface<IComparable>();
+            Assert.That(MetadataRegistry.IsInterfaceRegistered<IComparable>(), Is.True);
+            Assert.Throws<InvalidOperationException>(() => MetadataRegistry.RegisterInterface<IComparable>());
         }
 #endif
 

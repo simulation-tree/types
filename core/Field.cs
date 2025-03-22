@@ -13,7 +13,7 @@ namespace Types
         /// <summary>
         /// The type of the field.
         /// </summary>
-        public readonly Type Type => TypeRegistry.GetType(typeHash);
+        public readonly Type Type => MetadataRegistry.GetType(typeHash);
 
         /// <summary>
         /// Name of the field.

@@ -12,8 +12,8 @@ namespace Types.Functions
         /// </summary>
         public unsafe readonly void RegisterType<T>(ReadOnlySpan<Field> variables, ReadOnlySpan<Interface> interfaces) where T : unmanaged
         {
-            Type type = new(TypeRegistry.GetFullName<T>(), (ushort)sizeof(T), variables, interfaces);
-            TypeRegistry.RegisterType(type, RuntimeTypeTable.GetHandle<T>());
+            Type type = new(MetadataRegistry.GetFullName<T>(), (ushort)sizeof(T), variables, interfaces);
+            MetadataRegistry.RegisterType(type, RuntimeTypeTable.GetHandle<T>());
             TypeInstanceCreator.Initialize<T>(type);
         }
 
@@ -22,8 +22,8 @@ namespace Types.Functions
         /// </summary>
         public unsafe readonly void RegisterType<T>(FieldBuffer variables, byte variableCount, InterfaceTypeBuffer interfaces, byte interfaceCount) where T : unmanaged
         {
-            Type type = new(TypeRegistry.GetFullName<T>(), (ushort)sizeof(T), variables, variableCount, interfaces, interfaceCount);
-            TypeRegistry.RegisterType(type, RuntimeTypeTable.GetHandle<T>());
+            Type type = new(MetadataRegistry.GetFullName<T>(), (ushort)sizeof(T), variables, variableCount, interfaces, interfaceCount);
+            MetadataRegistry.RegisterType(type, RuntimeTypeTable.GetHandle<T>());
             TypeInstanceCreator.Initialize<T>(type);
         }
 
@@ -32,8 +32,8 @@ namespace Types.Functions
         /// </summary>
         public unsafe readonly void RegisterType<T>() where T : unmanaged
         {
-            Type type = new(TypeRegistry.GetFullName<T>(), (ushort)sizeof(T));
-            TypeRegistry.RegisterType(type, RuntimeTypeTable.GetHandle<T>());
+            Type type = new(MetadataRegistry.GetFullName<T>(), (ushort)sizeof(T));
+            MetadataRegistry.RegisterType(type, RuntimeTypeTable.GetHandle<T>());
             TypeInstanceCreator.Initialize<T>(type);
         }
 
@@ -42,8 +42,8 @@ namespace Types.Functions
         /// </summary>
         public readonly void RegisterInterface<T>()
         {
-            Interface interfaceValue = new(TypeRegistry.GetFullName<T>());
-            TypeRegistry.RegisterInterface(interfaceValue, RuntimeTypeTable.GetHandle<T>());
+            Interface interfaceValue = new(MetadataRegistry.GetFullName<T>());
+            MetadataRegistry.RegisterInterface(interfaceValue, RuntimeTypeTable.GetHandle<T>());
         }
 
         /// <summary>

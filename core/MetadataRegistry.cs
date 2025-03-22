@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
-using System.Runtime.CompilerServices;
 
 namespace Types
 {
     /// <summary>
     /// Stores metadata about types and interfaces.
     /// </summary>
-    public static class TypeRegistry
+    public static class MetadataRegistry
     {
         private static readonly List<Type> types = new();
         private static readonly List<Interface> interfaces = new();
@@ -25,8 +24,12 @@ namespace Types
         /// </summary>
         public static IReadOnlyCollection<Type> Types => types;
 
-        [SkipLocalsInit]
-        static unsafe TypeRegistry()
+        /// <summary>
+        /// All registered interfaces.
+        /// </summary>
+        public static IReadOnlyCollection<Interface> Interfaces => interfaces;
+
+        static unsafe MetadataRegistry()
         {
             RegisterType(new(GetFullName<byte>(), sizeof(byte)), RuntimeTypeTable.GetHandle<byte>());
             RegisterType(new(GetFullName<sbyte>(), sizeof(sbyte)), RuntimeTypeTable.GetHandle<sbyte>());
@@ -90,7 +93,7 @@ namespace Types
         /// <summary>
         /// Loads all <see cref="Type"/>s from the bank of type <typeparamref name="T"/>.
         /// </summary>
-        public unsafe static void Load<T>() where T : unmanaged, ITypeBank
+        public static void Load<T>() where T : unmanaged, ITypeBank
         {
             T bank = default;
             bank.Load(new());

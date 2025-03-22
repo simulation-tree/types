@@ -11,11 +11,8 @@ namespace Types.Generator
     public class TypeBankGenerator : IIncrementalGenerator
     {
         public const string TypeNameFormat = "{0}TypeBank";
-        public const string FieldBufferTypeName = "FieldBuffer";
-        public const string InterfaceBufferTypeName = "InterfaceTypeBuffer";
         public const string FieldBufferVariableName = "fields";
         public const string InterfaceBufferVariableName = "interfaces";
-        public const string RegisterFunctionTypeName = "RegisterFunction";
 
         void IIncrementalGenerator.Initialize(IncrementalGeneratorInitializationContext context)
         {
@@ -116,19 +113,19 @@ namespace Types.Generator
             source.BeginGroup();
             {
                 source.Append("readonly void ITypeBank.Load(");
-                source.Append(RegisterFunctionTypeName);
+                source.Append(Constants.RegisterFunctionTypeName);
                 source.Append(" register)");
                 source.AppendLine();
 
                 source.BeginGroup();
                 {
-                    source.Append(FieldBufferTypeName);
+                    source.Append(Constants.FieldBufferTypeName);
                     source.Append(' ');
                     source.Append(FieldBufferVariableName);
                     source.Append(" = new();");
                     source.AppendLine();
 
-                    source.Append(InterfaceBufferTypeName);
+                    source.Append(Constants.InterfaceBufferTypeName);
                     source.Append(' ');
                     source.Append(InterfaceBufferVariableName);
                     source.Append(" = new();");
@@ -174,7 +171,9 @@ namespace Types.Generator
         private static void AppendRegisterInterface(SourceBuilder source, ITypeSymbol interfaceType)
         {
             string fullName = interfaceType.GetFullTypeName();
-            source.Append("if (!TypeRegistry.IsInterfaceRegistered<");
+            source.Append("if (!");
+            source.Append(Constants.RegistryTypeName);
+            source.Append(".IsInterfaceRegistered<");
             source.Append(fullName);
             source.Append(">())");
             source.AppendLine();
@@ -197,7 +196,9 @@ namespace Types.Generator
                 return;
             }
 
-            source.Append("if (!TypeRegistry.IsTypeRegistered<");
+            source.Append("if (!");
+            source.Append(Constants.RegistryTypeName);
+            source.Append(".IsTypeRegistered<");
             source.Append(fullName);
             source.Append(">())");
             source.AppendLine();

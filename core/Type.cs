@@ -69,7 +69,7 @@ namespace Types
         /// <summary>
         /// Retrieves the raw handle for this type.
         /// </summary>
-        public readonly RuntimeTypeHandle TypeHandle => TypeRegistry.GetRuntimeTypeHandle(hash);
+        public readonly RuntimeTypeHandle TypeHandle => MetadataRegistry.GetRuntimeTypeHandle(hash);
 
         /// <summary>
         /// Full name of the type including the namespace.
@@ -189,7 +189,7 @@ namespace Types
         /// </summary>
         public readonly bool Is<T>() where T : unmanaged
         {
-            TypeRegistry.handleToType.TryGetValue(RuntimeTypeTable.GetHandle<T>(), out Type otherType);
+            MetadataRegistry.handleToType.TryGetValue(RuntimeTypeTable.GetHandle<T>(), out Type otherType);
             return hash == otherType.hash;
         }
 
@@ -200,7 +200,7 @@ namespace Types
         public readonly bool Implements<T>()
         {
             Span<char> buffer = stackalloc char[512];
-            int length = TypeRegistry.GetFullName(typeof(T), buffer);
+            int length = MetadataRegistry.GetFullName(typeof(T), buffer);
             long hash = buffer.Slice(0, length).GetLongHashCode();
             for (int i = 0; i < interfaceCount; i++)
             {

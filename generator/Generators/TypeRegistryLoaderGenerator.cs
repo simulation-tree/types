@@ -70,7 +70,8 @@ namespace Types.Generator
 
                         if (type.HasInterface("Types.ITypeBank"))
                         {
-                            builder.Append("TypeRegistry.Load<");
+                            builder.Append(Constants.RegistryTypeName);
+                            builder.Append(".Load<");
                             builder.Append(type.GetFullTypeName());
                             builder.Append(">();");
                             builder.AppendLine();
