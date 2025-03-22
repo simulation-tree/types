@@ -8,8 +8,8 @@ namespace Types
     public interface ITypeBank
     {
         /// <summary>
-        /// Loads type metadata into <see cref="TypeRegistry"/>.
+        /// Loads type metadata into <see cref="MetadataRegistry"/>.
         /// </summary>
-        void Load(Register register);
+        void Load(RegisterFunction register);
     }
 }
