@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Types
 {
@@ -7,6 +8,11 @@ namespace Types
     /// </summary>
     public readonly struct Interface : IEquatable<Interface>
     {
+        /// <summary>
+        /// All registered interfaces.
+        /// </summary>
+        public static IReadOnlyList<Interface> All => MetadataRegistry.Interfaces;
+
         private readonly long hash;
 
         /// <summary>

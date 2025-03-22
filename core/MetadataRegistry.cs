@@ -22,12 +22,12 @@ namespace Types
         /// <summary>
         /// All registered types.
         /// </summary>
-        public static IReadOnlyCollection<Type> Types => types;
+        public static IReadOnlyList<Type> Types => types;
 
         /// <summary>
         /// All registered interfaces.
         /// </summary>
-        public static IReadOnlyCollection<Interface> Interfaces => interfaces;
+        public static IReadOnlyList<Interface> Interfaces => interfaces;
 
         static unsafe MetadataRegistry()
         {

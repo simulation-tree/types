@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -10,6 +11,11 @@ namespace Types
     [SkipLocalsInit]
     public readonly struct Type : IEquatable<Type>
     {
+        /// <summary>
+        /// All registered types.
+        /// </summary>
+        public static IReadOnlyList<Type> All => MetadataRegistry.Types;
+
         /// <summary>
         /// Size of the type in bytes.
         /// </summary>
@@ -221,7 +227,7 @@ namespace Types
             long hash = interfaceValue.Hash;
             for (int i = 0; i < interfaceCount; i++)
             {
-                if (interfaces[i].Hash == hash)
+                if (interfaces.Get(i) == hash)
                 {
                     return true;
                 }
@@ -399,6 +405,46 @@ namespace Types
             unchecked
             {
                 return (int)hash;
+            }
+        }
+
+        /// <summary>
+        /// Retrieves all types that implement the given <typeparamref name="T"/> interface.
+        /// </summary>
+        public static IEnumerable<Type> GetAllThatImplement<T>()
+        {
+            Span<char> buffer = stackalloc char[512];
+            int length = MetadataRegistry.GetFullName(typeof(T), buffer);
+            long hash = buffer.Slice(0, length).GetLongHashCode();
+            foreach (Type type in All)
+            {
+                for (int i = 0; i < type.interfaceCount; i++)
+                {
+                    if (type.interfaces.Get(i) == hash)
+                    {
+                        yield return type;
+                        break;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Retrieves all types that implement the given <paramref name="interfaceValue"/>.
+        /// </summary>
+        public static IEnumerable<Type> GetAllThatImplement(Interface interfaceValue)
+        {
+            long hash = interfaceValue.Hash;
+            foreach (Type type in All)
+            {
+                for (int i = 0; i < type.interfaceCount; i++)
+                {
+                    if (type.interfaces.Get(i) == hash)
+                    {
+                        yield return type;
+                        break;
+                    }
+                }
             }
         }
 

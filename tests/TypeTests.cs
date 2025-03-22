@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 
 namespace Types.Tests
@@ -125,6 +126,19 @@ namespace Types.Tests
             Assert.That(type.Implements<ICloneable>(), Is.False);
             Assert.That(interfaces[0].Is<IDisposable>(), Is.True);
             Assert.That(interfaces[0].Is<ICloneable>(), Is.False);
+        }
+
+        [Test]
+        public void IterateThroughAllDisposableTypes()
+        {
+            List<Type> types = new();
+            foreach (Type type in Type.GetAllThatImplement<IDisposable>())
+            {
+                types.Add(type);
+            }
+
+            Assert.That(types.Count, Is.EqualTo(1));
+            Assert.That(types[0].Is<Stress>(), Is.True);
         }
     }
 }
