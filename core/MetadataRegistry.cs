@@ -147,7 +147,6 @@ namespace Types
         /// </summary>
         public unsafe static void RegisterType<T>() where T : unmanaged
         {
-            //todo: need to add a warning here when trying to register a type bank itself
             ushort size = (ushort)sizeof(T);
             Type type = new(GetFullName<T>(), size);
             RegisterType(type, RuntimeTypeTable.GetHandle<T>());
