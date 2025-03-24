@@ -6,29 +6,29 @@ namespace Types
 {
 #if NET
     /// <summary>
-    /// Buffer for storing <see cref="Field"/> values.
+    /// Buffer for storing <see cref="Interface"/> values.
     /// </summary>
     [InlineArray(Capacity)]
-    public struct FieldBuffer
+    public struct InterfaceBuffer
     {
         /// <summary>
-        /// Maximum amount that can be stored.
+        /// Maximum amount of values that can be stored.
         /// </summary>
         public const int Capacity = 32;
 
-        private Field element0;
+        private Interface element0;
 
         /// <summary>
-        /// Creates a buffer containing the given <paramref name="fields"/>.
+        /// Creates a buffer containing the given <paramref name="interfaces"/>.
         /// </summary>
-        public static FieldBuffer Create(ReadOnlySpan<Field> fields)
+        public static InterfaceBuffer Create(ReadOnlySpan<Interface> interfaces)
         {
-            ThrowIfCantFit(fields.Length);
+            ThrowIfCantFit(interfaces.Length);
 
-            FieldBuffer buffer = default;
-            for (int i = 0; i < fields.Length; i++)
+            InterfaceBuffer buffer = default;
+            for (int i = 0; i < interfaces.Length; i++)
             {
-                buffer[i] = fields[i];
+                buffer[i] = interfaces[i];
             }
 
             return buffer;
@@ -45,50 +45,47 @@ namespace Types
     }
 #else
     /// <summary>
-    /// Buffer for storing <see cref="Field"/> values.
+    /// Buffer for storing <see cref="Interface"/> values.
     /// </summary>
-    public unsafe struct FieldBuffer
+    public unsafe struct InterfaceBuffer
     {
         /// <summary>
-        /// Maximum amount that can be stored.
+        /// Maximum amount of values that can be stored.
         /// </summary>
         public const int Capacity = 32;
 
-        private fixed long buffer[Capacity * 2];
+        private fixed long buffer[Capacity];
 
         /// <summary>
-        /// Indexer for accessing the value at the given <paramref name="index"/>.
+        /// Indexer for accessing a value at the given <paramref name="index"/>.
         /// </summary>
-        public Field this[int index]
+        public Interface this[int index]
         {
             readonly get
             {
                 ThrowIfOutOfRange(index);
 
-                long typeHash = buffer[index * 2 + 0];
-                long nameHash = buffer[index * 2 + 1];
-                return new(typeHash, nameHash);
+                return new(buffer[index]);
             }
             set
             {
                 ThrowIfOutOfRange(index);
 
-                buffer[index * 2 + 0] = value.typeHash;
-                buffer[index * 2 + 1] = value.nameHash;
+                buffer[index] = value.Hash;
             }
         }
 
         /// <summary>
-        /// Creates a buffer containing the given <paramref name="fields"/>.
+        /// Creates a buffer containing the given <paramref name="interfaces"/>.
         /// </summary>
-        public static FieldBuffer Create(ReadOnlySpan<Field> fields)
+        public static InterfaceBuffer Create(ReadOnlySpan<Interface> interfaces)
         {
-            ThrowIfCantFit(fields.Length);
+            ThrowIfCantFit(interfaces.Length);
 
-            FieldBuffer buffer = default;
-            for (int i = 0; i < fields.Length; i++)
+            InterfaceBuffer buffer = default;
+            for (int i = 0; i < interfaces.Length; i++)
             {
-                buffer[i] = fields[i];
+                buffer[i] = interfaces[i];
             }
 
             return buffer;

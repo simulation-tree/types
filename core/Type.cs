@@ -25,7 +25,7 @@ namespace Types
         private readonly byte interfaceCount;
         private readonly long hash;
         private readonly FieldBuffer fields;
-        private readonly InterfaceTypeBuffer interfaces;
+        private readonly InterfaceBuffer interfaces;
 
         /// <summary>
         /// Hash value unique to this type.
@@ -142,16 +142,16 @@ namespace Types
         {
             this.size = size;
             fieldCount = (byte)fields.Length;
-            this.fields = new(fields);
+            this.fields = FieldBuffer.Create(fields);
             interfaceCount = (byte)interfaces.Length;
-            this.interfaces = new(interfaces);
+            this.interfaces = InterfaceBuffer.Create(interfaces);
             hash = TypeNames.Set(fullName);
         }
 
         /// <summary>
         /// Creates a new type.
         /// </summary>
-        public Type(ReadOnlySpan<char> fullName, ushort size, FieldBuffer fields, byte fieldCount, InterfaceTypeBuffer interfaces, byte interfaceCount)
+        public Type(ReadOnlySpan<char> fullName, ushort size, FieldBuffer fields, byte fieldCount, InterfaceBuffer interfaces, byte interfaceCount)
         {
             this.size = size;
             this.fieldCount = fieldCount;
@@ -168,9 +168,9 @@ namespace Types
         {
             this.size = size;
             fieldCount = (byte)fields.Length;
-            this.fields = new(fields);
+            this.fields = FieldBuffer.Create(fields);
             interfaceCount = (byte)interfaces.Length;
-            this.interfaces = new(interfaces);
+            this.interfaces = InterfaceBuffer.Create(interfaces);
             hash = TypeNames.Set(fullName);
         }
 
@@ -210,7 +210,7 @@ namespace Types
             long hash = buffer.Slice(0, length).GetLongHashCode();
             for (int i = 0; i < interfaceCount; i++)
             {
-                if (interfaces.Get(i) == hash)
+                if (interfaces[i].Hash == hash)
                 {
                     return true;
                 }
@@ -227,7 +227,7 @@ namespace Types
             long hash = interfaceValue.Hash;
             for (int i = 0; i < interfaceCount; i++)
             {
-                if (interfaces.Get(i) == hash)
+                if (interfaces[i].Hash == hash)
                 {
                     return true;
                 }
@@ -252,20 +252,29 @@ namespace Types
         {
             Span<byte> bytes = stackalloc byte[size];
             bytes.Clear();
-            return CreateInstance(bytes);
+            return TypeInstanceCreator.Do(this, bytes);
         }
 
         /// <summary>
         /// Copies all fields in this type to the <paramref name="destination"/>.
         /// </summary>
-        public readonly byte CopyFieldsTo(Span<Field> destination)
+        public readonly void CopyFieldsTo(Span<Field> destination)
         {
             for (int i = 0; i < fieldCount; i++)
             {
                 destination[i] = fields[i];
             }
+        }
 
-            return fieldCount;
+        /// <summary>
+        /// Copies all interfaces that this type implements to the <paramref name="destination"/>.
+        /// </summary>
+        public readonly void CopyInterfacesTo(Span<Interface> destination)
+        {
+            for (int i = 0; i < interfaceCount; i++)
+            {
+                destination[i] = interfaces[i];
+            }
         }
 
         /// <summary>
@@ -387,6 +396,15 @@ namespace Types
             }
         }
 
+        [Conditional("DEBUG")]
+        private unsafe readonly void ThrowIfTypeMismatch<T>() where T : unmanaged
+        {
+            if (SystemType != typeof(T))
+            {
+                throw new InvalidOperationException($"Type {FullName.ToString()} does not match {typeof(T).FullName}");
+            }
+        }
+
         /// <inheritdoc/>
         public readonly override bool Equals(object? obj)
         {
@@ -420,7 +438,7 @@ namespace Types
             {
                 for (int i = 0; i < type.interfaceCount; i++)
                 {
-                    if (type.interfaces.Get(i) == hash)
+                    if (type.interfaces[i].Hash == hash)
                     {
                         yield return type;
                         break;
@@ -439,7 +457,7 @@ namespace Types
             {
                 for (int i = 0; i < type.interfaceCount; i++)
                 {
-                    if (type.interfaces.Get(i) == hash)
+                    if (type.interfaces[i].Hash == hash)
                     {
                         yield return type;
                         break;

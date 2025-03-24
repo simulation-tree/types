@@ -20,7 +20,7 @@ namespace Types.Functions
         /// <summary>
         /// Registers a type with the given <paramref name="variables"/> and <paramref name="interfaces"/>.
         /// </summary>
-        public unsafe readonly void RegisterType<T>(FieldBuffer variables, byte variableCount, InterfaceTypeBuffer interfaces, byte interfaceCount) where T : unmanaged
+        public unsafe readonly void RegisterType<T>(FieldBuffer variables, byte variableCount, InterfaceBuffer interfaces, byte interfaceCount) where T : unmanaged
         {
             Type type = new(MetadataRegistry.GetFullName<T>(), (ushort)sizeof(T), variables, variableCount, interfaces, interfaceCount);
             MetadataRegistry.RegisterType(type, RuntimeTypeTable.GetHandle<T>());

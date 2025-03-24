@@ -66,6 +66,11 @@ namespace Types
             hash = TypeNames.Set(fullTypeName);
         }
 
+        internal Interface(long hash)
+        {
+            this.hash = hash;
+        }
+
         /// <inheritdoc/>
         public readonly override string ToString()
         {

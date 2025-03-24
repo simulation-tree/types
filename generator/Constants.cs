@@ -4,7 +4,7 @@
     {
         public const string RegistryTypeName = "MetadataRegistry";
         public const string FieldBufferTypeName = "FieldBuffer";
-        public const string InterfaceBufferTypeName = "InterfaceTypeBuffer";
+        public const string InterfaceBufferTypeName = "InterfaceBuffer";
         public const string RegisterFunctionTypeName = "RegisterFunction";
     }
 }

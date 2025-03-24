@@ -50,7 +50,7 @@ namespace Types
 #endif
 
             FieldBuffer fields = new();
-            InterfaceTypeBuffer interfaces = new();
+            InterfaceBuffer interfaces = new();
             fields[0] = new("x", GetFullName<float>());
             fields[1] = new("y", GetFullName<float>());
             fields[2] = new("z", GetFullName<float>());
