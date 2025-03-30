@@ -120,7 +120,9 @@ namespace Types
         {
             this.size = size;
             fieldCount = 0;
+            interfaceCount = 0;
             fields = default;
+            interfaces = default;
             hash = TypeNames.Set(fullName);
         }
 
@@ -131,7 +133,9 @@ namespace Types
         {
             this.size = size;
             fieldCount = 0;
+            interfaceCount = 0;
             fields = default;
+            interfaces = default;
             hash = TypeNames.Set(fullName);
         }
 

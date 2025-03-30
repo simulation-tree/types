@@ -44,10 +44,10 @@ namespace Types.Tests
             Assert.That(MetadataRegistry.IsTypeRegistered<double>(), Is.True);
             Assert.That(MetadataRegistry.IsTypeRegistered<char>(), Is.True);
 
-            Assert.That(MetadataRegistry.IsRegistered(typeof(bool).FullName ?? typeof(bool).Name), Is.True);
-            Assert.That(MetadataRegistry.IsRegistered(typeof(byte).FullName ?? typeof(byte).Name), Is.True);
-            Assert.That(MetadataRegistry.IsRegistered(typeof(sbyte).FullName ?? typeof(sbyte).Name), Is.True);
-            Assert.That(MetadataRegistry.IsRegistered(typeof(short).FullName ?? typeof(short).Name), Is.True);
+            Assert.That(MetadataRegistry.IsTypeRegistered(typeof(bool).FullName ?? typeof(bool).Name), Is.True);
+            Assert.That(MetadataRegistry.IsTypeRegistered(typeof(byte).FullName ?? typeof(byte).Name), Is.True);
+            Assert.That(MetadataRegistry.IsTypeRegistered(typeof(sbyte).FullName ?? typeof(sbyte).Name), Is.True);
+            Assert.That(MetadataRegistry.IsTypeRegistered(typeof(short).FullName ?? typeof(short).Name), Is.True);
 
             Assert.That(MetadataRegistry.GetType<Vector3>().size, Is.EqualTo((uint)sizeof(Vector3)));
             Assert.That(MetadataRegistry.GetType<Vector3>().Fields.Length, Is.EqualTo(3));

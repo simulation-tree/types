@@ -283,9 +283,17 @@ namespace Types
         }
 
         /// <summary>
+        /// Checks if the given <paramref name="interfaceType"/> is registered.
+        /// </summary>
+        public static bool IsInterfaceRegistered(System.Type interfaceType)
+        {
+            return handleToInterface.ContainsKey(RuntimeTypeTable.GetHandle(interfaceType));
+        }
+
+        /// <summary>
         /// Checks if a type with <paramref name="fullTypeName"/> is registered.
         /// </summary>
-        public static bool IsRegistered(ReadOnlySpan<char> fullTypeName)
+        public static bool IsTypeRegistered(ReadOnlySpan<char> fullTypeName)
         {
             long hash = fullTypeName.GetLongHashCode();
             foreach (Type type in types)
@@ -302,7 +310,7 @@ namespace Types
         /// <summary>
         /// Checks if a type with <paramref name="fullTypeName"/> is registered.
         /// </summary>
-        public static bool IsRegistered(string fullTypeName)
+        public static bool IsTypeRegistered(string fullTypeName)
         {
             long hash = fullTypeName.GetLongHashCode();
             foreach (Type type in types)
