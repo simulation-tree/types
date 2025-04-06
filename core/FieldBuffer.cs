@@ -14,7 +14,7 @@ namespace Types
         /// <summary>
         /// Maximum amount that can be stored.
         /// </summary>
-        public const int Capacity = 32;
+        public const int Capacity = 64;
 
         private Field element0;
 
