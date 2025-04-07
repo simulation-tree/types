@@ -1,36 +1,38 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>disable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <GenerateDocumentationFile>True</GenerateDocumentationFile>
-        <Title>Types Core</Title>
-        <Authors>popcron</Authors>
-        <Company>simulation-tree</Company>
-        <RepositoryUrl>https://github.com/simulation-tree/types</RepositoryUrl>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
-        <IsAotCompatible>True</IsAotCompatible>
-        <IsTrimmable>True</IsTrimmable>
-        <NoStandardLib>true</NoStandardLib>
-        <RootNamespace>Types</RootNamespace>
-        <PackageId/>
-    </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<Title>Types Core</Title>
+		<Authors>popcron</Authors>
+		<Company>simulation-tree</Company>
+		<RepositoryUrl>https://github.com/simulation-tree/types</RepositoryUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<IsAotCompatible>True</IsAotCompatible>
+		<IsTrimmable>True</IsTrimmable>
+		<NoStandardLib>true</NoStandardLib>
+		<RootNamespace>Types</RootNamespace>
+		<DebugType>Embedded</DebugType>
+		<EmbedAllSources>True</EmbedAllSources>
+		<PackageId/>
+	</PropertyGroup>
 
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-        <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	</PropertyGroup>
 
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-        <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	</PropertyGroup>
 
-    <ItemGroup>
-        <None Include="..\README.md">
-            <Pack>True</Pack>
-            <PackagePath>\</PackagePath>
-        </None>
-    </ItemGroup>
+	<ItemGroup>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
 
 </Project>
