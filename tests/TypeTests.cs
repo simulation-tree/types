@@ -140,5 +140,13 @@ namespace Types.Tests
             Assert.That(types.Count, Is.EqualTo(1));
             Assert.That(types[0].Is<Stress>(), Is.True);
         }
+
+        [Test]
+        public void TypeImplementingStaticInterfaceMembers()
+        {
+            Type type = Type.Get<VictimOfABug>();
+            Assert.That(type.Interfaces.Length, Is.EqualTo(1));
+            Assert.That(type.Implements("Types.Tests.IHahaInterfaceWithStaticMethodsHaha"), Is.True);
+        }
     }
 }

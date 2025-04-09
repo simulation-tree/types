@@ -38,12 +38,21 @@ namespace Types.Functions
         }
 
         /// <summary>
-        /// Registers a type without variables specified.
+        /// Registers an interface type.
         /// </summary>
         public readonly void RegisterInterface<T>()
         {
             Interface interfaceValue = new(MetadataRegistry.GetFullName<T>());
             MetadataRegistry.RegisterInterface(interfaceValue, RuntimeTypeTable.GetHandle<T>());
+        }
+
+        /// <summary>
+        /// Registers an interface type.
+        /// </summary>
+        public readonly void RegisterInterface(ReadOnlySpan<char> fullTypeName, RuntimeTypeHandle typeHandle)
+        {
+            Interface interfaceValue = new(fullTypeName);
+            MetadataRegistry.RegisterInterface(interfaceValue, typeHandle);
         }
 
         /// <summary>

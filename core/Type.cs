@@ -207,37 +207,42 @@ namespace Types
         /// Checks if the type implements the given <typeparamref name="T"/>
         /// <see langword="interface"/>.
         /// </summary>
-        public readonly bool Implements<T>()
+        public unsafe readonly bool Implements<T>()
         {
             Span<char> buffer = stackalloc char[512];
             int length = MetadataRegistry.GetFullName(typeof(T), buffer);
             long hash = buffer.Slice(0, length).GetLongHashCode();
-            for (int i = 0; i < interfaceCount; i++)
+            fixed (void* pointer = &interfaces)
             {
-                if (interfaces[i].Hash == hash)
-                {
-                    return true;
-                }
+                ReadOnlySpan<long> span = new(pointer, interfaceCount);
+                return span.Contains(hash);
             }
-
-            return false;
         }
 
         /// <summary>
         /// Checks if the type implements the given <paramref name="interfaceValue"/>.
         /// </summary>
-        public readonly bool Implements(Interface interfaceValue)
+        public unsafe readonly bool Implements(Interface interfaceValue)
         {
             long hash = interfaceValue.Hash;
-            for (int i = 0; i < interfaceCount; i++)
+            fixed (void* pointer = &interfaces)
             {
-                if (interfaces[i].Hash == hash)
-                {
-                    return true;
-                }
+                ReadOnlySpan<long> span = new(pointer, interfaceCount);
+                return span.Contains(hash);
             }
+        }
 
-            return false;
+        /// <summary>
+        /// Checks if the type implements an inteface with the <paramref name="fullTypeName"/>.
+        /// </summary>
+        public unsafe readonly bool Implements(ReadOnlySpan<char> fullTypeName)
+        {
+            long hash = fullTypeName.GetLongHashCode();
+            fixed (void* pointer = &interfaces)
+            {
+                ReadOnlySpan<long> span = new(pointer, interfaceCount);
+                return span.Contains(hash);
+            }
         }
 
         /// <summary>
@@ -468,6 +473,14 @@ namespace Types
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Retrieves the metadata of type <typeparamref name="T"/>.
+        /// </summary>
+        public static Type Get<T>() where T : unmanaged
+        {
+            return MetadataRegistry.GetType<T>();
         }
 
         /// <inheritdoc/>

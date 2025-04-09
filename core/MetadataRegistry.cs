@@ -325,6 +325,23 @@ namespace Types
         }
 
         /// <summary>
+        /// Checks if an interface type with <paramref name="fullTypeName"/> is registered.
+        /// </summary>
+        public static bool IsInterfaceRegistered(ReadOnlySpan<char> fullTypeName)
+        {
+            long hash = fullTypeName.GetLongHashCode();
+            foreach (Interface interfaceType in interfaces)
+            {
+                if (interfaceType.Hash == hash)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Retrieves the full type name for the given <paramref name="type"/>.
         /// </summary>
         public static int GetFullName(System.Type type, Span<char> buffer)

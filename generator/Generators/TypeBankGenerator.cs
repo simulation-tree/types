@@ -170,19 +170,65 @@ namespace Types.Generator
 
         private static void AppendRegisterInterface(SourceBuilder source, ITypeSymbol interfaceType)
         {
+            bool hasStaticAbstractMembers = false;
+            foreach (IMethodSymbol method in interfaceType.GetMembers())
+            {
+                if (method.IsStatic)
+                {
+                    hasStaticAbstractMembers = true;
+                    break;
+                }
+            }
+
             string fullName = interfaceType.GetFullTypeName();
             source.Append("if (!");
             source.Append(Constants.RegistryTypeName);
-            source.Append(".IsInterfaceRegistered<");
-            source.Append(fullName);
-            source.Append(">())");
+            source.Append(".IsInterfaceRegistered");
+            if (hasStaticAbstractMembers)
+            {
+                source.Append('(');
+                source.Append('"');
+                source.Append(fullName);
+                source.Append('"');
+                source.Append(')');
+            }
+            else
+            {
+                source.Append('<');
+                source.Append(fullName);
+                source.Append(">()");
+            }
+
+            source.Append(')');
             source.AppendLine();
 
             source.BeginGroup();
             {
-                source.Append("register.RegisterInterface<");
-                source.Append(fullName);
-                source.Append(">();");
+                source.Append("register.RegisterInterface");
+
+                if (hasStaticAbstractMembers)
+                {
+                    source.Append('(');
+                    source.Append('"');
+                    source.Append(fullName);
+                    source.Append('"');
+                    source.Append(',');
+                    source.Append(' ');
+                    source.Append("RuntimeTypeTable.GetHandle(typeof(");
+                    source.Append(fullName);
+                    source.Append("))");
+                    source.Append(')');
+                }
+                else
+                {
+                    source.Append('<');
+                    source.Append(fullName);
+                    source.Append('>');
+                    source.Append('(');
+                    source.Append(')');
+                }
+
+                source.Append(';');
                 source.AppendLine();
             }
             source.EndGroup();
