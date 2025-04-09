@@ -171,7 +171,7 @@ namespace Types.Generator
         private static void AppendRegisterInterface(SourceBuilder source, ITypeSymbol interfaceType)
         {
             bool hasStaticAbstractMembers = false;
-            foreach (IMethodSymbol method in interfaceType.GetMembers())
+            foreach (ISymbol method in interfaceType.GetMembers())
             {
                 if (method.IsStatic)
                 {
