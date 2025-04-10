@@ -215,7 +215,7 @@ namespace Types
             fixed (void* pointer = &interfaces)
             {
                 ReadOnlySpan<long> span = new(pointer, interfaceCount);
-                return span.Contains(hash);
+                return span.IndexOf(hash) != -1;
             }
         }
 
@@ -228,7 +228,7 @@ namespace Types
             fixed (void* pointer = &interfaces)
             {
                 ReadOnlySpan<long> span = new(pointer, interfaceCount);
-                return span.Contains(hash);
+                return span.IndexOf(hash) != -1;
             }
         }
 
@@ -241,7 +241,7 @@ namespace Types
             fixed (void* pointer = &interfaces)
             {
                 ReadOnlySpan<long> span = new(pointer, interfaceCount);
-                return span.Contains(hash);
+                return span.IndexOf(hash) != -1;
             }
         }
 
