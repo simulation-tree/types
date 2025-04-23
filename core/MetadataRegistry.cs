@@ -93,7 +93,7 @@ namespace Types
         /// <summary>
         /// Loads all <see cref="TypeMetadata"/>s from the bank of type <typeparamref name="T"/>.
         /// </summary>
-        public static void Load<T>() where T : unmanaged, ITypeBank
+        public static void Load<T>() where T : unmanaged, IMetadataBank
         {
             T bank = default;
             bank.Load(new());

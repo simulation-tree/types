@@ -3,10 +3,8 @@
 namespace Types.Generator
 {
     [Generator(LanguageNames.CSharp)]
-    public class TypeRegistryLoaderGenerator : IIncrementalGenerator
+    public class MetadataRegistryLoaderGenerator : IIncrementalGenerator
     {
-        private const string TypeName = "TypeRegistryLoader";
-
         void IIncrementalGenerator.Initialize(IncrementalGeneratorInitializationContext context)
         {
             context.RegisterSourceOutput(context.CompilationProvider, Generate);
@@ -16,7 +14,7 @@ namespace Types.Generator
         {
             if (compilation.GetEntryPoint(context.CancellationToken) is not null)
             {
-                context.AddSource($"{TypeName}.generated.cs", Generate(compilation));
+                context.AddSource($"{Constants.RegistryLoaderTypeName}.generated.cs", Generate(compilation));
             }
         }
 
@@ -24,7 +22,11 @@ namespace Types.Generator
         {
             string? assemblyName = compilation.AssemblyName;
             SourceBuilder builder = new();
-            builder.AppendLine("using Types;");
+            builder.Append("using ");
+            builder.Append(Constants.Namespace);
+            builder.Append(';');
+            builder.AppendLine();
+
             builder.AppendLine();
 
             if (assemblyName is not null)
@@ -36,7 +38,7 @@ namespace Types.Generator
             }
 
             builder.Append("public static class ");
-            builder.Append(TypeName);
+            builder.Append(Constants.RegistryLoaderTypeName);
             builder.AppendLine();
             builder.BeginGroup();
             {
@@ -68,7 +70,7 @@ namespace Types.Generator
                             }
                         }
 
-                        if (type.HasInterface("Types.ITypeBank"))
+                        if (type.HasInterface(Constants.Namespace + '.' + Constants.MetadataBankTypeName))
                         {
                             builder.Append(Constants.RegistryTypeName);
                             builder.Append(".Load<");

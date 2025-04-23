@@ -9,7 +9,7 @@ namespace Types.Tests
         public void LoadCustomBank()
         {
             Assert.That(MetadataRegistry.IsTypeRegistered<Field>(), Is.False);
-            MetadataRegistry.Load<CustomTypeBank>();
+            MetadataRegistry.Load<CustomMetadataBank>();
             Assert.That(MetadataRegistry.IsTypeRegistered<Field>(), Is.True);
         }
 
@@ -24,9 +24,9 @@ namespace Types.Tests
         }
 #endif
 
-        public readonly struct CustomTypeBank : ITypeBank
+        public readonly struct CustomMetadataBank : IMetadataBank
         {
-            void ITypeBank.Load(RegisterFunction register)
+            void IMetadataBank.Load(RegisterFunction register)
             {
                 register.RegisterType<Field>();
             }

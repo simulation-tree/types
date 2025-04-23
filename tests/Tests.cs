@@ -6,7 +6,7 @@ namespace Types.Tests
     {
         static Tests()
         {
-            MetadataRegistry.Load<TypesTestsTypeBank>();
+            MetadataRegistry.Load<TypesTestsMetadataBank>();
         }
 
         [SetUp]

@@ -8,9 +8,9 @@ using System.Threading;
 namespace Types.Generator
 {
     [Generator(LanguageNames.CSharp)]
-    public class TypeBankGenerator : IIncrementalGenerator
+    public class MetadataBankGenerator : IIncrementalGenerator
     {
-        public const string TypeNameFormat = "{0}TypeBank";
+        public const string TypeNameFormat = "{0}MetadataBank";
         public const string FieldBufferVariableName = "fields";
         public const string InterfaceBufferVariableName = "interfaces";
 
@@ -87,8 +87,18 @@ namespace Types.Generator
             }
 
             SourceBuilder source = new();
-            source.AppendLine("using Types;");
-            source.AppendLine("using Types.Functions;");
+            source.Append("using ");
+            source.Append(Constants.Namespace);
+            source.Append(';');
+            source.AppendLine();
+
+            source.Append("using ");
+            source.Append(Constants.Namespace);
+            source.Append('.');
+            source.Append("Functions");
+            source.Append(';');
+            source.AppendLine();
+
             source.AppendLine("using System;");
             source.AppendLine();
 
@@ -107,12 +117,15 @@ namespace Types.Generator
             typeName = typeName.Replace(".", "");
             source.Append("public readonly struct ");
             source.Append(typeName);
-            source.Append(" : ITypeBank");
+            source.Append(" : ");
+            source.Append(Constants.MetadataBankTypeName);
             source.AppendLine();
 
             source.BeginGroup();
             {
-                source.Append("readonly void ITypeBank.Load(");
+                source.Append("readonly void ");
+                source.Append(Constants.MetadataBankTypeName);
+                source.Append(".Load(");
                 source.Append(Constants.RegisterFunctionTypeName);
                 source.Append(" register)");
                 source.AppendLine();
