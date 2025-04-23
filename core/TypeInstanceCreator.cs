@@ -5,9 +5,9 @@ namespace Types
 {
     internal static class TypeInstanceCreator
     {
-        private static readonly Dictionary<Type, Create> functions = new();
+        private static readonly Dictionary<TypeMetadata, Create> functions = new();
 
-        public unsafe static void Initialize<T>(Type type) where T : unmanaged
+        public unsafe static void Initialize<T>(TypeMetadata type) where T : unmanaged
         {
             functions[type] = static (bytes) =>
             {
@@ -19,7 +19,7 @@ namespace Types
             };
         }
 
-        public static object Do(Type type, ReadOnlySpan<byte> bytes)
+        public static object Do(TypeMetadata type, ReadOnlySpan<byte> bytes)
         {
             Create action = functions[type];
             return action(bytes);

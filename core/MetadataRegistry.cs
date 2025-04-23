@@ -10,19 +10,19 @@ namespace Types
     /// </summary>
     public static class MetadataRegistry
     {
-        private static readonly List<Type> types = new();
+        private static readonly List<TypeMetadata> types = new();
         private static readonly List<Interface> interfaces = new();
-        internal static readonly Dictionary<RuntimeTypeHandle, Type> handleToType = new();
+        internal static readonly Dictionary<RuntimeTypeHandle, TypeMetadata> handleToType = new();
         internal static readonly Dictionary<RuntimeTypeHandle, Interface> handleToInterface = new();
         private static readonly Dictionary<long, RuntimeTypeHandle> typeToHandle = new();
         private static readonly Dictionary<long, RuntimeTypeHandle> interfaceToHandle = new();
-        private static readonly Dictionary<long, Type> hashToType = new();
+        private static readonly Dictionary<long, TypeMetadata> hashToType = new();
         private static readonly Dictionary<long, Interface> hashToInterface = new();
 
         /// <summary>
         /// All registered types.
         /// </summary>
-        public static IReadOnlyList<Type> Types => types;
+        public static IReadOnlyList<TypeMetadata> Types => types;
 
         /// <summary>
         /// All registered interfaces.
@@ -91,7 +91,7 @@ namespace Types
         }
 
         /// <summary>
-        /// Loads all <see cref="Type"/>s from the bank of type <typeparamref name="T"/>.
+        /// Loads all <see cref="TypeMetadata"/>s from the bank of type <typeparamref name="T"/>.
         /// </summary>
         public static void Load<T>() where T : unmanaged, ITypeBank
         {
@@ -102,14 +102,14 @@ namespace Types
         /// <summary>
         /// Manually registers the given <paramref name="type"/>.
         /// </summary>
-        public static void RegisterType(Type type, RuntimeTypeHandle handle)
+        public static void RegisterType(TypeMetadata type, RuntimeTypeHandle handle)
         {
             ThrowIfAlreadyRegistered(type);
 
             types.Add(type);
             handleToType.Add(handle, type);
-            typeToHandle.Add(type.Hash, handle);
-            hashToType.Add(type.Hash, type);
+            typeToHandle.Add(type.hash, handle);
+            hashToType.Add(type.hash, type);
         }
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace Types
         /// <summary>
         /// Tries to manually register the given <paramref name="type"/>.
         /// </summary>
-        public static bool TryRegisterType(Type type, RuntimeTypeHandle handle)
+        public static bool TryRegisterType(TypeMetadata type, RuntimeTypeHandle handle)
         {
             if (types.Contains(type))
             {
@@ -137,8 +137,8 @@ namespace Types
 
             types.Add(type);
             handleToType.Add(handle, type);
-            typeToHandle.Add(type.Hash, handle);
-            hashToType.Add(type.Hash, type);
+            typeToHandle.Add(type.hash, handle);
+            hashToType.Add(type.hash, type);
             return true;
         }
 
@@ -148,7 +148,7 @@ namespace Types
         public unsafe static void RegisterType<T>() where T : unmanaged
         {
             ushort size = (ushort)sizeof(T);
-            Type type = new(GetFullName<T>(), size);
+            TypeMetadata type = new(GetFullName<T>(), size);
             RegisterType(type, RuntimeTypeTable.GetHandle<T>());
         }
 
@@ -167,14 +167,14 @@ namespace Types
         public unsafe static bool TryRegisterType<T>() where T : unmanaged
         {
             ushort size = (ushort)sizeof(T);
-            Type type = new(GetFullName<T>(), size);
+            TypeMetadata type = new(GetFullName<T>(), size);
             return TryRegisterType(type, RuntimeTypeTable.GetHandle<T>());
         }
 
         /// <summary>
         /// Retrieves the metadata for <typeparamref name="T"/>.
         /// </summary>
-        public static Type GetType<T>() where T : unmanaged
+        public static TypeMetadata GetType<T>() where T : unmanaged
         {
             ThrowIfTypeNotRegistered<T>();
 
@@ -195,19 +195,9 @@ namespace Types
         /// Retrieves the metadata for <typeparamref name="T"/>, or registers
         /// it if it's not already registered without any variables.
         /// </summary>
-        public static Type GetOrRegisterType<T>() where T : unmanaged
+        public static TypeMetadata GetOrRegisterType<T>() where T : unmanaged
         {
             return LazyTypeCache<T>.value;
-        }
-
-        /// <summary>
-        /// Retrieves the metadata for the type with the given <paramref name="typeHash"/>.
-        /// </summary>
-        public static Type GetType(long typeHash)
-        {
-            ThrowIfTypeNotRegistered(typeHash);
-
-            return hashToType[typeHash];
         }
 
         /// <summary>
@@ -223,7 +213,7 @@ namespace Types
         /// <summary>
         /// Tries to get the metadata for the type with the given <paramref name="typeHash"/>.
         /// </summary>
-        public static bool TryGetType(long typeHash, out Type type)
+        public static bool TryGetType(long typeHash, out TypeMetadata type)
         {
             return hashToType.TryGetValue(typeHash, out type);
         }
@@ -231,7 +221,7 @@ namespace Types
         /// <summary>
         /// Retrieves the metadata for the <paramref name="handle"/> of the wanted type.
         /// </summary>
-        public static Type GetType(RuntimeTypeHandle handle)
+        public static TypeMetadata GetType(RuntimeTypeHandle handle)
         {
             ThrowIfNotRegistered(handle);
 
@@ -296,9 +286,9 @@ namespace Types
         public static bool IsTypeRegistered(ReadOnlySpan<char> fullTypeName)
         {
             long hash = fullTypeName.GetLongHashCode();
-            foreach (Type type in types)
+            foreach (TypeMetadata type in types)
             {
-                if (type.Hash == hash)
+                if (type.hash == hash)
                 {
                     return true;
                 }
@@ -313,9 +303,9 @@ namespace Types
         public static bool IsTypeRegistered(string fullTypeName)
         {
             long hash = fullTypeName.GetLongHashCode();
-            foreach (Type type in types)
+            foreach (TypeMetadata type in types)
             {
-                if (type.Hash == hash)
+                if (type.hash == hash)
                 {
                     return true;
                 }
@@ -479,7 +469,7 @@ namespace Types
         }
 
         [Conditional("DEBUG")]
-        private static void ThrowIfAlreadyRegistered(Type type)
+        private static void ThrowIfAlreadyRegistered(TypeMetadata type)
         {
             if (types.Contains(type))
             {
@@ -498,7 +488,7 @@ namespace Types
 
         private static class TypeCache<T> where T : unmanaged
         {
-            public static readonly Type value;
+            public static readonly TypeMetadata value;
 
             static TypeCache()
             {
@@ -524,7 +514,7 @@ namespace Types
 
         private unsafe static class LazyTypeCache<T> where T : unmanaged
         {
-            public static readonly Type value;
+            public static readonly TypeMetadata value;
 
             static LazyTypeCache()
             {

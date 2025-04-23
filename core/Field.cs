@@ -3,17 +3,16 @@
 namespace Types
 {
     /// <summary>
-    /// Describes a field declared in a <see cref="Types.Type"/>.
+    /// Describes a field declared in a <see cref="TypeMetadata"/>.
     /// </summary>
     public readonly struct Field : IEquatable<Field>
     {
-        internal readonly long typeHash;
-        internal readonly long nameHash;
-
         /// <summary>
         /// The type of the field.
         /// </summary>
-        public readonly Type Type => MetadataRegistry.GetType(typeHash);
+        public readonly TypeMetadata type;
+
+        internal readonly long nameHash;
 
         /// <summary>
         /// Name of the field.
@@ -23,7 +22,7 @@ namespace Types
         /// <summary>
         /// Size of the field in bytes.
         /// </summary>
-        public readonly ushort Size => Type.size;
+        public readonly ushort Size => type.Size;
 
 #if NET
         /// <summary>
@@ -37,7 +36,7 @@ namespace Types
 
         internal Field(long typeHash, long nameHash)
         {
-            this.typeHash = typeHash;
+            this.type = new(typeHash);
             this.nameHash = nameHash;
         }
 
@@ -47,7 +46,7 @@ namespace Types
         public Field(string fieldName, string fullTypeName)
         {
             nameHash = TypeNames.Set(fieldName);
-            typeHash = fullTypeName.GetLongHashCode();
+            type = new(fullTypeName.GetLongHashCode());
         }
 
         /// <summary>
@@ -56,7 +55,7 @@ namespace Types
         public Field(ReadOnlySpan<char> fieldName, ReadOnlySpan<char> fullTypeName)
         {
             nameHash = TypeNames.Set(fieldName);
-            typeHash = fullTypeName.GetLongHashCode();
+            type = new(fullTypeName.GetLongHashCode());
         }
 
         /// <summary>
@@ -65,7 +64,7 @@ namespace Types
         public Field(string fieldName, int typeHash)
         {
             nameHash = TypeNames.Set(fieldName);
-            this.typeHash = typeHash;
+            this.type = new(typeHash);
         }
 
         /// <inheritdoc/>
@@ -82,7 +81,6 @@ namespace Types
         /// <returns>Amount of characters written.</returns>
         public readonly int ToString(Span<char> buffer)
         {
-            Type type = Type;
             type.Name.CopyTo(buffer);
             int length = type.Name.Length;
             buffer[length++] = '=';
@@ -100,7 +98,7 @@ namespace Types
         /// <inheritdoc/>
         public readonly bool Equals(Field other)
         {
-            return nameHash == other.nameHash && typeHash == other.typeHash;
+            return nameHash == other.nameHash && type == other.type;
         }
 
         /// <inheritdoc/>
@@ -115,7 +113,7 @@ namespace Types
                     hashCode = hashCode * 31 + name[i];
                 }
 
-                hashCode = hashCode * 31 + (int)typeHash;
+                hashCode = hashCode * 31 + (int)type.hash;
                 return hashCode;
             }
         }

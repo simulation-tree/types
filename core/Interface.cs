@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Types
 {
     /// <summary>
-    /// Describes an <see langword="interface"/> type that a <see cref="Type"/> implements.
+    /// Describes an <see langword="interface"/> type that a <see cref="TypeMetadata"/> implements.
     /// </summary>
     public readonly struct Interface : IEquatable<Interface>
     {

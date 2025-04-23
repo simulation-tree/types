@@ -12,7 +12,7 @@ namespace Types.Functions
         /// </summary>
         public unsafe readonly void RegisterType<T>(ReadOnlySpan<Field> variables, ReadOnlySpan<Interface> interfaces) where T : unmanaged
         {
-            Type type = new(MetadataRegistry.GetFullName<T>(), (ushort)sizeof(T), variables, interfaces);
+            TypeMetadata type = new(MetadataRegistry.GetFullName<T>(), (ushort)sizeof(T), variables, interfaces);
             MetadataRegistry.RegisterType(type, RuntimeTypeTable.GetHandle<T>());
             TypeInstanceCreator.Initialize<T>(type);
         }
@@ -22,7 +22,7 @@ namespace Types.Functions
         /// </summary>
         public unsafe readonly void RegisterType<T>(FieldBuffer variables, byte variableCount, InterfaceBuffer interfaces, byte interfaceCount) where T : unmanaged
         {
-            Type type = new(MetadataRegistry.GetFullName<T>(), (ushort)sizeof(T), variables, variableCount, interfaces, interfaceCount);
+            TypeMetadata type = new(MetadataRegistry.GetFullName<T>(), (ushort)sizeof(T), variables, variableCount, interfaces, interfaceCount);
             MetadataRegistry.RegisterType(type, RuntimeTypeTable.GetHandle<T>());
             TypeInstanceCreator.Initialize<T>(type);
         }
@@ -32,7 +32,7 @@ namespace Types.Functions
         /// </summary>
         public unsafe readonly void RegisterType<T>() where T : unmanaged
         {
-            Type type = new(MetadataRegistry.GetFullName<T>(), (ushort)sizeof(T));
+            TypeMetadata type = new(MetadataRegistry.GetFullName<T>(), (ushort)sizeof(T));
             MetadataRegistry.RegisterType(type, RuntimeTypeTable.GetHandle<T>());
             TypeInstanceCreator.Initialize<T>(type);
         }
@@ -63,7 +63,7 @@ namespace Types.Functions
             /// <summary>
             /// Metadata of the type.
             /// </summary>
-            public readonly Type type;
+            public readonly TypeMetadata type;
 
             private readonly nint handle;
 
@@ -75,7 +75,7 @@ namespace Types.Functions
             /// <summary>
             /// Creates the input argument.
             /// </summary>
-            public Input(Type type, RuntimeTypeHandle handle)
+            public Input(TypeMetadata type, RuntimeTypeHandle handle)
             {
                 this.type = type;
                 this.handle = RuntimeTypeTable.GetAddress(handle);

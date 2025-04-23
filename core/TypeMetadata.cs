@@ -9,28 +9,22 @@ namespace Types
     /// Describes metadata for a <see langword="struct"/> type.
     /// </summary>
     [SkipLocalsInit]
-    public readonly struct Type : IEquatable<Type>
+    public readonly struct TypeMetadata : IEquatable<TypeMetadata>
     {
         /// <summary>
         /// All registered types.
         /// </summary>
-        public static IReadOnlyList<Type> All => MetadataRegistry.Types;
-
-        /// <summary>
-        /// Size of the type in bytes.
-        /// </summary>
-        public readonly ushort size;
-
-        private readonly byte fieldCount;
-        private readonly byte interfaceCount;
-        private readonly long hash;
-        private readonly FieldBuffer fields;
-        private readonly InterfaceBuffer interfaces;
+        public static IReadOnlyList<TypeMetadata> All => MetadataRegistry.Types;
 
         /// <summary>
         /// Hash value unique to this type.
         /// </summary>
-        public readonly long Hash => hash;
+        public readonly long hash;
+
+        /// <summary>
+        /// Size of the type in bytes.
+        /// </summary>
+        public readonly ushort Size => TypeData.Get(hash).size;
 
         /// <summary>
         /// All fields declared in the type.
@@ -39,9 +33,10 @@ namespace Types
         {
             get
             {
-                fixed (void* pointer = &fields)
+                ref TypeData data = ref TypeData.Get(hash);
+                fixed (void* fields = &data.fields)
                 {
-                    return new ReadOnlySpan<Field>(pointer, fieldCount);
+                    return new ReadOnlySpan<Field>(fields, data.fieldCount);
                 }
             }
         }
@@ -53,9 +48,10 @@ namespace Types
         {
             get
             {
-                fixed (void* pointer = &interfaces)
+                ref TypeData data = ref TypeData.Get(hash);
+                fixed (void* interfaces = &data.interfaces)
                 {
-                    return new ReadOnlySpan<Interface>(pointer, interfaceCount);
+                    return new ReadOnlySpan<Interface>(interfaces, data.interfaceCount);
                 }
             }
         }
@@ -107,75 +103,88 @@ namespace Types
         /// Default constructor not supported.
         /// </summary>
         [Obsolete("Default constructor not supported", true)]
-        public Type()
+        public TypeMetadata()
         {
             throw new NotSupportedException();
         }
 #endif
 
         /// <summary>
-        /// Initializes an existing value type.
+        /// Initializes an existing type from the given <paramref name="hash"/>.
         /// </summary>
-        public Type(ReadOnlySpan<char> fullName, ushort size)
+        public TypeMetadata(long hash)
         {
-            this.size = size;
-            fieldCount = 0;
-            interfaceCount = 0;
-            fields = default;
-            interfaces = default;
-            hash = TypeNames.Set(fullName);
+            this.hash = hash;
         }
 
         /// <summary>
         /// Initializes an existing value type.
         /// </summary>
-        public Type(string fullName, ushort size)
+        public TypeMetadata(ReadOnlySpan<char> fullName, ushort size)
         {
-            this.size = size;
-            fieldCount = 0;
-            interfaceCount = 0;
-            fields = default;
-            interfaces = default;
             hash = TypeNames.Set(fullName);
+            ref TypeData data = ref TypeData.Get(hash);
+            data.size = size;
+            data.fieldCount = 0;
+            data.interfaceCount = 0;
+            data.fields = default;
+            data.interfaces = default;
+        }
+
+        /// <summary>
+        /// Initializes an existing value type.
+        /// </summary>
+        public TypeMetadata(string fullName, ushort size)
+        {
+            hash = TypeNames.Set(fullName);
+            ref TypeData data = ref TypeData.Get(hash);
+            data.size = size;
+            data.fieldCount = 0;
+            data.interfaceCount = 0;
+            data.fields = default;
+            data.interfaces = default;
         }
 
         /// <summary>
         /// Creates a new type.
         /// </summary>
-        public Type(ReadOnlySpan<char> fullName, ushort size, ReadOnlySpan<Field> fields, ReadOnlySpan<Interface> interfaces)
+        public TypeMetadata(ReadOnlySpan<char> fullName, ushort size, ReadOnlySpan<Field> fields, ReadOnlySpan<Interface> interfaces)
         {
-            this.size = size;
-            fieldCount = (byte)fields.Length;
-            this.fields = FieldBuffer.Create(fields);
-            interfaceCount = (byte)interfaces.Length;
-            this.interfaces = InterfaceBuffer.Create(interfaces);
             hash = TypeNames.Set(fullName);
+            ref TypeData data = ref TypeData.Get(hash);
+            data.size = size;
+            data.fieldCount = (byte)fields.Length;
+            data.fields = FieldBuffer.Create(fields);
+            data.interfaceCount = (byte)interfaces.Length;
+            data.interfaces = InterfaceBuffer.Create(interfaces);
         }
 
         /// <summary>
         /// Creates a new type.
         /// </summary>
-        public Type(ReadOnlySpan<char> fullName, ushort size, FieldBuffer fields, byte fieldCount, InterfaceBuffer interfaces, byte interfaceCount)
+        public TypeMetadata(ReadOnlySpan<char> fullName, ushort size, FieldBuffer fields, byte fieldCount, InterfaceBuffer interfaces, byte interfaceCount)
         {
-            this.size = size;
-            this.fieldCount = fieldCount;
-            this.fields = fields;
-            this.interfaceCount = interfaceCount;
-            this.interfaces = interfaces;
             hash = TypeNames.Set(fullName);
+            ref TypeData data = ref TypeData.Get(hash);
+            data.size = size;
+            data.fieldCount = fieldCount;
+            data.fields = fields;
+            data.interfaceCount = interfaceCount;
+            data.interfaces = interfaces;
         }
 
         /// <summary>
         /// Creates a new type.
         /// </summary>
-        public Type(string fullName, ushort size, ReadOnlySpan<Field> fields, ReadOnlySpan<Interface> interfaces)
+        public TypeMetadata(string fullName, ushort size, ReadOnlySpan<Field> fields, ReadOnlySpan<Interface> interfaces)
         {
-            this.size = size;
-            fieldCount = (byte)fields.Length;
-            this.fields = FieldBuffer.Create(fields);
-            interfaceCount = (byte)interfaces.Length;
-            this.interfaces = InterfaceBuffer.Create(interfaces);
             hash = TypeNames.Set(fullName);
+            ref TypeData data = ref TypeData.Get(hash);
+            data.size = size;
+            data.fieldCount = (byte)fields.Length;
+            data.fields = FieldBuffer.Create(fields);
+            data.interfaceCount = (byte)interfaces.Length;
+            data.interfaces = InterfaceBuffer.Create(interfaces);
         }
 
         /// <inheritdoc/>
@@ -199,8 +208,7 @@ namespace Types
         /// </summary>
         public readonly bool Is<T>() where T : unmanaged
         {
-            MetadataRegistry.handleToType.TryGetValue(RuntimeTypeTable.GetHandle<T>(), out Type otherType);
-            return hash == otherType.hash;
+            return hash == MetadataRegistry.GetOrRegisterType<T>().hash;
         }
 
         /// <summary>
@@ -211,12 +219,9 @@ namespace Types
         {
             Span<char> buffer = stackalloc char[512];
             int length = MetadataRegistry.GetFullName(typeof(T), buffer);
-            long hash = buffer.Slice(0, length).GetLongHashCode();
-            fixed (void* pointer = &interfaces)
-            {
-                ReadOnlySpan<long> span = new(pointer, interfaceCount);
-                return span.IndexOf(hash) != -1;
-            }
+            TypeData data = TypeData.Get(hash);
+            ReadOnlySpan<long> span = new(&data.interfaces, data.interfaceCount);
+            return span.IndexOf(buffer.Slice(0, length).GetLongHashCode()) != -1;
         }
 
         /// <summary>
@@ -224,12 +229,9 @@ namespace Types
         /// </summary>
         public unsafe readonly bool Implements(Interface interfaceValue)
         {
-            long hash = interfaceValue.Hash;
-            fixed (void* pointer = &interfaces)
-            {
-                ReadOnlySpan<long> span = new(pointer, interfaceCount);
-                return span.IndexOf(hash) != -1;
-            }
+            TypeData data = TypeData.Get(hash);
+            ReadOnlySpan<long> span = new(&data.interfaces, data.interfaceCount);
+            return span.IndexOf(interfaceValue.Hash) != -1;
         }
 
         /// <summary>
@@ -237,12 +239,9 @@ namespace Types
         /// </summary>
         public unsafe readonly bool Implements(ReadOnlySpan<char> fullTypeName)
         {
-            long hash = fullTypeName.GetLongHashCode();
-            fixed (void* pointer = &interfaces)
-            {
-                ReadOnlySpan<long> span = new(pointer, interfaceCount);
-                return span.IndexOf(hash) != -1;
-            }
+            TypeData data = TypeData.Get(hash);
+            ReadOnlySpan<long> span = new(&data.interfaces, data.interfaceCount);
+            return span.IndexOf(fullTypeName.GetLongHashCode()) != -1;
         }
 
         /// <summary>
@@ -259,7 +258,7 @@ namespace Types
         /// </summary>
         public readonly object CreateInstance()
         {
-            Span<byte> bytes = stackalloc byte[size];
+            Span<byte> bytes = stackalloc byte[Size];
             bytes.Clear();
             return TypeInstanceCreator.Do(this, bytes);
         }
@@ -269,9 +268,10 @@ namespace Types
         /// </summary>
         public readonly void CopyFieldsTo(Span<Field> destination)
         {
-            for (int i = 0; i < fieldCount; i++)
+            TypeData data = TypeData.Get(hash);
+            for (int i = 0; i < data.fieldCount; i++)
             {
-                destination[i] = fields[i];
+                destination[i] = data.fields[i];
             }
         }
 
@@ -280,9 +280,10 @@ namespace Types
         /// </summary>
         public readonly void CopyInterfacesTo(Span<Interface> destination)
         {
-            for (int i = 0; i < interfaceCount; i++)
+            TypeData data = TypeData.Get(hash);
+            for (int i = 0; i < data.interfaceCount; i++)
             {
-                destination[i] = interfaces[i];
+                destination[i] = data.interfaces[i];
             }
         }
 
@@ -291,10 +292,11 @@ namespace Types
         /// </summary>
         public readonly bool ContainsField(string fieldName)
         {
+            TypeData data = TypeData.Get(hash);
             ReadOnlySpan<char> nameSpan = fieldName.AsSpan();
-            for (int i = 0; i < fieldCount; i++)
+            for (int i = 0; i < data.fieldCount; i++)
             {
-                if (fields[i].Name.SequenceEqual(nameSpan))
+                if (data.fields[i].Name.SequenceEqual(nameSpan))
                 {
                     return true;
                 }
@@ -308,10 +310,11 @@ namespace Types
         /// </summary>
         public readonly bool ContainsField(ReadOnlySpan<char> fieldName)
         {
+            TypeData data = TypeData.Get(hash);
             ReadOnlySpan<char> nameSpan = fieldName;
-            for (int i = 0; i < fieldCount; i++)
+            for (int i = 0; i < data.fieldCount; i++)
             {
-                if (fields[i].Name.SequenceEqual(nameSpan))
+                if (data.fields[i].Name.SequenceEqual(nameSpan))
                 {
                     return true;
                 }
@@ -327,9 +330,10 @@ namespace Types
         {
             ThrowIfFieldIsMissing(fieldName);
 
-            for (int i = 0; i < fieldCount; i++)
+            TypeData data = TypeData.Get(hash);
+            for (int i = 0; i < data.fieldCount; i++)
             {
-                Field field = fields[i];
+                Field field = data.fields[i];
                 if (field.Name.SequenceEqual(fieldName))
                 {
                     return field;
@@ -346,9 +350,10 @@ namespace Types
         {
             ThrowIfFieldIsMissing(fieldName);
 
-            for (int i = 0; i < fieldCount; i++)
+            TypeData data = TypeData.Get(hash);
+            for (int i = 0; i < data.fieldCount; i++)
             {
-                Field field = fields[i];
+                Field field = data.fields[i];
                 if (field.Name.SequenceEqual(fieldName))
                 {
                     return field;
@@ -365,9 +370,10 @@ namespace Types
         {
             ThrowIfFieldIsMissing(fieldName);
 
-            for (int i = 0; i < fieldCount; i++)
+            TypeData data = TypeData.Get(hash);
+            for (int i = 0; i < data.fieldCount; i++)
             {
-                Field field = fields[i];
+                Field field = data.fields[i];
                 if (field.Name.SequenceEqual(fieldName))
                 {
                     return i;
@@ -384,9 +390,10 @@ namespace Types
         {
             ThrowIfFieldIsMissing(fieldName);
 
-            for (int i = 0; i < fieldCount; i++)
+            TypeData data = TypeData.Get(hash);
+            for (int i = 0; i < data.fieldCount; i++)
             {
-                Field field = fields[i];
+                Field field = data.fields[i];
                 if (field.Name.SequenceEqual(fieldName))
                 {
                     return i;
@@ -417,11 +424,11 @@ namespace Types
         /// <inheritdoc/>
         public readonly override bool Equals(object? obj)
         {
-            return obj is Type type && Equals(type);
+            return obj is TypeMetadata type && Equals(type);
         }
 
         /// <inheritdoc/>
-        public readonly bool Equals(Type other)
+        public readonly bool Equals(TypeMetadata other)
         {
             return hash == other.hash;
         }
@@ -438,16 +445,17 @@ namespace Types
         /// <summary>
         /// Retrieves all types that implement the given <typeparamref name="T"/> interface.
         /// </summary>
-        public static IEnumerable<Type> GetAllThatImplement<T>()
+        public static IEnumerable<TypeMetadata> GetAllThatImplement<T>()
         {
             Span<char> buffer = stackalloc char[512];
             int length = MetadataRegistry.GetFullName(typeof(T), buffer);
             long hash = buffer.Slice(0, length).GetLongHashCode();
-            foreach (Type type in All)
+            foreach (TypeMetadata type in All)
             {
-                for (int i = 0; i < type.interfaceCount; i++)
+                TypeData data = TypeData.Get(type.hash);
+                for (int i = 0; i < data.interfaceCount; i++)
                 {
-                    if (type.interfaces[i].Hash == hash)
+                    if (data.interfaces[i].Hash == hash)
                     {
                         yield return type;
                         break;
@@ -459,14 +467,15 @@ namespace Types
         /// <summary>
         /// Retrieves all types that implement the given <paramref name="interfaceValue"/>.
         /// </summary>
-        public static IEnumerable<Type> GetAllThatImplement(Interface interfaceValue)
+        public static IEnumerable<TypeMetadata> GetAllThatImplement(Interface interfaceValue)
         {
             long hash = interfaceValue.Hash;
-            foreach (Type type in All)
+            foreach (TypeMetadata type in All)
             {
-                for (int i = 0; i < type.interfaceCount; i++)
+                TypeData data = TypeData.Get(type.hash);
+                for (int i = 0; i < data.interfaceCount; i++)
                 {
-                    if (type.interfaces[i].Hash == hash)
+                    if (data.interfaces[i].Hash == hash)
                     {
                         yield return type;
                         break;
@@ -478,19 +487,28 @@ namespace Types
         /// <summary>
         /// Retrieves the metadata of type <typeparamref name="T"/>.
         /// </summary>
-        public static Type Get<T>() where T : unmanaged
+        public static TypeMetadata Get<T>() where T : unmanaged
         {
             return MetadataRegistry.GetType<T>();
         }
 
+        /// <summary>
+        /// Retrieves an existing metadata of type <typeparamref name="T"/>, or
+        /// registers if missing.
+        /// </summary>
+        public static TypeMetadata GetOrRegister<T>() where T : unmanaged
+        {
+            return MetadataRegistry.GetOrRegisterType<T>();
+        }
+
         /// <inheritdoc/>
-        public static bool operator ==(Type left, Type right)
+        public static bool operator ==(TypeMetadata left, TypeMetadata right)
         {
             return left.Equals(right);
         }
 
         /// <inheritdoc/>
-        public static bool operator !=(Type left, Type right)
+        public static bool operator !=(TypeMetadata left, TypeMetadata right)
         {
             return !(left == right);
         }

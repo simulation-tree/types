@@ -8,7 +8,7 @@ namespace Types.Tests
         public void CastTypeAddressBackToHandle()
         {
             nint address = RuntimeTypeTable.GetAddress<string>();
-            System.Type? type = System.Type.GetTypeFromHandle(RuntimeTypeTable.GetHandle(address));
+            Type? type = Type.GetTypeFromHandle(RuntimeTypeTable.GetHandle(address));
             Assert.That(type, Is.EqualTo(typeof(string)));
         }
     }

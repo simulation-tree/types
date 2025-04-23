@@ -9,10 +9,10 @@ namespace Types.Tests
         [Test]
         public void VerifyLayoutOfRegisteredTypes()
         {
-            Type type = MetadataRegistry.GetType<Stress>();
+            TypeMetadata type = MetadataRegistry.GetType<Stress>();
             Assert.That(type.SystemType, Is.EqualTo(typeof(Stress)));
             Assert.That(type.Name.ToString(), Is.EqualTo("Stress"));
-            Assert.That(type.size, Is.EqualTo((uint)sizeof(Stress)));
+            Assert.That(type.Size, Is.EqualTo((uint)sizeof(Stress)));
 
             ReadOnlySpan<Field> fields = type.Fields;
             Assert.That(fields.Length, Is.EqualTo(5));
@@ -49,7 +49,7 @@ namespace Types.Tests
             Assert.That(MetadataRegistry.IsTypeRegistered(typeof(sbyte).FullName ?? typeof(sbyte).Name), Is.True);
             Assert.That(MetadataRegistry.IsTypeRegistered(typeof(short).FullName ?? typeof(short).Name), Is.True);
 
-            Assert.That(MetadataRegistry.GetType<Vector3>().size, Is.EqualTo((uint)sizeof(Vector3)));
+            Assert.That(MetadataRegistry.GetType<Vector3>().Size, Is.EqualTo((uint)sizeof(Vector3)));
             Assert.That(MetadataRegistry.GetType<Vector3>().Fields.Length, Is.EqualTo(3));
         }
 
@@ -58,10 +58,10 @@ namespace Types.Tests
         {
             Assert.That(MetadataRegistry.IsTypeRegistered<bool>(), Is.True);
             Assert.That(MetadataRegistry.IsTypeRegistered<byte>(), Is.True);
-            Type boolean = MetadataRegistry.GetType<bool>();
-            Type byteType = MetadataRegistry.GetType<byte>();
-            Assert.That(boolean.size, Is.EqualTo(1));
-            Assert.That(byteType.size, Is.EqualTo(1));
+            TypeMetadata boolean = MetadataRegistry.GetType<bool>();
+            TypeMetadata byteType = MetadataRegistry.GetType<byte>();
+            Assert.That(boolean.Size, Is.EqualTo(1));
+            Assert.That(byteType.Size, Is.EqualTo(1));
             Assert.That(boolean.GetHashCode(), Is.EqualTo(MetadataRegistry.GetType<bool>().GetHashCode()));
             Assert.That(byteType.GetHashCode(), Is.EqualTo(MetadataRegistry.GetType<byte>().GetHashCode()));
         }
@@ -69,7 +69,7 @@ namespace Types.Tests
         [Test]
         public void CheckIfLayoutIs()
         {
-            Type layout = MetadataRegistry.GetType<Stress>();
+            TypeMetadata layout = MetadataRegistry.GetType<Stress>();
 
             Assert.That(layout.Is<Stress>(), Is.True);
             Assert.That(layout.Is<Cherry>(), Is.False);
@@ -100,7 +100,7 @@ namespace Types.Tests
         [Test]
         public void CreateObjectFromTypeLayout()
         {
-            Type layout = MetadataRegistry.GetType<Stress>();
+            TypeMetadata layout = MetadataRegistry.GetType<Stress>();
             object instance = layout.CreateInstance();
             Assert.That(instance, Is.InstanceOf<Stress>());
             Assert.That((Stress)instance, Is.EqualTo(default(Stress)));
@@ -110,7 +110,7 @@ namespace Types.Tests
         public void GetOrRegister()
         {
             Assert.That(MetadataRegistry.IsTypeRegistered<DayOfWeek>(), Is.False);
-            Type type = MetadataRegistry.GetOrRegisterType<DayOfWeek>();
+            TypeMetadata type = MetadataRegistry.GetOrRegisterType<DayOfWeek>();
             Assert.That(MetadataRegistry.IsTypeRegistered<DayOfWeek>(), Is.True);
             Assert.That(type.Is<DayOfWeek>(), Is.True);
         }
@@ -118,7 +118,7 @@ namespace Types.Tests
         [Test]
         public void GetImplementedInterfaces()
         {
-            Type type = MetadataRegistry.GetType<Stress>();
+            TypeMetadata type = MetadataRegistry.GetType<Stress>();
             ReadOnlySpan<Interface> interfaces = type.Interfaces;
             Assert.That(interfaces.Length, Is.EqualTo(1));
             Assert.That(interfaces[0].Name.ToString(), Is.EqualTo("IDisposable"));
@@ -131,8 +131,8 @@ namespace Types.Tests
         [Test]
         public void IterateThroughAllDisposableTypes()
         {
-            List<Type> types = new();
-            foreach (Type type in Type.GetAllThatImplement<IDisposable>())
+            List<TypeMetadata> types = new();
+            foreach (TypeMetadata type in TypeMetadata.GetAllThatImplement<IDisposable>())
             {
                 types.Add(type);
             }
@@ -144,7 +144,7 @@ namespace Types.Tests
         [Test]
         public void TypeImplementingStaticInterfaceMembers()
         {
-            Type type = Type.Get<VictimOfABug>();
+            TypeMetadata type = TypeMetadata.Get<VictimOfABug>();
             Assert.That(type.Interfaces.Length, Is.EqualTo(1));
             Assert.That(type.Implements("Types.Tests.IHahaInterfaceWithStaticMethodsHaha"), Is.True);
         }
