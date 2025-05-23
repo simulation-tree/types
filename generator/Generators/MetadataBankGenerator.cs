@@ -150,11 +150,6 @@ namespace Types.Generator
                     {
                         foreach (INamedTypeSymbol interfaceType in type.AllInterfaces)
                         {
-                            if (interfaceType.IsGenericType)
-                            {
-                                continue;
-                            }
-
                             interfaceTypes.Add(interfaceType);
                         }
                     }
@@ -277,11 +272,6 @@ namespace Types.Generator
 
                 foreach (INamedTypeSymbol interfaceType in type.AllInterfaces)
                 {
-                    if (interfaceType.IsGenericType)
-                    {
-                        continue;
-                    }
-
                     AppendInterface(source, interfaceType, ref interfaceCount);
                 }
 

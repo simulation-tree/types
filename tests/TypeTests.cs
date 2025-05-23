@@ -121,7 +121,7 @@ namespace Types.Tests
             TypeMetadata type = MetadataRegistry.GetType<Stress>();
             ReadOnlySpan<Interface> interfaces = type.Interfaces;
             Assert.That(interfaces.Length, Is.EqualTo(1));
-            Assert.That(interfaces[0].Name.ToString(), Is.EqualTo("IDisposable"));
+            Assert.That(interfaces[0].FullName.ToString(), Is.EqualTo("System.IDisposable"));
             Assert.That(type.Implements<IDisposable>(), Is.True);
             Assert.That(type.Implements<ICloneable>(), Is.False);
             Assert.That(interfaces[0].Is<IDisposable>(), Is.True);

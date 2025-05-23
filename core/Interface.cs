@@ -26,26 +26,6 @@ namespace Types
         public readonly ReadOnlySpan<char> FullName => TypeNames.Get(hash);
 
         /// <summary>
-        /// Name of the interface.
-        /// </summary>
-        public readonly ReadOnlySpan<char> Name
-        {
-            get
-            {
-                ReadOnlySpan<char> fullName = TypeNames.Get(hash);
-                int index = fullName.LastIndexOf('.');
-                if (index != -1)
-                {
-                    return fullName.Slice(index + 1);
-                }
-                else
-                {
-                    return fullName;
-                }
-            }
-        }
-
-        /// <summary>
         /// Retrieves the raw handle for this interface.
         /// </summary>
         public readonly RuntimeTypeHandle TypeHandle => MetadataRegistry.GetRuntimeInterfaceHandle(hash);

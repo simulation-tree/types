@@ -59,12 +59,12 @@ namespace Types
         /// <summary>
         /// The underlying system type that this represents.
         /// </summary>
-        public readonly System.Type SystemType
+        public readonly Type SystemType
         {
             get
             {
                 RuntimeTypeHandle handle = TypeHandle;
-                return System.Type.GetTypeFromHandle(handle) ?? throw new InvalidOperationException($"System type not found for handle {handle}");
+                return Type.GetTypeFromHandle(handle) ?? throw new InvalidOperationException($"System type not found for handle {handle}");
             }
         }
 
@@ -77,26 +77,6 @@ namespace Types
         /// Full name of the type including the namespace.
         /// </summary>
         public readonly ReadOnlySpan<char> FullName => TypeNames.Get(hash);
-
-        /// <summary>
-        /// Name of the type.
-        /// </summary>
-        public readonly ReadOnlySpan<char> Name
-        {
-            get
-            {
-                ReadOnlySpan<char> fullName = TypeNames.Get(hash);
-                int index = fullName.LastIndexOf('.');
-                if (index != -1)
-                {
-                    return fullName.Slice(index + 1);
-                }
-                else
-                {
-                    return fullName;
-                }
-            }
-        }
 
 #if NET
         /// <summary>

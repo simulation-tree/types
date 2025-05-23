@@ -81,8 +81,9 @@ namespace Types
         /// <returns>Amount of characters written.</returns>
         public readonly int ToString(Span<char> buffer)
         {
-            type.Name.CopyTo(buffer);
-            int length = type.Name.Length;
+            ReadOnlySpan<char> fullName = type.FullName;
+            fullName.CopyTo(buffer);
+            int length = fullName.Length;
             buffer[length++] = '=';
             Name.CopyTo(buffer.Slice(length));
             length += Name.Length;

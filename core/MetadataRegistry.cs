@@ -267,7 +267,7 @@ namespace Types
         /// <summary>
         /// Checks if the given <paramref name="type"/> is registered.
         /// </summary>
-        public static bool IsTypeRegistered(System.Type type)
+        public static bool IsTypeRegistered(Type type)
         {
             return handleToType.ContainsKey(RuntimeTypeTable.GetHandle(type));
         }
@@ -275,7 +275,7 @@ namespace Types
         /// <summary>
         /// Checks if the given <paramref name="interfaceType"/> is registered.
         /// </summary>
-        public static bool IsInterfaceRegistered(System.Type interfaceType)
+        public static bool IsInterfaceRegistered(Type interfaceType)
         {
             return handleToInterface.ContainsKey(RuntimeTypeTable.GetHandle(interfaceType));
         }
@@ -334,7 +334,7 @@ namespace Types
         /// <summary>
         /// Retrieves the full type name for the given <paramref name="type"/>.
         /// </summary>
-        public static int GetFullName(System.Type type, Span<char> buffer)
+        public static int GetFullName(Type type, Span<char> buffer)
         {
             int length = 0;
             AppendType(buffer, ref length, type);
@@ -354,7 +354,7 @@ namespace Types
                 length += text.Length;
             }
 
-            static void AppendType(Span<char> fullName, ref int length, System.Type type)
+            static void AppendType(Span<char> fullName, ref int length, Type type)
             {
                 //todo: handle case where the type name is System.Collections.Generic.List`1+Enumerator[etc, etc]
                 System.Type? current = type;
@@ -406,7 +406,7 @@ namespace Types
         /// <summary>
         /// Retrieves the full type name for the given <paramref name="type"/>.
         /// </summary>
-        public static string GetFullName(System.Type type)
+        public static string GetFullName(Type type)
         {
             Span<char> buffer = stackalloc char[512];
             int length = GetFullName(type, buffer);
