@@ -11,7 +11,7 @@ namespace Types.Tests
         {
             TypeMetadata type = MetadataRegistry.GetType<Stress>();
             Assert.That(type.SystemType, Is.EqualTo(typeof(Stress)));
-            Assert.That(type.Name.ToString(), Is.EqualTo("Stress"));
+            Assert.That(type.FullName.ToString(), Is.EqualTo("Types.Tests.Stress"));
             Assert.That(type.Size, Is.EqualTo((uint)sizeof(Stress)));
 
             ReadOnlySpan<Field> fields = type.Fields;
@@ -78,9 +78,7 @@ namespace Types.Tests
         [Test]
         public void CheckNamesOfTypes()
         {
-            Assert.That(MetadataRegistry.GetType<bool>().Name.ToString(), Is.EqualTo("Boolean"));
             Assert.That(MetadataRegistry.GetType<bool>().FullName.ToString(), Is.EqualTo("System.Boolean"));
-            Assert.That(MetadataRegistry.GetType<Cherry>().Name.ToString(), Is.EqualTo("Cherry"));
             Assert.That(MetadataRegistry.GetType<Cherry>().FullName.ToString(), Is.EqualTo("Types.Tests.Cherry"));
         }
 
