@@ -512,11 +512,11 @@ namespace Types
             }
         }
 
-        private unsafe static class LazyTypeCache<T> where T : unmanaged
+        private static class LazyTypeCache<T> where T : unmanaged
         {
             public static readonly TypeMetadata value;
 
-            static LazyTypeCache()
+            unsafe static LazyTypeCache()
             {
                 RuntimeTypeHandle key = RuntimeTypeTable.GetHandle<T>();
                 if (!handleToType.TryGetValue(key, out value))
@@ -527,11 +527,11 @@ namespace Types
             }
         }
 
-        private unsafe static class LazyInterfaceCache<T> where T : unmanaged
+        private static class LazyInterfaceCache<T> where T : unmanaged
         {
             public static readonly Interface value;
 
-            static LazyInterfaceCache()
+            unsafe static LazyInterfaceCache()
             {
                 RuntimeTypeHandle key = RuntimeTypeTable.GetHandle<T>();
                 if (!handleToInterface.TryGetValue(key, out value))
