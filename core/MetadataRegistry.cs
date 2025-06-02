@@ -357,11 +357,11 @@ namespace Types
             static void AppendType(Span<char> fullName, ref int length, Type type)
             {
                 //todo: handle case where the type name is System.Collections.Generic.List`1+Enumerator[etc, etc]
-                System.Type? current = type;
+                Type? current = type;
                 string? currentNameSpace = current.Namespace;
                 while (current is not null)
                 {
-                    System.Type[] genericTypes = current.GenericTypeArguments;
+                    Type[] genericTypes = current.GenericTypeArguments;
                     string name = current.Name;
                     if (genericTypes.Length > 0)
                     {
