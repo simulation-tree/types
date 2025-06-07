@@ -1,38 +1,47 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
-		<ImplicitUsings>disable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<Title>Types Core</Title>
-		<Authors>popcron</Authors>
-		<Company>simulation-tree</Company>
-		<RepositoryUrl>https://github.com/simulation-tree/types</RepositoryUrl>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<IsAotCompatible>True</IsAotCompatible>
-		<IsTrimmable>True</IsTrimmable>
-		<NoStandardLib>true</NoStandardLib>
-		<RootNamespace>Types</RootNamespace>
-		<DebugType>Embedded</DebugType>
-		<EmbedAllSources>True</EmbedAllSources>
-		<PackageId/>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <Title>Types Core</Title>
+    <Authors>popcron</Authors>
+    <Company>simulation-tree</Company>
+    <RepositoryUrl>https://github.com/simulation-tree/types</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IsAotCompatible>True</IsAotCompatible>
+    <IsTrimmable>True</IsTrimmable>
+    <NoStandardLib>true</NoStandardLib>
+    <RootNamespace>Types</RootNamespace>
+    <DebugType>Embedded</DebugType>
+    <EmbedAllSources>True</EmbedAllSources>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+  </PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-	</PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+  </PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-	</PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<None Include="..\README.md">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
-	</ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="bin/Debug/net9.0/Types.Core.dll" Pack="true" PackagePath="tools/debug/Types.Core.dll" Visible="false"/>
+    <Content Include="bin/Debug/net9.0/Types.Core.xml" Pack="true" PackagePath="tools/debug/Types.Core.xml" Visible="false"/>
+    <Content Include="bin/Release/net9.0/Types.Core.dll" Pack="true" PackagePath="tools/release/Types.Core.dll" Visible="false"/>
+    <Content Include="bin/Release/net9.0/Types.Core.xml" Pack="true" PackagePath="tools/release/Types.Core.xml" Visible="false"/>
+    <Content Include="build/Types.Core.targets" Pack="true" PackagePath="build/Types.Core.targets" Visible="false"/>
+  </ItemGroup>
 
 </Project>
