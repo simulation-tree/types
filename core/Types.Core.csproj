@@ -18,7 +18,7 @@
     <DebugType>Embedded</DebugType>
     <EmbedAllSources>True</EmbedAllSources>
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <OutDir>bin/$(TargetFramework)/$(Configuration)</OutDir>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -37,11 +37,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="bin/Debug/net9.0/Types.Core.dll" Pack="true" PackagePath="tools/debug/Types.Core.dll" Visible="false"/>
-    <Content Include="bin/Debug/net9.0/Types.Core.xml" Pack="true" PackagePath="tools/debug/Types.Core.xml" Visible="false" Condition="Exists('bin/Debug/net9.0/Types.Core.xml')"/>
-    <Content Include="bin/Release/net9.0/Types.Core.dll" Pack="true" PackagePath="tools/release/Types.Core.dll" Visible="false"/>
-    <Content Include="bin/Release/net9.0/Types.Core.xml" Pack="true" PackagePath="tools/release/Types.Core.xml" Visible="false" Condition="Exists('bin/Release/net9.0/Types.Core.xml')"/>
-    <Content Include="build/Types.Core.targets" Pack="true" PackagePath="build/Types.Core.targets" Visible="false"/>
+    <Content Include="bin/**/*" Pack="true" PackagePath="lib" Visible="false"/>
+    <Content Include="buildTransitive/**/*" Pack="true" PackagePath="buildTransitive"/>
   </ItemGroup>
 
 </Project>
