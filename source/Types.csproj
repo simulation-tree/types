@@ -28,8 +28,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\generator\Types.Generator.csproj"/>
-    <ProjectReference Include="..\core\Types.Core.csproj"/>
+    <ProjectReference Include="..\generator\Types.Generator.csproj" />
+    <ProjectReference Include="..\core\Types.Core.csproj" />
   </ItemGroup>
 
 </Project>

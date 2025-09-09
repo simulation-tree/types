@@ -15,26 +15,28 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1"/>
-    <PackageReference Include="NUnit" Version="4.4.0-beta.1"/>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="NUnit" Version="4.4.0" />
     <PackageReference Include="NUnit.Analyzers" Version="4.10.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NUnit3TestAdapter" Version="5.1.0-alpha.3"/>
+    <PackageReference Include="NUnit3TestAdapter" Version="5.1.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\core\Types.Core.csproj"/>
+    <ProjectReference Include="..\core\Types.Core.csproj" />
+    <ProjectReference Include="..\..\unmanaged\generator\Unmanaged.Generator.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
+    <ProjectReference Include="..\generator\Types.Generator.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
   </ItemGroup>
 
   <ItemGroup>
-    <Analyzer Include="..\..\unmanaged\generator\bin\$(Configuration)\netstandard2.0\Unmanaged.Generator.dll"/>
-    <Analyzer Include="..\generator\bin\$(Configuration)\netstandard2.0\Types.Generator.dll"/>
+    <Analyzer Include="..\..\unmanaged\generator\bin\$(Configuration)\netstandard2.0\Unmanaged.Generator.dll" />
+    <Analyzer Include="..\generator\bin\$(Configuration)\netstandard2.0\Types.Generator.dll" />
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="NUnit.Framework"/>
+    <Using Include="NUnit.Framework" />
   </ItemGroup>
 
 </Project>
