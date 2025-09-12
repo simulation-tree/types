@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace Types
 {
     /// <summary>
     /// Stores metadata about types and interfaces.
     /// </summary>
+    [SkipLocalsInit]
     public static class MetadataRegistry
     {
         private static readonly List<TypeMetadata> types = new();
@@ -356,7 +358,6 @@ namespace Types
 
             static void AppendType(Span<char> fullName, ref int length, Type type)
             {
-                //todo: handle case where the type name is System.Collections.Generic.List`1+Enumerator[etc, etc]
                 Type? current = type;
                 string? currentNameSpace = current.Namespace;
                 while (current is not null)
