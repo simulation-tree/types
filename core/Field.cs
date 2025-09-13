@@ -105,18 +105,15 @@ namespace Types
         /// <inheritdoc/>
         public readonly override int GetHashCode()
         {
-            unchecked
+            int hashCode = 17;
+            ReadOnlySpan<char> name = Name;
+            for (int i = 0; i < name.Length; i++)
             {
-                int hashCode = 17;
-                ReadOnlySpan<char> name = Name;
-                for (int i = 0; i < name.Length; i++)
-                {
-                    hashCode = hashCode * 31 + name[i];
-                }
-
-                hashCode = hashCode * 31 + (int)type.hash;
-                return hashCode;
+                hashCode = hashCode * 31 + name[i];
             }
+
+            hashCode = hashCode * 31 + (int)type.hash;
+            return hashCode;
         }
 
         /// <inheritdoc/>

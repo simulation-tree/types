@@ -7,6 +7,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <Title>Types Core</Title>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <Authors>popcron</Authors>
     <Company>simulation-tree</Company>
     <RepositoryUrl>https://github.com/simulation-tree/types</RepositoryUrl>

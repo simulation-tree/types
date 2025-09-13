@@ -92,10 +92,7 @@ namespace Types
         /// <inheritdoc/>
         public readonly override int GetHashCode()
         {
-            unchecked
-            {
-                return (int)hash;
-            }
+            return (int)hash;
         }
 
         /// <inheritdoc/>
