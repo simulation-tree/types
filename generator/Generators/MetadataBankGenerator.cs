@@ -132,17 +132,9 @@ namespace Types.Generator
 
                 source.BeginGroup();
                 {
-                    source.Append(Constants.FieldBufferTypeName);
-                    source.Append(' ');
-                    source.Append(FieldBufferVariableName);
-                    source.Append(" = new();");
-                    source.AppendLine();
-
-                    source.Append(Constants.InterfaceBufferTypeName);
-                    source.Append(' ');
-                    source.Append(InterfaceBufferVariableName);
-                    source.Append(" = new();");
-                    source.AppendLine();
+                    int fieldCount = 0;
+                    int interfaceCount = 0;
+                    int index = source.Length;
 
                     //register all interfaces first
                     HashSet<ITypeSymbol> interfaceTypes = [];
@@ -161,7 +153,29 @@ namespace Types.Generator
 
                     foreach (ITypeSymbol type in types)
                     {
-                        AppendRegisterType(source, type);
+                        (int fieldCount, int interfaceCount) x = AppendRegisterType(source, type);
+                        fieldCount += x.fieldCount;
+                        interfaceCount += x.interfaceCount;
+                    }
+
+                    if (fieldCount > 0)
+                    {
+                        source.InsertAt(index, "\r\n");
+                        source.InsertAt(index, " = new();");
+                        source.InsertAt(index, FieldBufferVariableName);
+                        source.InsertAt(index, ' ');
+                        source.InsertAt(index, Constants.FieldBufferTypeName);
+                        source.InsertIndentationAt(index);
+                    }
+
+                    if (interfaceCount > 0)
+                    {
+                        source.InsertAt(index, "\r\n");
+                        source.InsertAt(index, " = new();");
+                        source.InsertAt(index, InterfaceBufferVariableName);
+                        source.InsertAt(index, ' ');
+                        source.InsertAt(index, Constants.InterfaceBufferTypeName);
+                        source.InsertIndentationAt(index);
                     }
                 }
                 source.EndGroup();
@@ -209,7 +223,6 @@ namespace Types.Generator
 
             source.Append(')');
             source.AppendLine();
-
             source.BeginGroup();
             {
                 source.Append("register.RegisterInterface");
@@ -242,12 +255,12 @@ namespace Types.Generator
             source.EndGroup();
         }
 
-        private static void AppendRegisterType(SourceBuilder source, ITypeSymbol type)
+        private static (int fieldCount, int interfaceCount) AppendRegisterType(SourceBuilder source, ITypeSymbol type)
         {
             string fullName = type.GetFullTypeName();
             if (fullName.EndsWith("e__FixedBuffer"))
             {
-                return;
+                return default;
             }
 
             source.Append("if (!");
@@ -257,16 +270,16 @@ namespace Types.Generator
             source.Append(">())");
             source.AppendLine();
 
+            int fieldCount = 0;
+            int interfaceCount = 0;
             source.BeginGroup();
             {
-                byte variableCount = 0;
-                byte interfaceCount = 0;
                 HashSet<string> fieldNames = new();
                 foreach (IFieldSymbol field in type.GetFields())
                 {
                     if (fieldNames.Add(field.Name))
                     {
-                        AppendVariable(source, field, ref variableCount);
+                        AppendField(source, field, ref fieldCount);
                     }
                 }
 
@@ -278,26 +291,43 @@ namespace Types.Generator
                 source.Append("register.RegisterType<");
                 source.Append(fullName);
                 source.Append(">(");
-                if (variableCount > 0 || interfaceCount > 0)
+                if (fieldCount > 0 || interfaceCount > 0)
                 {
-                    source.Append(FieldBufferVariableName);
+                    if (fieldCount > 0)
+                    {
+                        source.Append(FieldBufferVariableName);
+                        source.Append(',');
+                        source.Append(' ');
+                        source.Append(fieldCount);
+                    }
+                    else
+                    {
+                        source.Append("default, 0");
+                    }
+
                     source.Append(',');
                     source.Append(' ');
-                    source.Append(variableCount);
-                    source.Append(',');
-                    source.Append(' ');
-                    source.Append(InterfaceBufferVariableName);
-                    source.Append(',');
-                    source.Append(' ');
-                    source.Append(interfaceCount);
+
+                    if (interfaceCount > 0)
+                    {
+                        source.Append(InterfaceBufferVariableName);
+                        source.Append(',');
+                        source.Append(' ');
+                        source.Append(interfaceCount);
+                    }
+                    else
+                    {
+                        source.Append("default, 0");
+                    }
                 }
 
                 source.Append(");");
                 source.AppendLine();
             }
             source.EndGroup();
+            return (fieldCount, interfaceCount);
 
-            static void AppendVariable(SourceBuilder source, IFieldSymbol field, ref byte count)
+            static void AppendField(SourceBuilder source, IFieldSymbol field, ref int count)
             {
                 source.Append(FieldBufferVariableName);
                 source.Append('[');
@@ -323,7 +353,7 @@ namespace Types.Generator
                 count++;
             }
 
-            static void AppendInterface(SourceBuilder source, INamedTypeSymbol interfaceType, ref byte count)
+            static void AppendInterface(SourceBuilder source, INamedTypeSymbol interfaceType, ref int count)
             {
                 source.Append(InterfaceBufferVariableName);
                 source.Append('[');

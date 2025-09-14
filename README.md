@@ -62,5 +62,5 @@ These are also generated like type banks. But differ in that they're only
 generated for projects with an entry point (a `static void Main()` method).
 They load all type banks found in the project:
 ```cs
-TypeRegistryLoader.Load();
+MetadataRegistryLoader.Load();
 ```

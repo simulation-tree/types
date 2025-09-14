@@ -120,5 +120,24 @@ namespace Types.Generator
 
             builder.Append(character);
         }
+
+        public void InsertAt(int index, string text)
+        {
+            builder.Insert(index, text);
+        }
+
+        public void InsertAt(int index, char character)
+        {
+            builder.Insert(index, character);
+        }
+
+        public void InsertIndentationAt(int index)
+        {
+            for (int i = 0; i < indentation; i++)
+            {
+                builder.Insert(index, ' ');
+                index++;
+            }
+        }
     }
 }
