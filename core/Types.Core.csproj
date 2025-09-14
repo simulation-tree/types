@@ -9,7 +9,7 @@
     <Title>Types Core</Title>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <Authors>popcron</Authors>
-    <Company>simulation-tree</Company>
+    <Company>Simulation Tree</Company>
     <RepositoryUrl>https://github.com/simulation-tree/types</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <IsAotCompatible>True</IsAotCompatible>

@@ -64,16 +64,16 @@ jobs:
         run: dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --name github --username ${{ github.repository_owner }} --password ${{ github.token }} --store-password-in-clear-text
             
       - name: Publish `Types.Core`
-        run: dotnet nuget push Types.Core.${VERSION}.nupkg --source github --api-key ${NUGET_TOKEN}
+        run: dotnet nuget push SimulationTree.Types.Core.${VERSION}.nupkg --source github --api-key ${NUGET_TOKEN}
         env:
           NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
       
       - name: Publish `Types.Generator`
-        run: dotnet nuget push Types.Generator.${VERSION}.nupkg --source github --api-key ${NUGET_TOKEN}
+        run: dotnet nuget push SimulationTree.Types.Generator.${VERSION}.nupkg --source github --api-key ${NUGET_TOKEN}
         env:
           NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
       
       - name: Publish `Types`
-        run: dotnet nuget push Types.${VERSION}.nupkg --source github --api-key ${NUGET_TOKEN}
+        run: dotnet nuget push SimulationTree.Types.${VERSION}.nupkg --source github --api-key ${NUGET_TOKEN}
         env:
           NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
