@@ -17,6 +17,7 @@
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <RepositoryUrl>https://github.com/simulation-tree/types</RepositoryUrl>
     <PackageId>SimulationTree.Types.Generator</PackageId>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
